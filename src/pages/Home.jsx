@@ -9,10 +9,15 @@ import CountdownPartido from '../components/CountdownPartido';
 import ResumenPublico from '../components/ResumenPublico';
 import Footer from '../components/Footer';
 
-// TODO: reemplazar con los datos reales de contacto y redes de La Retoucherie de Manuela
-const WHATSAPP_NUMERO = '573000000000';
-const INSTAGRAM_USUARIO = '@laretoucheriedemanuela';
-const DIRECCION = 'Barranquilla, Colombia';
+const WHATSAPP_NUMERO = '573103963708';
+const INSTAGRAM_USUARIO = '@retoucherie_col';
+
+const SEDES = [
+    { ciudad: 'Barranquilla', nombre: 'Cc Buenavista', direccion: 'Sótano 2, local 17', telefono: '6053131966' },
+    { ciudad: 'Barranquilla', nombre: 'Cc Viva Barranquilla', direccion: 'Sótano 1', telefono: '6053093750' },
+    { ciudad: 'Barranquilla', nombre: 'Cc Aranjuez', direccion: 'Calle 82 #53', telefono: '6052022021' },
+    { ciudad: 'Cartagena', nombre: 'Cc Caribe Plaza', direccion: 'Sótano 1', telefono: '6056515251' },
+];
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 
@@ -163,9 +168,20 @@ export default function Home() {
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-6 text-center">
                     <h2 className="text-white font-black text-xl mb-2">Quiénes somos</h2>
                     <p className="text-zinc-400 text-sm mb-4">
-                        La Retoucherie de Manuela es un centro de belleza y bienestar en {DIRECCION}.
+                        La Retoucherie es un centro de belleza y bienestar con sedes en Barranquilla y Cartagena.
                         Esta Polla Mundialista es nuestro regalo para celebrar el Mundial 2026 junto a nuestros clientes.
                     </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-left">
+                        {SEDES.map((sede) => (
+                            <div key={sede.nombre} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                <p className="text-white font-bold text-xs">{sede.nombre}</p>
+                                <p className="text-zinc-400 text-xs">{sede.ciudad} · {sede.direccion}</p>
+                                <p className="text-zinc-400 text-xs">📞 {sede.telefono}</p>
+                            </div>
+                        ))}
+                    </div>
+
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <a
                             href={`https://instagram.com/${INSTAGRAM_USUARIO.replace('@', '')}`}
