@@ -75,7 +75,7 @@ export default function Home() {
                                 <img
                                     src={premio.imagen}
                                     alt={premio.titulo}
-                                    className="w-full h-24 object-contain mb-2"
+                                    className="w-full h-24 object-cover rounded-lg shadow-lg shadow-black/40 mb-2"
                                 />
                                 <p className="text-white font-bold text-sm">{premio.titulo}</p>
                                 <p className="text-zinc-400 text-xs">{premio.descripcion}</p>
