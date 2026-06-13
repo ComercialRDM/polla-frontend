@@ -1,9 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 @import "tailwindcss";
 
 @theme {
   --color-colombia-yellow: #FCD116;
   --color-colombia-blue: #003893;
   --color-colombia-red: #CE1126;
+}
+
+.font-scoreboard {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+.stadium-glow {
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(20, 83, 45, 0.35), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(0, 56, 147, 0.25), transparent 60%);
+}
+
+.neon-gold {
+  text-shadow: 0 0 6px rgba(250, 204, 21, 0.7), 0 0 16px rgba(250, 204, 21, 0.4);
+}
+
+.neon-green {
+  text-shadow: 0 0 6px rgba(163, 230, 53, 0.8), 0 0 16px rgba(163, 230, 53, 0.4);
 }
 
 html, body, #root {

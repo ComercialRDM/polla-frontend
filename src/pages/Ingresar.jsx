@@ -54,7 +54,7 @@ export default function Ingresar() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -75,7 +75,7 @@ export default function Ingresar() {
                         value={contacto}
                         onChange={(e) => setContacto(e.target.value)}
                         placeholder="Correo o número de celular"
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
 
                     {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -83,14 +83,14 @@ export default function Ingresar() {
                     <button
                         type="submit"
                         disabled={cargando}
-                        className="w-full py-4 rounded-xl font-bold text-zinc-950 text-center bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg shadow-orange-500/20 active:scale-95 transition-transform disabled:opacity-60"
+                        className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
                     >
                         {cargando ? 'Verificando...' : 'Ingresar'}
                     </button>
                 </form>
 
                 {sinAcceso && (
-                    <div className="mt-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 text-center">
+                    <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-5 text-center">
                         <p className="text-white font-semibold mb-2">No encontramos un bono activo 😕</p>
                         <p className="text-zinc-400 text-sm mb-4">
                             Si ya pagaste, espera unos minutos a que se confirme tu pago, o escríbenos por WhatsApp y te ayudamos.

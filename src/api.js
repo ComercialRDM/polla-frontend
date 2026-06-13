@@ -41,6 +41,10 @@ export function verificarAcceso({ contacto, partido_id }) {
     return request(`/api/polla/verificar-acceso?${params.toString()}`);
 }
 
+export function obtenerRanking(partidoId) {
+    return request(`/api/partidos/${partidoId}/ranking`);
+}
+
 export function votar({ token_acceso, partido_id, marcadores }) {
     return request('/api/polla/votar', {
         method: 'POST',

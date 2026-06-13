@@ -64,7 +64,7 @@ export default function Comprar() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -85,10 +85,10 @@ export default function Comprar() {
                             key={plan.valor}
                             type="button"
                             onClick={() => setPlanSeleccionado(plan.valor)}
-                            className={`rounded-xl border p-4 text-left transition-all backdrop-blur-sm ${
+                            className={`rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
                                 planSeleccionado === plan.valor
-                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400'
-                                    : 'border-white/10 bg-white/5'
+                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
+                                    : 'border-white/10 bg-slate-900/60'
                             }`}
                         >
                             <div className="flex justify-between items-center">
@@ -111,7 +111,7 @@ export default function Comprar() {
                             value={form.nombre}
                             onChange={handleChange}
                             placeholder="Ej: Manuela Pérez"
-                            className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
                     <div>
@@ -122,7 +122,7 @@ export default function Comprar() {
                             value={form.correo}
                             onChange={handleChange}
                             placeholder="tucorreo@email.com"
-                            className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
                     <div>
@@ -133,7 +133,7 @@ export default function Comprar() {
                             value={form.celular}
                             onChange={handleChange}
                             placeholder="3001234567"
-                            className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
 
@@ -142,7 +142,7 @@ export default function Comprar() {
                     <button
                         type="submit"
                         disabled={cargando}
-                        className="w-full py-4 rounded-xl font-bold text-zinc-950 text-center bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg shadow-orange-500/20 active:scale-95 transition-transform disabled:opacity-60"
+                        className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
                     >
                         {cargando ? 'Generando link de pago...' : 'Pagar con Wompi'}
                     </button>

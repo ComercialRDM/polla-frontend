@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
+import { bandera } from '../utils/banderas';
+import RankingEnVivo from '../components/RankingEnVivo';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
 
@@ -31,6 +33,7 @@ export default function Polla() {
     const [marcadores, setMarcadores] = useState([]);
     const [enviando, setEnviando] = useState(false);
     const [mensajeExito, setMensajeExito] = useState('');
+    const [hayCambios, setHayCambios] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -73,6 +76,7 @@ export default function Polla() {
     function actualizarMarcador(index, campo, valor) {
         const valorLimpio = valor.replace(/[^0-9]/g, '').slice(0, 2);
         setMarcadores((prev) => prev.map((m, i) => (i === index ? { ...m, [campo]: valorLimpio } : m)));
+        setHayCambios(true);
     }
 
     async function handleSubmit() {
@@ -97,6 +101,7 @@ export default function Polla() {
                 setMensajeExito('¡Pronósticos guardados con éxito! Mucha suerte 🇨🇴');
                 setInfo((prev) => ({ ...prev, intentos_disponibles: data.intentos_disponibles }));
                 setMarcadores(Array.from({ length: data.intentos_disponibles }, () => ({ local: '', visitante: '' })));
+                setHayCambios(false);
             } else {
                 setError(data?.error || 'No se pudieron guardar los pronósticos.');
             }
@@ -124,41 +129,48 @@ export default function Polla() {
         );
     }
 
+    const mostrarFormulario = !cerrado && info.intentos_disponibles > 0;
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen relative bg-zinc-950 stadium-glow px-4 sm:px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className="w-full max-w-md mt-6">
+            <div className={`w-full max-w-md mt-6 relative ${mostrarFormulario ? 'pb-28 sm:pb-0' : ''}`}>
                 <h1 className="text-2xl font-extrabold text-white mb-1">¡Hola, {info.nombre}!</h1>
                 <p className="text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
 
                 {/* Marcador tipo estadio */}
-                <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-sm p-6 mb-6 text-center">
-                    <p className="text-amber-400 font-bold text-lg mb-3">
+                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-6 mb-6 text-center">
+                    <p className="text-amber-400 font-bold text-lg mb-3 flex items-center justify-center gap-2">
+                        <span className="text-2xl">{bandera(info.equipo_local)}</span>
                         {info.equipo_local} vs {info.equipo_visitante}
+                        <span className="text-2xl">{bandera(info.equipo_visitante)}</span>
                     </p>
                     <p className="text-xs text-zinc-400 mb-1">
                         {cerrado ? 'Votación cerrada' : enUltimaHora ? '¡Última hora para votar!' : 'Tiempo restante para predecir'}
                     </p>
                     <div
-                        className={`font-mono text-4xl sm:text-5xl font-black tracking-widest ${
-                            cerrado ? 'text-zinc-500' : enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-white'
+                        className={`font-scoreboard text-4xl sm:text-5xl font-black tracking-widest bg-black rounded-xl py-2 ${
+                            cerrado ? 'text-zinc-500' : enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'
                         }`}
                     >
                         {cerrado ? '00:00:00' : formatearTiempo(msRestantes)}
                     </div>
                 </div>
 
+                {/* Ranking en vivo */}
+                <RankingEnVivo partidoId={info.partido_id} />
+
                 {cerrado ? (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-5 text-center text-zinc-300">
+                    <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-5 text-center text-zinc-300">
                         El partido ya comenzó o la votación está cerrada. ¡Gracias por participar!
                     </div>
                 ) : info.intentos_disponibles === 0 ? (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-5 text-center text-zinc-300">
+                    <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-5 text-center text-zinc-300">
                         Ya usaste todos tus intentos para este partido. ¡Mucha suerte! 🍀
                     </div>
                 ) : (
@@ -167,29 +179,46 @@ export default function Polla() {
                             Tienes <span className="text-amber-400 font-bold">{info.intentos_disponibles}</span> intento(s) disponibles.
                         </p>
 
-                        <div className="flex flex-col gap-3 mb-4">
+                        <div className="flex flex-col gap-5 mb-4">
                             {marcadores.map((m, i) => (
-                                <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center gap-4">
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="text-xs text-zinc-400">{info.equipo_local}</span>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={m.local}
-                                            onChange={(e) => actualizarMarcador(i, 'local', e.target.value)}
-                                            className="w-16 h-16 text-center text-2xl font-bold rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                        />
-                                    </div>
-                                    <span className="text-zinc-500 text-xl font-bold mt-5">-</span>
-                                    <div className="flex flex-col items-center gap-1">
-                                        <span className="text-xs text-zinc-400">{info.equipo_visitante}</span>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={m.visitante}
-                                            onChange={(e) => actualizarMarcador(i, 'visitante', e.target.value)}
-                                            className="w-16 h-16 text-center text-2xl font-bold rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                        />
+                                <div
+                                    key={i}
+                                    className="relative rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-5 pt-6"
+                                >
+                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-xs font-black px-3 py-1 rounded-full shadow-md whitespace-nowrap">
+                                        Intento #{i + 1}
+                                    </span>
+
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                                            <span className="text-3xl sm:text-4xl drop-shadow-md">{bandera(info.equipo_local)}</span>
+                                            <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide truncate max-w-full">
+                                                {info.equipo_local}
+                                            </span>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={m.local}
+                                                onChange={(e) => actualizarMarcador(i, 'local', e.target.value)}
+                                                className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
+                                            />
+                                        </div>
+
+                                        <span className="text-amber-400 font-black text-xl sm:text-2xl font-scoreboard">VS</span>
+
+                                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                                            <span className="text-3xl sm:text-4xl drop-shadow-md">{bandera(info.equipo_visitante)}</span>
+                                            <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide truncate max-w-full">
+                                                {info.equipo_visitante}
+                                            </span>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={m.visitante}
+                                                onChange={(e) => actualizarMarcador(i, 'visitante', e.target.value)}
+                                                className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -198,13 +227,18 @@ export default function Polla() {
                         {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
                         {mensajeExito && <p className="text-green-400 text-sm mb-3">{mensajeExito}</p>}
 
-                        <button
-                            onClick={handleSubmit}
-                            disabled={enviando}
-                            className="w-full py-4 rounded-xl font-bold text-zinc-950 text-center bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg shadow-orange-500/20 active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {enviando ? 'Guardando...' : 'Guardar pronósticos'}
-                        </button>
+                        {/* Botón flotante en móvil, normal en desktop */}
+                        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent z-20 sm:static sm:bg-none sm:p-0">
+                            <button
+                                onClick={handleSubmit}
+                                disabled={enviando}
+                                className={`w-full max-w-md mx-auto block py-4 rounded-xl font-black text-slate-950 text-center text-base sm:text-lg bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60 ${
+                                    hayCambios && !enviando ? 'animate-pulse' : ''
+                                }`}
+                            >
+                                {enviando ? 'Guardando...' : 'Guardar pronósticos'}
+                            </button>
+                        </div>
                     </>
                 )}
             </div>

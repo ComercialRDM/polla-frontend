@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import promoFlyer from '../assets/promo-flyer.jpg';
 
+const PREMIOS = [
+    { emoji: '🎽', titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
+    { emoji: '🧢', titulo: 'Gorra Edición Especial', descripcion: 'Tricolor bordada' },
+    { emoji: '⚽', titulo: 'Balón Mundialista', descripcion: 'Réplica oficial' },
+    { emoji: '🎁', titulo: 'Bono Sorpresa', descripcion: 'Servicios Retoucherie' },
+];
+
 export default function Home() {
     return (
-        <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
+        <div className="min-h-screen flex flex-col items-center bg-zinc-950 stadium-glow">
             <div className="w-full flex">
                 <div className="flex-1 bg-colombia-yellow h-2" />
                 <div className="flex-1 bg-colombia-blue h-2" />
@@ -19,7 +26,7 @@ export default function Home() {
             </div>
 
             <div className="w-full max-w-md px-6 -mt-6 relative z-10">
-                <div className="rounded-2xl border border-amber-400/30 bg-zinc-950/90 backdrop-blur-sm shadow-xl shadow-black/40 p-6 text-center">
+                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-6 text-center">
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-1">
                         Polla Mundialista
                     </h1>
@@ -31,7 +38,7 @@ export default function Home() {
                     <div className="flex flex-col gap-4">
                         <Link
                             to="/comprar"
-                            className="w-full py-4 rounded-xl font-bold text-zinc-950 text-center bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg shadow-orange-500/20 active:scale-95 transition-transform"
+                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform"
                         >
                             Comprar mi bono
                         </Link>
@@ -42,6 +49,31 @@ export default function Home() {
                             Ya compré mi bono → Ingresar
                         </Link>
                     </div>
+                </div>
+            </div>
+
+            {/* Botín de Premios Mundialistas */}
+            <div className="w-full max-w-md px-6 mt-10 relative z-10">
+                <h2 className="text-center text-white font-black text-xl mb-1">
+                    🏆 Botín de Premios Mundialistas
+                </h2>
+                <p className="text-center text-zinc-400 text-sm mb-4">
+                    Los aciertos más rápidos se llevan estos premios
+                </p>
+
+                <div className="grid grid-cols-2 gap-4">
+                    {PREMIOS.map((premio) => (
+                        <div
+                            key={premio.titulo}
+                            className="group rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 text-center transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:border-transparent hover:bg-gradient-to-r hover:from-yellow-400 hover:via-blue-500 hover:to-red-500"
+                        >
+                            <div className="rounded-xl bg-zinc-950/60 group-hover:bg-zinc-950/80 p-4 transition-colors">
+                                <span className="text-4xl block mb-2">{premio.emoji}</span>
+                                <p className="text-white font-bold text-sm">{premio.titulo}</p>
+                                <p className="text-zinc-400 text-xs">{premio.descripcion}</p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
