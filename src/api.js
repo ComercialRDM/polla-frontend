@@ -76,6 +76,13 @@ export function adminCrearPartido(token, { equipo_local, equipo_visitante, fecha
     });
 }
 
+export function adminEliminarPartido(token, id) {
+    return request(`/api/admin/partidos/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminRechazar(token, transaccion_id) {
     return request('/api/admin/rechazar', {
         method: 'POST',

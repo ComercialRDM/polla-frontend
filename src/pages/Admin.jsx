@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, obtenerPartidos } from '../api';
+import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminEliminarPartido, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -94,6 +94,22 @@ export default function Admin() {
             setErrorPartido('Error de conexión al crear el partido.');
         } finally {
             setCreandoPartido(false);
+        }
+    }
+
+    async function handleEliminarPartido(id) {
+        if (!window.confirm('¿Eliminar este partido?')) return;
+
+        setErrorPartido('');
+        try {
+            const data = await adminEliminarPartido(token, id);
+            if (data?.success) {
+                cargarPartidos();
+            } else {
+                setErrorPartido(data?.error || 'No se pudo eliminar el partido.');
+            }
+        } catch (err) {
+            setErrorPartido('Error de conexión al eliminar el partido.');
         }
     }
 
@@ -211,6 +227,7 @@ export default function Admin() {
                                         <th className="px-3 py-2">Partido</th>
                                         <th className="px-3 py-2">Fecha</th>
                                         <th className="px-3 py-2">Estado</th>
+                                        <th className="px-3 py-2">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -219,6 +236,14 @@ export default function Admin() {
                                             <td className="px-3 py-2">{p.equipo_local} vs {p.equipo_visitante}</td>
                                             <td className="px-3 py-2 text-zinc-400">{new Date(p.fecha_hora_inicio).toLocaleString('es-CO')}</td>
                                             <td className="px-3 py-2">{p.estado}</td>
+                                            <td className="px-3 py-2">
+                                                <button
+                                                    onClick={() => handleEliminarPartido(p.id)}
+                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
