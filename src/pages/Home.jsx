@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import confetti from 'canvas-confetti';
 import promoFlyer from '../assets/promo-flyer.jpg';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
@@ -12,7 +14,21 @@ const PREMIOS = [
     { imagen: gafasImg, titulo: 'Bono Sorpresa', descripcion: 'Servicios Retoucherie' },
 ];
 
+const COLORES_CONFETI = ['#FCD116', '#003893', '#CE1126', '#ffffff'];
+
 export default function Home() {
+    useEffect(() => {
+        if (localStorage.getItem('confeti_bienvenida')) return;
+        localStorage.setItem('confeti_bienvenida', '1');
+
+        const disparo = (opciones) =>
+            confetti({ colors: COLORES_CONFETI, ...opciones });
+
+        disparo({ particleCount: 100, spread: 70, origin: { x: 0.2, y: 0.6 }, angle: 60 });
+        disparo({ particleCount: 100, spread: 70, origin: { x: 0.8, y: 0.6 }, angle: 120 });
+        disparo({ particleCount: 80, spread: 100, origin: { y: 0.4 } });
+    }, []);
+
     return (
         <div className="min-h-screen flex flex-col items-center bg-zinc-950 stadium-glow">
             <div className="w-full flex">
