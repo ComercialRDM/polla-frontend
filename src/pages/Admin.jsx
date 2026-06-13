@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminEliminarPartido, obtenerPartidos } from '../api';
+import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminEliminarPartido, adminAbrirComprobante, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -128,6 +128,14 @@ export default function Admin() {
             cargarDatos(token);
         } catch (err) {
             setError('No se pudo rechazar la transacción.');
+        }
+    }
+
+    async function handleVerComprobante(id) {
+        try {
+            await adminAbrirComprobante(token, id);
+        } catch (err) {
+            setError('No se pudo abrir el comprobante.');
         }
     }
 
@@ -318,22 +326,32 @@ export default function Admin() {
                                     </td>
                                     <td className="px-4 py-3 text-zinc-400">{new Date(t.fecha).toLocaleString('es-CO')}</td>
                                     <td className="px-4 py-3">
-                                        {t.estado === 'PENDIENTE' && (
-                                            <div className="flex gap-2">
+                                        <div className="flex gap-2 flex-wrap">
+                                            {t.tieneComprobante && (
                                                 <button
-                                                    onClick={() => handleAprobar(t.id)}
-                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                                                    onClick={() => handleVerComprobante(t.id)}
+                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700"
                                                 >
-                                                    Aprobar
+                                                    Ver comprobante
                                                 </button>
-                                                <button
-                                                    onClick={() => handleRechazar(t.id)}
-                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700"
-                                                >
-                                                    Rechazar
-                                                </button>
-                                            </div>
-                                        )}
+                                            )}
+                                            {t.estado === 'PENDIENTE' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleAprobar(t.id)}
+                                                        className="px-3 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                                                    >
+                                                        Aprobar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRechazar(t.id)}
+                                                        className="px-3 py-1 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700"
+                                                    >
+                                                        Rechazar
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

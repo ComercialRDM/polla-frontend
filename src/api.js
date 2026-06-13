@@ -31,6 +31,34 @@ export function crearLinkPago({ nombre, correo, celular, partido_id, valor }) {
     });
 }
 
+export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante }) {
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('correo', correo);
+    formData.append('celular', celular);
+    formData.append('partido_id', partido_id);
+    formData.append('valor', valor);
+    formData.append('comprobante', comprobante);
+
+    const res = await fetch(`${API_BASE}/api/transacciones/crear-transferencia`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    let data = null;
+    try {
+        data = await res.json();
+    } catch {
+        data = null;
+    }
+
+    if (!res.ok && !data) {
+        throw new Error(`Error ${res.status}`);
+    }
+
+    return data;
+}
+
 export function obtenerInfoPolla(token_acceso) {
     const params = new URLSearchParams({ token_acceso });
     return request(`/api/polla/info?${params.toString()}`);
@@ -93,6 +121,18 @@ export function adminRechazar(token, transaccion_id) {
         headers: { Authorization: `Bearer ${token}` },
         body: JSON.stringify({ transaccion_id }),
     });
+}
+
+export async function adminAbrirComprobante(token, transaccion_id) {
+    const res = await fetch(`${API_BASE}/api/admin/comprobante/${transaccion_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+        throw new Error('No se pudo cargar el comprobante');
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
 }
 
 export { API_BASE };
