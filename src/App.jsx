@@ -6,6 +6,8 @@ import Comprar from './pages/Comprar';
 import Ingresar from './pages/Ingresar';
 import Polla from './pages/Polla';
 import Admin from './pages/Admin';
+import Terminos from './pages/Terminos';
+import Privacidad from './pages/Privacidad';
 
 const SPLASH_KEY = 'polla_splash_visto';
 
@@ -28,6 +30,8 @@ export default function App() {
                 <Route path="/comprar" element={<Comprar />} />
                 <Route path="/ingresar" element={<Ingresar />} />
                 <Route path="/polla" element={<Polla />} />
+                <Route path="/terminos" element={<Terminos />} />
+                <Route path="/privacidad" element={<Privacidad />} />
                 <Route path="/dashboardpollardm" element={<Admin />} />
             </Routes>
         </BrowserRouter>

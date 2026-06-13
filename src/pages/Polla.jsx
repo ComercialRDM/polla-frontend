@@ -225,7 +225,21 @@ export default function Polla() {
                         </div>
 
                         {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-                        {mensajeExito && <p className="text-green-400 text-sm mb-3">{mensajeExito}</p>}
+                        {mensajeExito && (
+                            <div className="mb-3">
+                                <p className="text-green-400 text-sm mb-2">{mensajeExito}</p>
+                                <a
+                                    href={`https://wa.me/?text=${encodeURIComponent(
+                                        `¡Ya registré mi pronóstico para ${info.equipo_local} vs ${info.equipo_visitante} en la Polla Mundialista de La Retoucherie de Manuela! 🇨🇴⚽\n\nCompra tu Bono Digital y participa tú también, con este link ambos ganamos un intento extra: ${window.location.origin}/?ref=${token}`
+                                    )}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-block w-full py-3 rounded-xl font-bold text-white text-center bg-green-600 hover:bg-green-700 transition-colors"
+                                >
+                                    📲 Compartir en WhatsApp
+                                </a>
+                            </div>
+                        )}
 
                         {/* Botón flotante en móvil, normal en desktop */}
                         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent z-20 sm:static sm:bg-none sm:p-0">

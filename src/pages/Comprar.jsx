@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PLANES, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
+import CountdownPartido from '../components/CountdownPartido';
+import Footer from '../components/Footer';
+
+const REF_STORAGE_KEY = 'polla_ref_token';
 
 const CUENTA_TRANSFERENCIA = {
     banco: 'Bancolombia',
@@ -58,6 +62,8 @@ export default function Comprar() {
             return;
         }
 
+        const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
+
         setCargando(true);
         try {
             if (metodoPago === 'transferencia') {
@@ -68,6 +74,7 @@ export default function Comprar() {
                     partido_id: partidoId,
                     valor: planSeleccionado,
                     comprobante,
+                    ref,
                 });
 
                 if (data?.success) {
@@ -85,6 +92,7 @@ export default function Comprar() {
                 celular: form.celular.trim(),
                 partido_id: partidoId,
                 valor: planSeleccionado,
+                ref,
             });
 
             if (data?.success && data.checkout_url) {
@@ -145,13 +153,27 @@ export default function Comprar() {
                             key={plan.valor}
                             type="button"
                             onClick={() => setPlanSeleccionado(plan.valor)}
-                            className={`rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
-                                planSeleccionado === plan.valor
-                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
-                                    : 'border-white/10 bg-slate-900/60'
+                            className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
+                                plan.destacado === 'premium'
+                                    ? planSeleccionado === plan.valor
+                                        ? 'border-amber-400 bg-amber-400/15 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] scale-[1.02]'
+                                        : 'border-amber-400/60 bg-amber-400/5 scale-[1.02]'
+                                    : planSeleccionado === plan.valor
+                                        ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
+                                        : 'border-white/10 bg-slate-900/60'
                             }`}
                         >
-                            <div className="flex justify-between items-center">
+                            {plan.destacado === 'popular' && (
+                                <span className="absolute -top-2.5 left-4 bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    ⭐ Más popular
+                                </span>
+                            )}
+                            {plan.destacado === 'premium' && (
+                                <span className="absolute -top-2.5 left-4 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    🏆 Mejor valor — recomendado
+                                </span>
+                            )}
+                            <div className="flex justify-between items-center mt-1">
                                 <div>
                                     <p className="text-white font-bold">{formatoPesos(plan.valor)}</p>
                                     <p className="text-xs text-zinc-400">Bono de {formatoPesos(plan.saldoBono)}</p>
@@ -161,6 +183,8 @@ export default function Comprar() {
                         </button>
                     ))}
                 </div>
+
+                <CountdownPartido />
 
                 {/* Selección del método de pago */}
                 <div className="mb-6">
@@ -256,6 +280,17 @@ export default function Comprar() {
 
                     {error && <p className="text-red-400 text-sm">{error}</p>}
 
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
+                        <p className="text-zinc-300 text-xs flex items-center justify-center gap-1.5 flex-wrap">
+                            🔒 Pago seguro con Wompi · La Retoucherie de Manuela · NIT 901765354
+                        </p>
+                        {metodoPago === 'transferencia' && (
+                            <p className="text-zinc-400 text-xs mt-1">
+                                Tu bono se activa en minutos tras revisar el comprobante.
+                            </p>
+                        )}
+                    </div>
+
                     <button
                         type="submit"
                         disabled={cargando}
@@ -267,6 +302,8 @@ export default function Comprar() {
                     </button>
                 </form>
             </div>
+
+            <Footer />
         </div>
     );
 }

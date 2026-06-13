@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PLANES, formatoPesos } from '../config/planes';
 
-const DURACION_MS = 6000;
+const DURACION_MS = 3000;
 
 export default function Splash({ onFinish }) {
     const [progreso, setProgreso] = useState(0);
@@ -36,22 +36,35 @@ export default function Splash({ onFinish }) {
                 </div>
 
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
-                    ¡ARMA TU <span className="text-amber-400">POLLA MUNDIALISTA</span>!
+                    Compra tu <span className="text-amber-400">Bono Digital</span> y participa GRATIS en la Polla Mundialista
                 </h1>
 
                 <p className="text-zinc-300 text-sm sm:text-base">
-                    Compra tu Bono Digital de servicios en{' '}
-                    <span className="font-semibold text-white">La Retoucherie de Manuela</span> y participa
-                    prediciendo el marcador de la Selección Colombia 🇨🇴
+                    <span className="font-semibold text-white">La Retoucherie de Manuela</span> te regala intentos para predecir el marcador de la Selección Colombia 🇨🇴
+                    {' '}por cada Bono Digital que compres para tus servicios de belleza. Si aciertas, ganas premios.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mt-2">
                     {PLANES.map((plan) => (
                         <div
                             key={plan.valor}
-                            className="rounded-xl border border-amber-400/30 bg-white/5 backdrop-blur-sm p-4 flex flex-col items-center gap-1"
+                            className={`relative rounded-xl border p-4 flex flex-col items-center gap-1 backdrop-blur-sm ${
+                                plan.destacado === 'premium'
+                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 scale-105'
+                                    : 'border-amber-400/30 bg-white/5'
+                            }`}
                         >
-                            <span className="text-xs text-zinc-400">Pagas {formatoPesos(plan.valor)}</span>
+                            {plan.destacado === 'popular' && (
+                                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    ⭐ Más popular
+                                </span>
+                            )}
+                            {plan.destacado === 'premium' && (
+                                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
+                                    🏆 Mejor valor
+                                </span>
+                            )}
+                            <span className="text-xs text-zinc-400 mt-2">Pagas {formatoPesos(plan.valor)}</span>
                             <span className="text-xl font-bold text-amber-400">{formatoPesos(plan.saldoBono)}</span>
                             <span className="text-xs text-zinc-300">en bono + {plan.etiqueta}</span>
                         </div>
@@ -72,9 +85,9 @@ export default function Splash({ onFinish }) {
                 </div>
                 <button
                     onClick={onFinish}
-                    className="text-sm text-zinc-400 hover:text-white transition-colors underline"
+                    className="w-full py-3 rounded-xl font-bold text-center text-white border border-white/15 bg-white/5 backdrop-blur-sm active:scale-95 transition-transform"
                 >
-                    Saltar
+                    Entrar ahora →
                 </button>
             </div>
         </div>

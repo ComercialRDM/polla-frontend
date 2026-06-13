@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminEliminarPartido, adminAbrirComprobante, obtenerPartidos } from '../api';
+import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -18,6 +18,10 @@ export default function Admin() {
     const [nuevoPartido, setNuevoPartido] = useState({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '' });
     const [creandoPartido, setCreandoPartido] = useState(false);
     const [errorPartido, setErrorPartido] = useState('');
+
+    const [recompra, setRecompra] = useState({ origen: '', destino: '' });
+    const [enviandoRecompra, setEnviandoRecompra] = useState(false);
+    const [resultadoRecompra, setResultadoRecompra] = useState('');
 
     async function cargarDatos(tok) {
         setCargando(true);
@@ -110,6 +114,33 @@ export default function Admin() {
             }
         } catch (err) {
             setErrorPartido('Error de conexión al eliminar el partido.');
+        }
+    }
+
+    async function handleNotificarRecompra(e) {
+        e.preventDefault();
+        setResultadoRecompra('');
+
+        if (!recompra.origen || !recompra.destino) {
+            setResultadoRecompra('Selecciona el partido de origen y el de destino.');
+            return;
+        }
+
+        setEnviandoRecompra(true);
+        try {
+            const data = await adminNotificarRecompra(token, {
+                partido_id_origen: recompra.origen,
+                partido_id_destino: recompra.destino,
+            });
+            if (data?.success) {
+                setResultadoRecompra(`Correo enviado a ${data.enviados} de ${data.total} participantes.`);
+            } else {
+                setResultadoRecompra(data?.error || 'No se pudo enviar la notificación.');
+            }
+        } catch (err) {
+            setResultadoRecompra('Error de conexión al enviar la notificación.');
+        } finally {
+            setEnviandoRecompra(false);
         }
     }
 
@@ -258,6 +289,45 @@ export default function Admin() {
                             </table>
                         </div>
                     )}
+                </div>
+
+                {/* Notificar recompra */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-white mb-3">Notificar recompra para el siguiente partido</h2>
+                    <p className="text-zinc-400 text-sm mb-3">
+                        Envía un correo a quienes compraron bono para el partido de origen, invitándolos a comprar
+                        su bono para el partido de destino.
+                    </p>
+                    <form onSubmit={handleNotificarRecompra} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <select
+                            value={recompra.origen}
+                            onChange={(e) => setRecompra((r) => ({ ...r, origen: e.target.value }))}
+                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                            <option value="">Partido de origen</option>
+                            {partidos.map((p) => (
+                                <option key={p.id} value={p.id}>{p.equipo_local} vs {p.equipo_visitante}</option>
+                            ))}
+                        </select>
+                        <select
+                            value={recompra.destino}
+                            onChange={(e) => setRecompra((r) => ({ ...r, destino: e.target.value }))}
+                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                            <option value="">Partido de destino</option>
+                            {partidos.map((p) => (
+                                <option key={p.id} value={p.id}>{p.equipo_local} vs {p.equipo_visitante}</option>
+                            ))}
+                        </select>
+                        <button
+                            type="submit"
+                            disabled={enviandoRecompra}
+                            className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
+                        >
+                            {enviandoRecompra ? 'Enviando...' : 'Notificar'}
+                        </button>
+                    </form>
+                    {resultadoRecompra && <p className="text-zinc-300 text-sm mt-2">{resultadoRecompra}</p>}
                 </div>
 
                 {/* Pestañas y buscador */}

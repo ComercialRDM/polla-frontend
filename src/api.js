@@ -24,14 +24,14 @@ export function obtenerPartidos() {
     return request('/api/partidos');
 }
 
-export function crearLinkPago({ nombre, correo, celular, partido_id, valor }) {
+export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref }) {
     return request('/api/transacciones/crear-link', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref }),
     });
 }
 
-export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante }) {
+export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, ref }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('correo', correo);
@@ -39,6 +39,7 @@ export async function crearTransferencia({ nombre, correo, celular, partido_id, 
     formData.append('partido_id', partido_id);
     formData.append('valor', valor);
     formData.append('comprobante', comprobante);
+    if (ref) formData.append('ref', ref);
 
     const res = await fetch(`${API_BASE}/api/transacciones/crear-transferencia`, {
         method: 'POST',
@@ -71,6 +72,10 @@ export function verificarAcceso({ contacto, partido_id }) {
 
 export function obtenerRanking(partidoId) {
     return request(`/api/partidos/${partidoId}/ranking`);
+}
+
+export function obtenerResumenPublico(partidoId) {
+    return request(`/api/partidos/${partidoId}/resumen-publico`);
 }
 
 export function votar({ token_acceso, partido_id, marcadores }) {
@@ -120,6 +125,14 @@ export function adminRechazar(token, transaccion_id) {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: JSON.stringify({ transaccion_id }),
+    });
+}
+
+export function adminNotificarRecompra(token, { partido_id_origen, partido_id_destino }) {
+    return request('/api/admin/notificar-recompra', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ partido_id_origen, partido_id_destino }),
     });
 }
 
