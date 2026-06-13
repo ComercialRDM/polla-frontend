@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom';
 import promoFlyer from '../assets/promo-flyer.jpg';
+import camisetaImg from '../assets/premios/camiseta.webp';
+import gorraImg from '../assets/premios/gorra.webp';
+import balonImg from '../assets/premios/balon.webp';
+import gafasImg from '../assets/premios/gafas.webp';
 
 const PREMIOS = [
-    { emoji: '🎽', titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
-    { emoji: '🧢', titulo: 'Gorra Edición Especial', descripcion: 'Tricolor bordada' },
-    { emoji: '⚽', titulo: 'Balón Mundialista', descripcion: 'Réplica oficial' },
-    { emoji: '🎁', titulo: 'Bono Sorpresa', descripcion: 'Servicios Retoucherie' },
+    { imagen: camisetaImg, titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
+    { imagen: gorraImg, titulo: 'Gorra Edición Especial', descripcion: 'Tricolor bordada' },
+    { imagen: balonImg, titulo: 'Balón Mundialista', descripcion: 'Réplica oficial' },
+    { imagen: gafasImg, titulo: 'Bono Sorpresa', descripcion: 'Servicios Retoucherie' },
 ];
 
 export default function Home() {
@@ -68,7 +72,11 @@ export default function Home() {
                             className="group rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 text-center transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:border-transparent hover:bg-gradient-to-r hover:from-yellow-400 hover:via-blue-500 hover:to-red-500"
                         >
                             <div className="rounded-xl bg-zinc-950/60 group-hover:bg-zinc-950/80 p-4 transition-colors">
-                                <span className="text-4xl block mb-2">{premio.emoji}</span>
+                                <img
+                                    src={premio.imagen}
+                                    alt={premio.titulo}
+                                    className="w-full h-24 object-contain mb-2"
+                                />
                                 <p className="text-white font-bold text-sm">{premio.titulo}</p>
                                 <p className="text-zinc-400 text-xs">{premio.descripcion}</p>
                             </div>
