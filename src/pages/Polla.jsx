@@ -1,0 +1,213 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { obtenerInfoPolla, votar } from '../api';
+
+const UNA_HORA_MS = 60 * 60 * 1000;
+
+function calcularRestante(fechaInicio) {
+    const ahora = new Date();
+    const inicio = new Date(fechaInicio);
+    return inicio.getTime() - ahora.getTime();
+}
+
+function formatearTiempo(ms) {
+    if (ms <= 0) return '00:00:00';
+    const totalSegundos = Math.floor(ms / 1000);
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+    const segundos = totalSegundos % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(horas)}:${pad(minutos)}:${pad(segundos)}`;
+}
+
+export default function Polla() {
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token');
+
+    const [info, setInfo] = useState(null);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+    const [msRestantes, setMsRestantes] = useState(null);
+    const [marcadores, setMarcadores] = useState([]);
+    const [enviando, setEnviando] = useState(false);
+    const [mensajeExito, setMensajeExito] = useState('');
+
+    useEffect(() => {
+        if (!token) {
+            setError('Link de acceso inválido. Ingresa desde la página principal.');
+            setCargando(false);
+            return;
+        }
+
+        obtenerInfoPolla(token)
+            .then((data) => {
+                if (!data?.acceso) {
+                    setError('No encontramos un bono activo asociado a este link.');
+                } else {
+                    setInfo(data);
+                    setMsRestantes(calcularRestante(data.fecha_hora_inicio));
+                    setMarcadores(
+                        Array.from({ length: data.intentos_disponibles }, () => ({ local: '', visitante: '' }))
+                    );
+                }
+            })
+            .catch(() => setError('Error de conexión con el servidor.'))
+            .finally(() => setCargando(false));
+    }, [token]);
+
+    useEffect(() => {
+        if (!info) return;
+        const intervalo = setInterval(() => {
+            setMsRestantes(calcularRestante(info.fecha_hora_inicio));
+        }, 1000);
+        return () => clearInterval(intervalo);
+    }, [info]);
+
+    const cerrado = useMemo(() => {
+        if (msRestantes === null) return false;
+        return msRestantes < 1000 || info?.estado_partido !== 'activo';
+    }, [msRestantes, info]);
+
+    const enUltimaHora = msRestantes !== null && msRestantes > 0 && msRestantes <= UNA_HORA_MS;
+
+    function actualizarMarcador(index, campo, valor) {
+        const valorLimpio = valor.replace(/[^0-9]/g, '').slice(0, 2);
+        setMarcadores((prev) => prev.map((m, i) => (i === index ? { ...m, [campo]: valorLimpio } : m)));
+    }
+
+    async function handleSubmit() {
+        setError('');
+        setMensajeExito('');
+
+        const marcadoresCompletos = marcadores.filter((m) => m.local !== '' && m.visitante !== '');
+        if (marcadoresCompletos.length === 0) {
+            setError('Completa al menos un pronóstico.');
+            return;
+        }
+
+        setEnviando(true);
+        try {
+            const data = await votar({
+                token_acceso: token,
+                partido_id: info.partido_id,
+                marcadores: marcadoresCompletos.map((m) => ({ local: Number(m.local), visitante: Number(m.visitante) })),
+            });
+
+            if (data?.success) {
+                setMensajeExito('¡Pronósticos guardados con éxito! Mucha suerte 🇨🇴');
+                setInfo((prev) => ({ ...prev, intentos_disponibles: data.intentos_disponibles }));
+                setMarcadores(Array.from({ length: data.intentos_disponibles }, () => ({ local: '', visitante: '' })));
+            } else {
+                setError(data?.error || 'No se pudieron guardar los pronósticos.');
+            }
+        } catch (err) {
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    if (cargando) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+                Cargando...
+            </div>
+        );
+    }
+
+    if (error && !info) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-6 text-center gap-4">
+                <p className="text-red-400">{error}</p>
+                <Link to="/" className="text-amber-400 underline">Volver al inicio</Link>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-6 py-10 flex flex-col items-center">
+            <div className="absolute top-0 left-0 right-0 h-2 flex">
+                <div className="flex-1 bg-colombia-yellow" />
+                <div className="flex-1 bg-colombia-blue" />
+                <div className="flex-1 bg-colombia-red" />
+            </div>
+
+            <div className="w-full max-w-md mt-6">
+                <h1 className="text-2xl font-extrabold text-white mb-1">¡Hola, {info.nombre}!</h1>
+                <p className="text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
+
+                {/* Marcador tipo estadio */}
+                <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-sm p-6 mb-6 text-center">
+                    <p className="text-amber-400 font-bold text-lg mb-3">
+                        {info.equipo_local} vs {info.equipo_visitante}
+                    </p>
+                    <p className="text-xs text-zinc-400 mb-1">
+                        {cerrado ? 'Votación cerrada' : enUltimaHora ? '¡Última hora para votar!' : 'Tiempo restante para predecir'}
+                    </p>
+                    <div
+                        className={`font-mono text-4xl sm:text-5xl font-black tracking-widest ${
+                            cerrado ? 'text-zinc-500' : enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-white'
+                        }`}
+                    >
+                        {cerrado ? '00:00:00' : formatearTiempo(msRestantes)}
+                    </div>
+                </div>
+
+                {cerrado ? (
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-5 text-center text-zinc-300">
+                        El partido ya comenzó o la votación está cerrada. ¡Gracias por participar!
+                    </div>
+                ) : info.intentos_disponibles === 0 ? (
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-5 text-center text-zinc-300">
+                        Ya usaste todos tus intentos para este partido. ¡Mucha suerte! 🍀
+                    </div>
+                ) : (
+                    <>
+                        <p className="text-sm text-zinc-300 mb-3">
+                            Tienes <span className="text-amber-400 font-bold">{info.intentos_disponibles}</span> intento(s) disponibles.
+                        </p>
+
+                        <div className="flex flex-col gap-3 mb-4">
+                            {marcadores.map((m, i) => (
+                                <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center gap-4">
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="text-xs text-zinc-400">{info.equipo_local}</span>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={m.local}
+                                            onChange={(e) => actualizarMarcador(i, 'local', e.target.value)}
+                                            className="w-16 h-16 text-center text-2xl font-bold rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                        />
+                                    </div>
+                                    <span className="text-zinc-500 text-xl font-bold mt-5">-</span>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <span className="text-xs text-zinc-400">{info.equipo_visitante}</span>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={m.visitante}
+                                            onChange={(e) => actualizarMarcador(i, 'visitante', e.target.value)}
+                                            className="w-16 h-16 text-center text-2xl font-bold rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+                        {mensajeExito && <p className="text-green-400 text-sm mb-3">{mensajeExito}</p>}
+
+                        <button
+                            onClick={handleSubmit}
+                            disabled={enviando}
+                            className="w-full py-4 rounded-xl font-bold text-zinc-950 text-center bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg shadow-orange-500/20 active:scale-95 transition-transform disabled:opacity-60"
+                        >
+                            {enviando ? 'Guardando...' : 'Guardar pronósticos'}
+                        </button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+}
