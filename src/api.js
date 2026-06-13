@@ -68,6 +68,14 @@ export function adminAprobar(token, transaccion_id) {
     });
 }
 
+export function adminCrearPartido(token, { equipo_local, equipo_visitante, fecha_hora_inicio }) {
+    return request('/api/admin/partidos', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ equipo_local, equipo_visitante, fecha_hora_inicio }),
+    });
+}
+
 export function adminRechazar(token, transaccion_id) {
     return request('/api/admin/rechazar', {
         method: 'POST',

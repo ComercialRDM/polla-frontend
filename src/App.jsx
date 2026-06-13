@@ -28,7 +28,7 @@ export default function App() {
                 <Route path="/comprar" element={<Comprar />} />
                 <Route path="/ingresar" element={<Ingresar />} />
                 <Route path="/polla" element={<Polla />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route path="/dashboardpollardm" element={<Admin />} />
             </Routes>
         </BrowserRouter>
     );

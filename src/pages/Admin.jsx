@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminPendientes, adminAprobar, adminRechazar } from '../api';
+import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -13,6 +13,11 @@ export default function Admin() {
     const [error, setError] = useState('');
     const [filtro, setFiltro] = useState('TODAS');
     const [busqueda, setBusqueda] = useState('');
+
+    const [partidos, setPartidos] = useState([]);
+    const [nuevoPartido, setNuevoPartido] = useState({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '' });
+    const [creandoPartido, setCreandoPartido] = useState(false);
+    const [errorPartido, setErrorPartido] = useState('');
 
     async function cargarDatos(tok) {
         setCargando(true);
@@ -36,9 +41,21 @@ export default function Admin() {
         }
     }
 
+    async function cargarPartidos() {
+        try {
+            const data = await obtenerPartidos();
+            if (data?.success) {
+                setPartidos(data.partidos);
+            }
+        } catch (err) {
+            // silencioso: la lista de partidos no es crítica para el panel
+        }
+    }
+
     useEffect(() => {
         if (token) {
             cargarDatos(token);
+            cargarPartidos();
         }
     }, []);
 
@@ -47,6 +64,37 @@ export default function Admin() {
         if (!tokenInput.trim()) return;
         setToken(tokenInput.trim());
         cargarDatos(tokenInput.trim());
+        cargarPartidos();
+    }
+
+    async function handleCrearPartido(e) {
+        e.preventDefault();
+        setErrorPartido('');
+
+        const { equipo_local, equipo_visitante, fecha_hora_inicio } = nuevoPartido;
+        if (!equipo_local.trim() || !equipo_visitante.trim() || !fecha_hora_inicio) {
+            setErrorPartido('Completa todos los campos.');
+            return;
+        }
+
+        setCreandoPartido(true);
+        try {
+            const data = await adminCrearPartido(token, {
+                equipo_local: equipo_local.trim(),
+                equipo_visitante: equipo_visitante.trim(),
+                fecha_hora_inicio: new Date(fecha_hora_inicio).toISOString(),
+            });
+            if (data?.success) {
+                setNuevoPartido({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '' });
+                cargarPartidos();
+            } else {
+                setErrorPartido(data?.error || 'No se pudo crear el partido.');
+            }
+        } catch (err) {
+            setErrorPartido('Error de conexión al crear el partido.');
+        } finally {
+            setCreandoPartido(false);
+        }
     }
 
     async function handleAprobar(id) {
@@ -119,6 +167,64 @@ export default function Admin() {
                     <Metrica titulo="Aprobadas" valor={aprobadas.length} />
                     <Metrica titulo="Ingresos" valor={formatoPesos(ingresos)} />
                     <Metrica titulo="Total transacciones" valor={transacciones.length} />
+                </div>
+
+                {/* Crear partido */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-white mb-3">Crear partido</h2>
+                    <form onSubmit={handleCrearPartido} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <input
+                            type="text"
+                            value={nuevoPartido.equipo_local}
+                            onChange={(e) => setNuevoPartido((p) => ({ ...p, equipo_local: e.target.value }))}
+                            placeholder="Equipo local"
+                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        <input
+                            type="text"
+                            value={nuevoPartido.equipo_visitante}
+                            onChange={(e) => setNuevoPartido((p) => ({ ...p, equipo_visitante: e.target.value }))}
+                            placeholder="Equipo visitante"
+                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        <input
+                            type="datetime-local"
+                            value={nuevoPartido.fecha_hora_inicio}
+                            onChange={(e) => setNuevoPartido((p) => ({ ...p, fecha_hora_inicio: e.target.value }))}
+                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        <button
+                            type="submit"
+                            disabled={creandoPartido}
+                            className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
+                        >
+                            {creandoPartido ? 'Creando...' : 'Crear partido'}
+                        </button>
+                    </form>
+                    {errorPartido && <p className="text-red-400 text-sm mt-2">{errorPartido}</p>}
+
+                    {partidos.length > 0 && (
+                        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-white/5 text-zinc-400">
+                                    <tr>
+                                        <th className="px-3 py-2">Partido</th>
+                                        <th className="px-3 py-2">Fecha</th>
+                                        <th className="px-3 py-2">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {partidos.map((p) => (
+                                        <tr key={p.id} className="border-t border-white/5 text-zinc-200">
+                                            <td className="px-3 py-2">{p.equipo_local} vs {p.equipo_visitante}</td>
+                                            <td className="px-3 py-2 text-zinc-400">{new Date(p.fecha_hora_inicio).toLocaleString('es-CO')}</td>
+                                            <td className="px-3 py-2">{p.estado}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
 
                 {/* Pestañas y buscador */}
