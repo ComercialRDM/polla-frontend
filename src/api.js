@@ -83,6 +83,14 @@ export function obtenerPronosticosPublicos(partidoId) {
     return request(`/api/partidos/${partidoId}/pronosticos-publicos`);
 }
 
+// Suscribe a eventos en tiempo real (SSE) del partido. `onActualizado` se llama
+// cada vez que el backend avisa que cambió el ranking/marcador.
+export function suscribirseEventosPartido(partidoId, onActualizado) {
+    const eventSource = new EventSource(`${API_BASE}/api/partidos/${partidoId}/eventos`);
+    eventSource.addEventListener('actualizado', onActualizado);
+    return eventSource;
+}
+
 export function actualizarEquiposFavoritos({ token_acceso, equipos_favoritos }) {
     return request('/api/polla/equipos-favoritos', {
         method: 'PUT',

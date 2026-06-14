@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { obtenerRanking } from '../api';
+import { obtenerRanking, suscribirseEventosPartido } from '../api';
 
 const MEDALLAS = [
     'bg-gradient-to-r from-amber-300 to-yellow-600 text-slate-950 shadow-[0_0_10px_rgba(234,179,8,0.5)]',
@@ -40,10 +40,17 @@ export default function RankingEnVivo({ partidoId }) {
         }
 
         cargar();
-        const intervalo = setInterval(cargar, 10000);
+
+        // Refresco inmediato cuando el backend avisa por SSE que cambió el ranking/marcador.
+        const eventSource = suscribirseEventosPartido(partidoId, cargar);
+
+        // Respaldo por si el navegador cierra la conexión SSE (ej. pestaña en segundo plano).
+        const intervalo = setInterval(cargar, 30000);
+
         return () => {
             activo = false;
             clearInterval(intervalo);
+            eventSource.close();
         };
     }, [partidoId]);
 
