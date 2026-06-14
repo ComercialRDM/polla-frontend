@@ -1,28 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { obtenerPartidos, verificarAcceso } from '../api';
+import { verificarAcceso } from '../api';
 
 const WHATSAPP_NUMERO = '573000000000'; // TODO: reemplazar con el número real de La Retoucherie de Manuela
 
 export default function Ingresar() {
     const navigate = useNavigate();
-    const [partidoId, setPartidoId] = useState(null);
     const [contacto, setContacto] = useState('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
     const [sinAcceso, setSinAcceso] = useState(false);
-
-    useEffect(() => {
-        obtenerPartidos()
-            .then((data) => {
-                if (data?.success && data.partidos.length > 0) {
-                    const activos = data.partidos.filter((p) => p.estado === 'activo');
-                    const lista = activos.length > 0 ? activos : data.partidos;
-                    setPartidoId(lista[0]?.id ?? null);
-                }
-            })
-            .catch(() => {});
-    }, []);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -33,14 +20,10 @@ export default function Ingresar() {
             setError('Ingresa tu correo o número de celular.');
             return;
         }
-        if (!partidoId) {
-            setError('No hay partidos disponibles en este momento.');
-            return;
-        }
 
         setCargando(true);
         try {
-            const data = await verificarAcceso({ contacto: contacto.trim(), partido_id: partidoId });
+            const data = await verificarAcceso({ contacto: contacto.trim() });
             if (data?.acceso) {
                 navigate(`/polla?token=${data.token_acceso}`);
             } else {
