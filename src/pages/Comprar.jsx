@@ -37,9 +37,12 @@ export default function Comprar() {
         obtenerPartidos()
             .then((data) => {
                 if (data?.success && data.partidos.length > 0) {
-                    const lista = partidosFuturos(data.partidos, 5);
+                    const partidoUrl = Number(searchParams.get('partido'));
+                    const limite = partidoUrl ? 20 : 5;
+                    const lista = partidosFuturos(data.partidos, limite);
                     setPartidos(lista);
-                    setPartidoId(lista[0]?.id ?? null);
+                    const preseleccionado = lista.some((p) => p.id === partidoUrl) ? partidoUrl : lista[0]?.id ?? null;
+                    setPartidoId(preseleccionado);
                 }
             })
             .catch(() => setError('No se pudo cargar la información del partido.'));

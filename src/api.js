@@ -83,6 +83,13 @@ export function obtenerPronosticosPublicos(partidoId) {
     return request(`/api/partidos/${partidoId}/pronosticos-publicos`);
 }
 
+export function actualizarEquiposFavoritos({ token_acceso, equipos_favoritos }) {
+    return request('/api/polla/equipos-favoritos', {
+        method: 'PUT',
+        body: JSON.stringify({ token_acceso, equipos_favoritos }),
+    });
+}
+
 export function votar({ token_acceso, partido_id, marcadores }) {
     return request('/api/polla/votar', {
         method: 'POST',

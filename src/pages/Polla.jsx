@@ -3,6 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
 import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
+import EquiposFavoritos from '../components/EquiposFavoritos';
+import PartidosFavoritos from '../components/PartidosFavoritos';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
 
@@ -162,6 +164,16 @@ export default function Polla() {
                         {cerrado ? '00:00:00' : formatearTiempo(msRestantes)}
                     </div>
                 </div>
+
+                {/* Equipos favoritos */}
+                <EquiposFavoritos
+                    token={token}
+                    equiposIniciales={info.equipos_favoritos || []}
+                    onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))}
+                />
+
+                {/* Próximos partidos de los equipos favoritos */}
+                <PartidosFavoritos equipos={info.equipos_favoritos} />
 
                 {/* Reta a un amigo */}
                 <div className="rounded-2xl border border-amber-400/20 bg-slate-900/60 backdrop-blur-lg p-4 mb-6 text-center">
