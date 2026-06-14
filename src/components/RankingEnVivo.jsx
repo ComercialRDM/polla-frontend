@@ -40,7 +40,7 @@ export default function RankingEnVivo({ partidoId }) {
         }
 
         cargar();
-        const intervalo = setInterval(cargar, 15000);
+        const intervalo = setInterval(cargar, 10000);
         return () => {
             activo = false;
             clearInterval(intervalo);
