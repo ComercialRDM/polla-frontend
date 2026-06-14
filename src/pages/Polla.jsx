@@ -167,12 +167,12 @@ export default function Polla() {
                 <div className="rounded-2xl border border-amber-400/20 bg-slate-900/60 backdrop-blur-lg p-4 mb-6 text-center">
                     <p className="text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
                     <p className="text-zinc-400 text-xs mb-3">
-                        Comparte tu link, y si tu amigo compra su bono, ¡ambos ganan un intento extra!
+                        Comparte tu link y reta a tus amigos a participar.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-2">
                         <a
                             href={`https://wa.me/?text=${encodeURIComponent(
-                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de ${info.equipo_local} vs ${info.equipo_visitante} y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí, y con este link ambos ganamos un intento extra: ${window.location.origin}/?ref=${token}`
+                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de ${info.equipo_local} vs ${info.equipo_visitante} y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí: ${window.location.origin}/?ref=${token}`
                             )}`}
                             target="_blank"
                             rel="noreferrer"
@@ -261,7 +261,7 @@ export default function Polla() {
                                 <p className="text-green-400 text-sm mb-2">{mensajeExito}</p>
                                 <a
                                     href={`https://wa.me/?text=${encodeURIComponent(
-                                        `¡Ya registré mi pronóstico para ${info.equipo_local} vs ${info.equipo_visitante} en la Polla Mundialista de La Retoucherie de Manuela! 🇨🇴⚽\n\nCompra tu Bono Digital y participa tú también, con este link ambos ganamos un intento extra: ${window.location.origin}/?ref=${token}`
+                                        `¡Ya registré mi pronóstico para ${info.equipo_local} vs ${info.equipo_visitante} en la Polla Mundialista de La Retoucherie de Manuela! 🇨🇴⚽\n\nCompra tu Bono Digital y participa tú también: ${window.location.origin}/?ref=${token}`
                                     )}`}
                                     target="_blank"
                                     rel="noreferrer"
