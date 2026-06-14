@@ -7,6 +7,7 @@ import balonImg from '../assets/premios/balon.webp';
 import gafasImg from '../assets/premios/gafas.webp';
 import promoFlyer from '../assets/promo-flyer.jpg';
 import CountdownPartido from '../components/CountdownPartido';
+import ProximosPartidos from '../components/ProximosPartidos';
 import ResumenPublico from '../components/ResumenPublico';
 import ListaPronosticos from '../components/ListaPronosticos';
 import UltimosResultados from '../components/UltimosResultados';
@@ -134,6 +135,8 @@ export default function Home() {
             <div className="w-full max-w-md px-6 mt-6 relative z-10">
                 <CountdownPartido />
             </div>
+
+            <ProximosPartidos />
 
             <UltimosResultados />
 
