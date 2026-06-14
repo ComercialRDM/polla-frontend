@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { PLANES, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
@@ -18,9 +18,13 @@ const CUENTA_TRANSFERENCIA = {
 };
 
 export default function Comprar() {
+    const [searchParams] = useSearchParams();
     const [partidos, setPartidos] = useState([]);
     const [partidoId, setPartidoId] = useState(null);
-    const [planSeleccionado, setPlanSeleccionado] = useState(PLANES[0].valor);
+    const [planSeleccionado, setPlanSeleccionado] = useState(() => {
+        const planUrl = Number(searchParams.get('plan'));
+        return PLANES.some((p) => p.valor === planUrl) ? planUrl : PLANES[0].valor;
+    });
     const [metodoPago, setMetodoPago] = useState('wompi'); // 'wompi' | 'transferencia'
     const [form, setForm] = useState({ nombre: '', correo: '', celular: '' });
     const [comprobante, setComprobante] = useState(null);

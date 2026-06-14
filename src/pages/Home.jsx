@@ -5,6 +5,7 @@ import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
 import balonImg from '../assets/premios/balon.webp';
 import gafasImg from '../assets/premios/gafas.webp';
+import promoFlyer from '../assets/promo-flyer.jpg';
 import CountdownPartido from '../components/CountdownPartido';
 import ResumenPublico from '../components/ResumenPublico';
 import UltimosResultados from '../components/UltimosResultados';
@@ -37,6 +38,13 @@ const PASOS = [
 ];
 
 const COLORES_CONFETI = ['#FCD116', '#003893', '#CE1126', '#ffffff'];
+
+// Áreas clicables sobre las cajas "Elige tu bono" del flyer (posiciones en % sobre la imagen)
+const BONOS_FLYER = [
+    { valor: 50000, left: '2.5%', width: '31%' },
+    { valor: 100000, left: '34.5%', width: '31%' },
+    { valor: 200000, left: '66.5%', width: '31%' },
+];
 
 export default function Home() {
     const [searchParams] = useSearchParams();
@@ -77,6 +85,22 @@ export default function Home() {
                 <p className="text-zinc-400 text-sm">
                     Compra servicios de belleza con tu bono y, de regalo, recibe intentos para predecir el marcador de la Selección Colombia. Si aciertas, ganas premios 🏆
                 </p>
+            </div>
+
+            {/* Flyer promocional con áreas clicables para elegir el bono */}
+            <div className="w-full max-w-md px-6 mt-6 relative z-10">
+                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+                    <img src={promoFlyer} alt="Promoción Polla Mundialista - Elige tu bono" className="w-full block" />
+                    {BONOS_FLYER.map((bono) => (
+                        <Link
+                            key={bono.valor}
+                            to={`/comprar?plan=${bono.valor}`}
+                            aria-label={`Comprar bono de ${bono.valor.toLocaleString('es-CO')}`}
+                            className="absolute top-[54%] h-[20%] rounded-lg active:scale-95 active:bg-amber-400/20 transition-transform"
+                            style={{ left: bono.left, width: bono.width }}
+                        />
+                    ))}
+                </div>
             </div>
 
             <div className="w-full max-w-md px-6 mt-6 relative z-10">
