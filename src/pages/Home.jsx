@@ -7,6 +7,7 @@ import balonImg from '../assets/premios/balon.webp';
 import gafasImg from '../assets/premios/gafas.webp';
 import CountdownPartido from '../components/CountdownPartido';
 import ResumenPublico from '../components/ResumenPublico';
+import UltimosResultados from '../components/UltimosResultados';
 import Footer from '../components/Footer';
 
 const WHATSAPP_NUMERO = '573103963708';
@@ -108,6 +109,8 @@ export default function Home() {
             <div className="w-full max-w-md px-6 mt-6 relative z-10">
                 <CountdownPartido />
             </div>
+
+            <UltimosResultados />
 
             <ResumenPublico />
 
