@@ -146,7 +146,12 @@ export default function Admin() {
 
     async function handleAprobar(id) {
         try {
-            await adminAprobar(token, id);
+            const data = await adminAprobar(token, id);
+            if (!data?.success) {
+                setError(data?.error || 'No se pudo aprobar la transacción.');
+                return;
+            }
+            setError('');
             cargarDatos(token);
         } catch (err) {
             setError('No se pudo aprobar la transacción.');
@@ -155,7 +160,12 @@ export default function Admin() {
 
     async function handleRechazar(id) {
         try {
-            await adminRechazar(token, id);
+            const data = await adminRechazar(token, id);
+            if (!data?.success) {
+                setError(data?.error || 'No se pudo rechazar la transacción.');
+                return;
+            }
+            setError('');
             cargarDatos(token);
         } catch (err) {
             setError('No se pudo rechazar la transacción.');
