@@ -12,7 +12,7 @@ const REF_STORAGE_KEY = 'polla_ref_token';
 const CUENTA_TRANSFERENCIA = {
     banco: 'Bancolombia',
     tipo: 'Ahorros',
-    numero: '442-000082-48',
+    numero: '44200008248',
     titular: 'La Retoucherie de Manuela',
     nit: '901765354',
 };
