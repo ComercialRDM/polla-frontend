@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
-import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, obtenerPartidos } from '../api';
+import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
+
+// Convierte un ISO date a formato "YYYY-MM-DDTHH:mm" en hora local para inputs datetime-local
+function aDatetimeLocal(iso) {
+    const fecha = new Date(iso);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}T${pad(fecha.getHours())}:${pad(fecha.getMinutes())}`;
+}
 
 export default function Admin() {
     const [token, setToken] = useState(() => localStorage.getItem(TOKEN_STORAGE_KEY) || '');
@@ -18,6 +25,10 @@ export default function Admin() {
     const [nuevoPartido, setNuevoPartido] = useState({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '' });
     const [creandoPartido, setCreandoPartido] = useState(false);
     const [errorPartido, setErrorPartido] = useState('');
+
+    const [editandoPartido, setEditandoPartido] = useState(null);
+    const [edicionPartido, setEdicionPartido] = useState(null);
+    const [guardandoPartido, setGuardandoPartido] = useState(false);
 
     const [recompra, setRecompra] = useState({ origen: '', destino: '' });
     const [enviandoRecompra, setEnviandoRecompra] = useState(false);
@@ -114,6 +125,45 @@ export default function Admin() {
             }
         } catch (err) {
             setErrorPartido('Error de conexión al eliminar el partido.');
+        }
+    }
+
+    function handleEditarPartido(p) {
+        setEditandoPartido(p.id);
+        setEdicionPartido({
+            fecha_hora_inicio: aDatetimeLocal(p.fecha_hora_inicio),
+            goles_local: p.goles_local ?? 0,
+            goles_visitante: p.goles_visitante ?? 0,
+            estado: p.estado,
+        });
+    }
+
+    function handleCancelarEdicionPartido() {
+        setEditandoPartido(null);
+        setEdicionPartido(null);
+    }
+
+    async function handleGuardarPartido(id) {
+        setErrorPartido('');
+        setGuardandoPartido(true);
+        try {
+            const data = await adminActualizarPartido(token, id, {
+                fecha_hora_inicio: new Date(edicionPartido.fecha_hora_inicio).toISOString(),
+                goles_local: Number(edicionPartido.goles_local),
+                goles_visitante: Number(edicionPartido.goles_visitante),
+                estado: edicionPartido.estado,
+            });
+            if (data?.success) {
+                setEditandoPartido(null);
+                setEdicionPartido(null);
+                cargarPartidos();
+            } else {
+                setErrorPartido(data?.error || 'No se pudo actualizar el partido.');
+            }
+        } catch (err) {
+            setErrorPartido('Error de conexión al actualizar el partido.');
+        } finally {
+            setGuardandoPartido(false);
         }
     }
 
@@ -275,26 +325,103 @@ export default function Admin() {
                                     <tr>
                                         <th className="px-3 py-2">Partido</th>
                                         <th className="px-3 py-2">Fecha</th>
+                                        <th className="px-3 py-2">Marcador</th>
                                         <th className="px-3 py-2">Estado</th>
                                         <th className="px-3 py-2">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {partidos.map((p) => (
-                                        <tr key={p.id} className="border-t border-white/5 text-zinc-200">
-                                            <td className="px-3 py-2">{p.equipo_local} vs {p.equipo_visitante}</td>
-                                            <td className="px-3 py-2 text-zinc-400">{new Date(p.fecha_hora_inicio).toLocaleString('es-CO')}</td>
-                                            <td className="px-3 py-2">{p.estado}</td>
-                                            <td className="px-3 py-2">
-                                                <button
-                                                    onClick={() => handleEliminarPartido(p.id)}
-                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700"
-                                                >
-                                                    Eliminar
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {partidos.map((p) => {
+                                        const editando = editandoPartido === p.id;
+                                        return (
+                                            <tr key={p.id} className="border-t border-white/5 text-zinc-200">
+                                                <td className="px-3 py-2">{p.equipo_local} vs {p.equipo_visitante}</td>
+                                                <td className="px-3 py-2 text-zinc-400">
+                                                    {editando ? (
+                                                        <input
+                                                            type="datetime-local"
+                                                            value={edicionPartido.fecha_hora_inicio}
+                                                            onChange={(e) => setEdicionPartido((ed) => ({ ...ed, fecha_hora_inicio: e.target.value }))}
+                                                            className="rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                        />
+                                                    ) : (
+                                                        new Date(p.fecha_hora_inicio).toLocaleString('es-CO')
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {editando ? (
+                                                        <div className="flex items-center gap-1">
+                                                            <input
+                                                                type="number"
+                                                                value={edicionPartido.goles_local}
+                                                                onChange={(e) => setEdicionPartido((ed) => ({ ...ed, goles_local: e.target.value }))}
+                                                                className="w-14 rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                            />
+                                                            <span>-</span>
+                                                            <input
+                                                                type="number"
+                                                                value={edicionPartido.goles_visitante}
+                                                                onChange={(e) => setEdicionPartido((ed) => ({ ...ed, goles_visitante: e.target.value }))}
+                                                                className="w-14 rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        `${p.goles_local ?? 0} - ${p.goles_visitante ?? 0}`
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {editando ? (
+                                                        <select
+                                                            value={edicionPartido.estado}
+                                                            onChange={(e) => setEdicionPartido((ed) => ({ ...ed, estado: e.target.value }))}
+                                                            className="rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                        >
+                                                            <option value="activo">activo</option>
+                                                            <option value="cerrado">cerrado</option>
+                                                        </select>
+                                                    ) : (
+                                                        p.estado
+                                                    )}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <div className="flex gap-2 flex-wrap">
+                                                        {editando ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleGuardarPartido(p.id)}
+                                                                    disabled={guardandoPartido}
+                                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
+                                                                >
+                                                                    Guardar
+                                                                </button>
+                                                                <button
+                                                                    onClick={handleCancelarEdicionPartido}
+                                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-white/10 text-zinc-300 hover:bg-white/20"
+                                                                >
+                                                                    Cancelar
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleEditarPartido(p)}
+                                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-amber-500 text-zinc-950 hover:bg-amber-400"
+                                                                >
+                                                                    Editar
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleEliminarPartido(p.id)}
+                                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700"
+                                                                >
+                                                                    Eliminar
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

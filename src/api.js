@@ -114,6 +114,14 @@ export function adminCrearPartido(token, { equipo_local, equipo_visitante, fecha
     });
 }
 
+export function adminActualizarPartido(token, id, cambios) {
+    return request(`/api/admin/partidos/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(cambios),
+    });
+}
+
 export function adminEliminarPartido(token, id) {
     return request(`/api/admin/partidos/${id}`, {
         method: 'DELETE',
