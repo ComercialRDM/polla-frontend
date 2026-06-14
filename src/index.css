@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -8,7 +8,8 @@
 }
 
 .font-scoreboard {
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-family: 'Orbitron', 'Courier New', monospace;
+  font-weight: 900;
 }
 
 .stadium-glow {
