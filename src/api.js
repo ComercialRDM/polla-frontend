@@ -111,6 +111,20 @@ export function iniciarSesion({ celular, password }) {
     });
 }
 
+export function solicitarResetPassword({ celular }) {
+    return request('/api/auth/solicitar-reset', {
+        method: 'POST',
+        body: JSON.stringify({ celular }),
+    });
+}
+
+export function restablecerPassword({ celular, codigo, nueva_password }) {
+    return request('/api/auth/restablecer-password', {
+        method: 'POST',
+        body: JSON.stringify({ celular, codigo, nueva_password }),
+    });
+}
+
 export function adminLogin(token) {
     return request('/api/admin/pendientes', {
         headers: { Authorization: `Bearer ${token}` },

@@ -6,6 +6,7 @@ import Comprar from './pages/Comprar';
 import Ingresar from './pages/Ingresar';
 import Registro from './pages/Registro';
 import IniciarSesion from './pages/IniciarSesion';
+import RecuperarPassword from './pages/RecuperarPassword';
 import Polla from './pages/Polla';
 import Admin from './pages/Admin';
 import Terminos from './pages/Terminos';
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="/comprar" element={<RutaProtegida><Comprar /></RutaProtegida>} />
                 <Route path="/registro" element={<Registro />} />
                 <Route path="/iniciar-sesion" element={<IniciarSesion />} />
+                <Route path="/recuperar-password" element={<RecuperarPassword />} />
                 <Route path="/ingresar" element={<Ingresar />} />
                 <Route path="/polla" element={<Polla />} />
                 <Route path="/terminos" element={<Terminos />} />

@@ -92,6 +92,12 @@ export default function IniciarSesion() {
                             Regístrate
                         </Link>
                     </p>
+
+                    <p className="text-center text-zinc-400 text-sm">
+                        <Link to="/recuperar-password" className="text-amber-400 font-semibold underline">
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </p>
                 </form>
 
                 {sinCuenta && (
