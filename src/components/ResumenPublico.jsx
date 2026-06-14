@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { obtenerPartidos, obtenerResumenPublico } from '../api';
+import { partidosFuturos } from '../utils/partidos';
 
 export default function ResumenPublico() {
     const [resumen, setResumen] = useState(null);
@@ -8,8 +9,7 @@ export default function ResumenPublico() {
         obtenerPartidos()
             .then((data) => {
                 if (!data?.success || data.partidos.length === 0) return;
-                const activos = data.partidos.filter((p) => p.estado === 'activo');
-                const partido = (activos.length > 0 ? activos : data.partidos)[0];
+                const partido = partidosFuturos(data.partidos, 1)[0];
                 if (!partido) return;
                 return obtenerResumenPublico(partido.id);
             })

@@ -4,6 +4,8 @@ import { PLANES, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
+import { bandera } from '../utils/banderas';
+import { partidosFuturos } from '../utils/partidos';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 
@@ -31,14 +33,15 @@ export default function Comprar() {
         obtenerPartidos()
             .then((data) => {
                 if (data?.success && data.partidos.length > 0) {
-                    const activos = data.partidos.filter((p) => p.estado === 'activo');
-                    const lista = activos.length > 0 ? activos : data.partidos;
+                    const lista = partidosFuturos(data.partidos, 5);
                     setPartidos(lista);
                     setPartidoId(lista[0]?.id ?? null);
                 }
             })
             .catch(() => setError('No se pudo cargar la información del partido.'));
     }, []);
+
+    const partidoSeleccionado = partidos.find((p) => p.id === partidoId) ?? null;
 
     function handleChange(e) {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -184,7 +187,43 @@ export default function Comprar() {
                     ))}
                 </div>
 
-                <CountdownPartido />
+                {/* Selección del partido */}
+                <div className="mb-6">
+                    <p className="block text-sm text-zinc-300 mb-2">Elige el partido en el que quieres participar</p>
+                    <div className="flex flex-col gap-2">
+                        {partidos.map((p) => {
+                            const fecha = new Date(p.fecha_hora_inicio);
+                            const fechaTexto = fecha.toLocaleString('es-CO', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                            });
+                            return (
+                                <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => setPartidoId(p.id)}
+                                    className={`rounded-xl border p-3 text-left transition-all backdrop-blur-lg flex items-center justify-between gap-2 ${
+                                        partidoId === p.id
+                                            ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-white'
+                                            : 'border-white/10 bg-slate-900/60 text-zinc-300'
+                                    }`}
+                                >
+                                    <span className="font-bold text-sm">
+                                        {bandera(p.equipo_local)} {p.equipo_local} vs {p.equipo_visitante} {bandera(p.equipo_visitante)}
+                                    </span>
+                                    <span className="text-xs text-zinc-400 whitespace-nowrap">{fechaTexto}</span>
+                                </button>
+                            );
+                        })}
+                        {partidos.length === 0 && (
+                            <p className="text-sm text-zinc-400">No hay partidos disponibles por el momento.</p>
+                        )}
+                    </div>
+                </div>
+
+                <CountdownPartido partido={partidoSeleccionado} />
 
                 {/* Selección del método de pago */}
                 <div className="mb-6">

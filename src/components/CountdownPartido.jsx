@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { obtenerPartidos } from '../api';
 import { bandera } from '../utils/banderas';
+import { partidosFuturos } from '../utils/partidos';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
 
@@ -14,21 +15,24 @@ function formatearTiempo(ms) {
     return `${pad(horas)}:${pad(minutos)}:${pad(segundos)}`;
 }
 
-export default function CountdownPartido() {
-    const [partido, setPartido] = useState(null);
+export default function CountdownPartido({ partido: partidoProp } = {}) {
+    const [partido, setPartido] = useState(partidoProp ?? null);
     const [msRestantes, setMsRestantes] = useState(null);
 
     useEffect(() => {
+        if (partidoProp) {
+            setPartido(partidoProp);
+            return;
+        }
+
         obtenerPartidos()
             .then((data) => {
                 if (data?.success && data.partidos.length > 0) {
-                    const activos = data.partidos.filter((p) => p.estado === 'activo');
-                    const lista = activos.length > 0 ? activos : data.partidos;
-                    setPartido(lista[0] ?? null);
+                    setPartido(partidosFuturos(data.partidos, 1)[0] ?? null);
                 }
             })
             .catch(() => {});
-    }, []);
+    }, [partidoProp]);
 
     useEffect(() => {
         if (!partido) return;
