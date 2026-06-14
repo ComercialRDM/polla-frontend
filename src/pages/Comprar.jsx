@@ -218,7 +218,7 @@ export default function Comprar() {
                                     }`}
                                 >
                                     <span className="font-bold text-sm inline-flex items-center gap-1.5">
-                                        <Bandera equipo={p.equipo_local} className="w-5 h-5" /> {p.equipo_local} vs {p.equipo_visitante} <Bandera equipo={p.equipo_visitante} className="w-5 h-5" />
+                                        <Bandera equipo={p.equipo_local} className="w-5 h-5" /> {p.equipo_local} vs <Bandera equipo={p.equipo_visitante} className="w-5 h-5" /> {p.equipo_visitante}
                                     </span>
                                     <span className="text-xs text-zinc-400 whitespace-nowrap">{fechaTexto}</span>
                                 </button>

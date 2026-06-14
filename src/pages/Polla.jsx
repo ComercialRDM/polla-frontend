@@ -150,8 +150,9 @@ export default function Polla() {
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-6 mb-6 text-center">
                     <p className="text-amber-400 font-bold text-lg mb-3 flex items-center justify-center gap-2">
                         <Bandera equipo={info.equipo_local} className="w-7 h-7" />
-                        {info.equipo_local} vs {info.equipo_visitante}
+                        {info.equipo_local} vs
                         <Bandera equipo={info.equipo_visitante} className="w-7 h-7" />
+                        {info.equipo_visitante}
                     </p>
                     <p className="text-xs text-zinc-400 mb-1">
                         {cerrado ? 'Votación cerrada' : enUltimaHora ? '¡Última hora para votar!' : 'Tiempo restante para predecir'}

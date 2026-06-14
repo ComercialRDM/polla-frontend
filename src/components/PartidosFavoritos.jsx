@@ -38,8 +38,9 @@ export default function PartidosFavoritos({ equipos }) {
                     >
                         <span className="flex items-center gap-1.5 text-zinc-200 text-sm font-medium truncate">
                             <Bandera equipo={p.equipo_local} className="w-5 h-5" />
-                            {p.equipo_local} vs {p.equipo_visitante}
+                            {p.equipo_local} vs
                             <Bandera equipo={p.equipo_visitante} className="w-5 h-5" />
+                            {p.equipo_visitante}
                         </span>
                         <span className="text-amber-400 text-xs font-bold flex-shrink-0">
                             {new Date(p.fecha_hora_inicio).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}

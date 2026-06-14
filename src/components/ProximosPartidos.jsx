@@ -35,8 +35,9 @@ export default function ProximosPartidos() {
                     >
                         <span className="flex items-center gap-2 text-white font-bold text-sm truncate">
                             <Bandera equipo={p.equipo_local} className="w-6 h-6" />
-                            {p.equipo_local} vs {p.equipo_visitante}
+                            {p.equipo_local} vs
                             <Bandera equipo={p.equipo_visitante} className="w-6 h-6" />
+                            {p.equipo_visitante}
                         </span>
                         <span className="flex-shrink-0 text-right">
                             <span className="block text-amber-400 text-xs font-bold">

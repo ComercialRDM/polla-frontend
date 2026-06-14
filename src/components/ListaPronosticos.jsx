@@ -32,8 +32,9 @@ export default function ListaPronosticos() {
                 </p>
                 <p className="text-zinc-400 text-xs mb-3 text-center">
                     <Bandera equipo={partido.equipo_local} className="w-4 h-4 inline-block mr-1" />
-                    {partido.equipo_local} vs {partido.equipo_visitante}
-                    <Bandera equipo={partido.equipo_visitante} className="w-4 h-4 inline-block ml-1" />
+                    {partido.equipo_local} vs
+                    <Bandera equipo={partido.equipo_visitante} className="w-4 h-4 inline-block ml-1 mr-1" />
+                    {partido.equipo_visitante}
                 </p>
                 <div className="max-h-56 overflow-y-auto pr-1 flex flex-col gap-1.5">
                     {pronosticos.map((p, i) => (
