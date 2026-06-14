@@ -16,10 +16,11 @@ export default function UltimosResultados() {
         obtenerPartidos()
             .then((data) => {
                 if (!data?.success || data.partidos.length === 0) return;
-                const ordenados = [...data.partidos].sort(
-                    (a, b) => new Date(b.fecha_hora_inicio) - new Date(a.fecha_hora_inicio)
-                );
-                setPartidos(ordenados.slice(0, 3));
+                const ahora = Date.now();
+                const recientes = data.partidos
+                    .filter((p) => new Date(p.fecha_hora_inicio).getTime() <= ahora)
+                    .sort((a, b) => new Date(b.fecha_hora_inicio) - new Date(a.fecha_hora_inicio));
+                setPartidos(recientes.slice(0, 3));
             })
             .catch(() => {});
     }, []);
