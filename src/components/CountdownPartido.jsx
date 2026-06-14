@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { obtenerPartidos } from '../api';
-import { bandera } from '../utils/banderas';
+import Bandera from './Bandera';
 import { partidosFuturos } from '../utils/partidos';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
@@ -54,8 +54,8 @@ export default function CountdownPartido({ partido: partidoProp } = {}) {
         }`}>
             <p className="text-xs text-zinc-300 mb-1 flex items-center justify-center gap-2 flex-wrap">
                 {enUltimaHora ? '⏰ ¡Últimos minutos para comprar y participar!' : 'Faltan para'}{' '}
-                <span className="font-semibold text-white">
-                    {bandera(partido.equipo_local)} {partido.equipo_local} vs {partido.equipo_visitante} {bandera(partido.equipo_visitante)}
+                <span className="font-semibold text-white inline-flex items-center gap-1.5">
+                    <Bandera equipo={partido.equipo_local} className="w-5 h-5" /> {partido.equipo_local} vs {partido.equipo_visitante} <Bandera equipo={partido.equipo_visitante} className="w-5 h-5" />
                 </span>
             </p>
             <div className={`font-scoreboard text-2xl sm:text-3xl font-black tracking-widest bg-black rounded-xl py-2 ${

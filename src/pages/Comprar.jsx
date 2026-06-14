@@ -4,7 +4,7 @@ import { PLANES, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
-import { bandera } from '../utils/banderas';
+import Bandera from '../components/Bandera';
 import { partidosFuturos } from '../utils/partidos';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
@@ -214,8 +214,8 @@ export default function Comprar() {
                                             : 'border-white/10 bg-slate-900/60 text-zinc-300'
                                     }`}
                                 >
-                                    <span className="font-bold text-sm">
-                                        {bandera(p.equipo_local)} {p.equipo_local} vs {p.equipo_visitante} {bandera(p.equipo_visitante)}
+                                    <span className="font-bold text-sm inline-flex items-center gap-1.5">
+                                        <Bandera equipo={p.equipo_local} className="w-5 h-5" /> {p.equipo_local} vs {p.equipo_visitante} <Bandera equipo={p.equipo_visitante} className="w-5 h-5" />
                                     </span>
                                     <span className="text-xs text-zinc-400 whitespace-nowrap">{fechaTexto}</span>
                                 </button>

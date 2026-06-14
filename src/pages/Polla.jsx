@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
-import { bandera } from '../utils/banderas';
+import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
@@ -146,9 +146,9 @@ export default function Polla() {
                 {/* Marcador tipo estadio */}
                 <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-6 mb-6 text-center">
                     <p className="text-amber-400 font-bold text-lg mb-3 flex items-center justify-center gap-2">
-                        <span className="text-2xl">{bandera(info.equipo_local)}</span>
+                        <Bandera equipo={info.equipo_local} className="w-7 h-7" />
                         {info.equipo_local} vs {info.equipo_visitante}
-                        <span className="text-2xl">{bandera(info.equipo_visitante)}</span>
+                        <Bandera equipo={info.equipo_visitante} className="w-7 h-7" />
                     </p>
                     <p className="text-xs text-zinc-400 mb-1">
                         {cerrado ? 'Votación cerrada' : enUltimaHora ? '¡Última hora para votar!' : 'Tiempo restante para predecir'}
@@ -191,7 +191,7 @@ export default function Polla() {
 
                                     <div className="flex items-center justify-between gap-2">
                                         <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                            <span className="text-3xl sm:text-4xl drop-shadow-md">{bandera(info.equipo_local)}</span>
+                                            <Bandera equipo={info.equipo_local} className="w-9 h-9 sm:w-10 sm:h-10 drop-shadow-md" />
                                             <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide truncate max-w-full">
                                                 {info.equipo_local}
                                             </span>
@@ -207,7 +207,7 @@ export default function Polla() {
                                         <span className="text-amber-400 font-black text-xl sm:text-2xl font-scoreboard">VS</span>
 
                                         <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                            <span className="text-3xl sm:text-4xl drop-shadow-md">{bandera(info.equipo_visitante)}</span>
+                                            <Bandera equipo={info.equipo_visitante} className="w-9 h-9 sm:w-10 sm:h-10 drop-shadow-md" />
                                             <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide truncate max-w-full">
                                                 {info.equipo_visitante}
                                             </span>

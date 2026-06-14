@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { obtenerPartidos } from '../api';
-import { bandera } from '../utils/banderas';
+import Bandera from './Bandera';
 
 function formatearFecha(fechaIso) {
     const fecha = new Date(fechaIso);
@@ -43,7 +43,7 @@ export default function UltimosResultados() {
                         >
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <span className="text-2xl">{bandera(partido.equipo_local)}</span>
+                                    <Bandera equipo={partido.equipo_local} className="w-7 h-7 flex-shrink-0" />
                                     <span className="text-white font-bold text-sm truncate">{partido.equipo_local}</span>
                                 </div>
 
@@ -75,7 +75,7 @@ export default function UltimosResultados() {
 
                                 <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                                     <span className="text-white font-bold text-sm truncate text-right">{partido.equipo_visitante}</span>
-                                    <span className="text-2xl">{bandera(partido.equipo_visitante)}</span>
+                                    <Bandera equipo={partido.equipo_visitante} className="w-7 h-7 flex-shrink-0" />
                                 </div>
                             </div>
                         </div>
