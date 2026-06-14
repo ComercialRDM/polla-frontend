@@ -8,6 +8,7 @@ import gafasImg from '../assets/premios/gafas.webp';
 import promoFlyer from '../assets/promo-flyer.jpg';
 import CountdownPartido from '../components/CountdownPartido';
 import ResumenPublico from '../components/ResumenPublico';
+import ListaPronosticos from '../components/ListaPronosticos';
 import UltimosResultados from '../components/UltimosResultados';
 import Footer from '../components/Footer';
 
@@ -137,6 +138,8 @@ export default function Home() {
             <UltimosResultados />
 
             <ResumenPublico />
+
+            <ListaPronosticos />
 
             {/* Cómo funciona */}
             <div className="w-full max-w-md px-6 mt-10 relative z-10">

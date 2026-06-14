@@ -34,6 +34,7 @@ export default function Polla() {
     const [enviando, setEnviando] = useState(false);
     const [mensajeExito, setMensajeExito] = useState('');
     const [hayCambios, setHayCambios] = useState(false);
+    const [mensajeCopiado, setMensajeCopiado] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -159,6 +160,36 @@ export default function Polla() {
                         }`}
                     >
                         {cerrado ? '00:00:00' : formatearTiempo(msRestantes)}
+                    </div>
+                </div>
+
+                {/* Reta a un amigo */}
+                <div className="rounded-2xl border border-amber-400/20 bg-slate-900/60 backdrop-blur-lg p-4 mb-6 text-center">
+                    <p className="text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
+                    <p className="text-zinc-400 text-xs mb-3">
+                        Comparte tu link, y si tu amigo compra su bono, ¡ambos ganan un intento extra!
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <a
+                            href={`https://wa.me/?text=${encodeURIComponent(
+                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de ${info.equipo_local} vs ${info.equipo_visitante} y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí, y con este link ambos ganamos un intento extra: ${window.location.origin}/?ref=${token}`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 inline-block py-2.5 rounded-xl font-bold text-sm text-white text-center bg-green-600 hover:bg-green-700 transition-colors"
+                        >
+                            📲 Retar por WhatsApp
+                        </a>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/?ref=${token}`);
+                                setMensajeCopiado(true);
+                                setTimeout(() => setMensajeCopiado(false), 2000);
+                            }}
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white text-center border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                        >
+                            {mensajeCopiado ? '¡Copiado! ✅' : '🔗 Copiar link'}
+                        </button>
                     </div>
                 </div>
 

@@ -79,6 +79,10 @@ export function obtenerResumenPublico(partidoId) {
     return request(`/api/partidos/${partidoId}/resumen-publico`);
 }
 
+export function obtenerPronosticosPublicos(partidoId) {
+    return request(`/api/partidos/${partidoId}/pronosticos-publicos`);
+}
+
 export function votar({ token_acceso, partido_id, marcadores }) {
     return request('/api/polla/votar', {
         method: 'POST',
