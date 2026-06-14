@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
@@ -22,8 +22,6 @@ const SEDES = [
     { ciudad: 'Barranquilla', nombre: 'Cc Aranjuez', direccion: 'Calle 82 #53', telefono: '6052022021' },
     { ciudad: 'Cartagena', nombre: 'Cc Caribe Plaza', direccion: 'Sótano 1', telefono: '6056515251' },
 ];
-
-const REF_STORAGE_KEY = 'polla_ref_token';
 
 const PREMIOS = [
     { imagen: camisetaImg, titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
@@ -49,13 +47,6 @@ const BONOS_FLYER = [
 ];
 
 export default function Home() {
-    const [searchParams] = useSearchParams();
-
-    useEffect(() => {
-        const ref = searchParams.get('ref');
-        if (ref) localStorage.setItem(REF_STORAGE_KEY, ref);
-    }, [searchParams]);
-
     useEffect(() => {
         if (localStorage.getItem('confeti_bienvenida')) return;
         localStorage.setItem('confeti_bienvenida', '1');

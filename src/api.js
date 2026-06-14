@@ -97,6 +97,20 @@ export function votar({ token_acceso, partido_id, marcadores }) {
     });
 }
 
+export function registrarCuenta({ celular, password, nombre, equipos_favoritos }) {
+    return request('/api/auth/registro', {
+        method: 'POST',
+        body: JSON.stringify({ celular, password, nombre, equipos_favoritos }),
+    });
+}
+
+export function iniciarSesion({ celular, password }) {
+    return request('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ celular, password }),
+    });
+}
+
 export function adminLogin(token) {
     return request('/api/admin/pendientes', {
         headers: { Authorization: `Bearer ${token}` },
