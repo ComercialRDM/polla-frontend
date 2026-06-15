@@ -169,6 +169,7 @@ export default function Polla() {
                 <EquiposFavoritos
                     token={token}
                     equiposIniciales={info.equipos_favoritos || []}
+                    calendarioToken={info.calendario_token}
                     onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))}
                 />
 

@@ -252,4 +252,8 @@ export async function adminAbrirComprobante(token, transaccion_id) {
     window.open(url, '_blank');
 }
 
+export function urlCalendarioIcs(calendarioToken) {
+    return `${API_BASE}/api/polla/calendario/${calendarioToken}.ics`;
+}
+
 export { API_BASE };

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { actualizarEquiposFavoritos } from '../api';
 import { EQUIPOS_MUNDIAL, MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
 import Bandera from './Bandera';
+import AgendarCalendario from './AgendarCalendario';
 
-export default function EquiposFavoritos({ token, equiposIniciales, onGuardado }) {
+export default function EquiposFavoritos({ token, equiposIniciales, calendarioToken, onGuardado }) {
     const [editando, setEditando] = useState(equiposIniciales.length === 0);
     const [seleccionados, setSeleccionados] = useState(equiposIniciales);
     const [guardando, setGuardando] = useState(false);
@@ -38,25 +39,29 @@ export default function EquiposFavoritos({ token, equiposIniciales, onGuardado }
 
     if (!editando) {
         return (
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 mb-6">
-                <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-white font-bold text-sm">⭐ Tus equipos favoritos:</span>
-                        {seleccionados.map((equipo) => (
-                            <span key={equipo} className="inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-full px-2 py-0.5 text-xs text-zinc-200">
-                                <Bandera equipo={equipo} className="w-4 h-4" />
-                                {equipo}
-                            </span>
-                        ))}
+            <>
+                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 mb-6">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-white font-bold text-sm">⭐ Tus equipos favoritos:</span>
+                            {seleccionados.map((equipo) => (
+                                <span key={equipo} className="inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-full px-2 py-0.5 text-xs text-zinc-200">
+                                    <Bandera equipo={equipo} className="w-4 h-4" />
+                                    {equipo}
+                                </span>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setEditando(true)}
+                            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 border border-amber-400/30 hover:bg-amber-400/10 transition-colors"
+                        >
+                            Editar
+                        </button>
                     </div>
-                    <button
-                        onClick={() => setEditando(true)}
-                        className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 border border-amber-400/30 hover:bg-amber-400/10 transition-colors"
-                    >
-                        Editar
-                    </button>
                 </div>
-            </div>
+
+                {seleccionados.length > 0 && <AgendarCalendario calendarioToken={calendarioToken} />}
+            </>
         );
     }
 

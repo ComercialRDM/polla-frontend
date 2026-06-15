@@ -6,6 +6,7 @@ import { obtenerDatosComprador, guardarDatosComprador } from '../utils/datosComp
 import { MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
 import SelectorEquipos from '../components/SelectorEquipos';
 import GoogleButton from '../components/GoogleButton';
+import AgendarCalendario from '../components/AgendarCalendario';
 
 export default function Registro() {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function Registro() {
     const [password, setPassword] = useState('');
     const [confirmarPassword, setConfirmarPassword] = useState('');
     const [equipos, setEquipos] = useState([]);
+    const [calendarioToken, setCalendarioToken] = useState(null);
     const [aceptaTerminos, setAceptaTerminos] = useState(false);
     const [error, setError] = useState('');
     const [enviando, setEnviando] = useState(false);
@@ -103,7 +105,12 @@ export default function Registro() {
             if (data?.success) {
                 guardarSesion(data.usuario);
                 guardarDatosComprador({ nombre: nombre.trim(), celular: celular.trim() });
-                navigate('/');
+                if (equipos.length > 0 && data.usuario?.calendario_token) {
+                    setCalendarioToken(data.usuario.calendario_token);
+                    setPaso(3);
+                } else {
+                    navigate('/');
+                }
             } else {
                 setError(data?.error || 'No se pudo completar el registro.');
             }
@@ -124,12 +131,14 @@ export default function Registro() {
 
             <div className="w-full max-w-md mt-6">
                 <h1 className="text-2xl font-extrabold text-white mb-1">
-                    {paso === 1 ? '¡Bienvenido! 🇨🇴' : 'Elige tus equipos favoritos'}
+                    {paso === 1 ? '¡Bienvenido! 🇨🇴' : paso === 2 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
                 </h1>
                 <p className="text-zinc-400 text-sm mb-6">
                     {paso === 1
                         ? 'Crea tu cuenta para participar en la Polla Mundialista de La Retoucherie.'
-                        : `Selecciona hasta ${MAX_EQUIPOS_FAVORITOS} equipos para personalizar tu experiencia (opcional).`}
+                        : paso === 2
+                        ? `Selecciona hasta ${MAX_EQUIPOS_FAVORITOS} equipos para personalizar tu experiencia (opcional).`
+                        : '¿Quieres agendar en tu calendario los partidos de tus equipos favoritos?'}
                 </p>
 
                 {paso === 1 ? (
@@ -236,7 +245,7 @@ export default function Registro() {
                             </Link>
                         </p>
                     </form>
-                ) : (
+                ) : paso === 2 ? (
                     <div className="flex flex-col gap-4">
                         <SelectorEquipos seleccionados={equipos} onToggle={toggleEquipo} max={MAX_EQUIPOS_FAVORITOS} />
 
@@ -259,6 +268,18 @@ export default function Registro() {
                                 {enviando ? 'Guardando...' : 'Continuar'}
                             </button>
                         </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-4">
+                        <AgendarCalendario calendarioToken={calendarioToken} />
+
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="w-full py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform"
+                        >
+                            Continuar
+                        </button>
                     </div>
                 )}
             </div>
