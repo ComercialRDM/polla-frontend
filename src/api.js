@@ -213,17 +213,30 @@ export function adminNotificarRecompra(token, { partido_id_origen, partido_id_de
     });
 }
 
-export function adminBuscarBono(token, tokenAcceso) {
-    return request(`/api/admin/bono/${tokenAcceso}`, {
+export function localLogin(usuario, password) {
+    return request('/api/local/login', {
+        method: 'POST',
+        body: JSON.stringify({ usuario, password }),
+    });
+}
+
+export function localBuscarBono(token, tokenAcceso) {
+    return request(`/api/local/bono/${tokenAcceso}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 }
 
-export function adminConsumirBono(token, tokenAcceso) {
-    return request('/api/admin/bono/consumir', {
+export function localConsumirBono(token, tokenAcceso) {
+    return request('/api/local/bono/consumir', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: JSON.stringify({ token_acceso: tokenAcceso }),
+    });
+}
+
+export function localEstadisticas(token) {
+    return request('/api/local/estadisticas', {
+        headers: { Authorization: `Bearer ${token}` },
     });
 }
 

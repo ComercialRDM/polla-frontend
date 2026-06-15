@@ -9,6 +9,7 @@ import IniciarSesion from './pages/IniciarSesion';
 import RecuperarPassword from './pages/RecuperarPassword';
 import Polla from './pages/Polla';
 import Admin from './pages/Admin';
+import RedimirCodigo from './pages/RedimirCodigo';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Anexo from './pages/Anexo';
@@ -62,6 +63,7 @@ export default function App() {
                 <Route path="/privacidad" element={<Privacidad />} />
                 <Route path="/anexo" element={<Anexo />} />
                 <Route path="/dashboardpollardm" element={<Admin />} />
+                <Route path="/redimircodigordm" element={<RedimirCodigo />} />
             </Routes>
             <BotonWhatsApp />
         </BrowserRouter>
