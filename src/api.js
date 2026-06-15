@@ -133,6 +133,20 @@ export function restablecerPassword({ celular, codigo, nueva_password }) {
     });
 }
 
+export function loginConGoogle(credential) {
+    return request('/api/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ credential }),
+    });
+}
+
+export function completarRegistroGoogle({ credential, celular, equipos_favoritos }) {
+    return request('/api/auth/google/completar', {
+        method: 'POST',
+        body: JSON.stringify({ credential, celular, equipos_favoritos }),
+    });
+}
+
 export function adminLogin(usuario, password) {
     return request('/api/admin/login', {
         method: 'POST',
