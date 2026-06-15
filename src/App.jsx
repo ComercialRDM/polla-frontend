@@ -11,6 +11,7 @@ import Polla from './pages/Polla';
 import Admin from './pages/Admin';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
+import BotonWhatsApp from './components/BotonWhatsApp';
 import { obtenerSesion } from './utils/sesion';
 
 const SPLASH_KEY = 'polla_splash_visto';
@@ -60,6 +61,7 @@ export default function App() {
                 <Route path="/privacidad" element={<Privacidad />} />
                 <Route path="/dashboardpollardm" element={<Admin />} />
             </Routes>
+            <BotonWhatsApp />
         </BrowserRouter>
     );
 }
