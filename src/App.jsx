@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import Splash from './pages/Splash';
 import Home from './pages/Home';
+import Premios from './pages/Premios';
+import ComoParticipo from './pages/ComoParticipo';
+import Nosotros from './pages/Nosotros';
 import Comprar from './pages/Comprar';
 import Ingresar from './pages/Ingresar';
 import Registro from './pages/Registro';
@@ -16,8 +19,11 @@ import Anexo from './pages/Anexo';
 import BotonWhatsApp from './components/BotonWhatsApp';
 import InstalarApp from './components/InstalarApp';
 import ThemeToggle from './components/ThemeToggle';
+import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
+
+const RUTAS_CON_BOTTOM_NAV = ['/', '/premios', '/como-participo', '/nosotros'];
 
 const SPLASH_KEY = 'polla_splash_visto';
 const REF_STORAGE_KEY = 'polla_ref_token';
@@ -39,9 +45,41 @@ function RutaProtegida({ children }) {
     return children;
 }
 
+function AppRoutes() {
+    const location = useLocation();
+    const [mostrarInstalarApp, setMostrarInstalarApp] = useState(false);
+    const mostrarBottomNav = RUTAS_CON_BOTTOM_NAV.includes(location.pathname);
+
+    return (
+        <>
+            <CapturarRef />
+            <Routes>
+                <Route path="/" element={<RutaProtegida><Home /></RutaProtegida>} />
+                <Route path="/premios" element={<RutaProtegida><Premios /></RutaProtegida>} />
+                <Route path="/como-participo" element={<RutaProtegida><ComoParticipo /></RutaProtegida>} />
+                <Route path="/nosotros" element={<RutaProtegida><Nosotros /></RutaProtegida>} />
+                <Route path="/comprar" element={<RutaProtegida><Comprar /></RutaProtegida>} />
+                <Route path="/registro" element={<Registro />} />
+                <Route path="/iniciar-sesion" element={<IniciarSesion />} />
+                <Route path="/recuperar-password" element={<RecuperarPassword />} />
+                <Route path="/ingresar" element={<Ingresar />} />
+                <Route path="/polla" element={<Polla />} />
+                <Route path="/terminos" element={<Terminos />} />
+                <Route path="/privacidad" element={<Privacidad />} />
+                <Route path="/anexo" element={<Anexo />} />
+                <Route path="/dashboardpollardm" element={<Admin />} />
+                <Route path="/redimircodigordm" element={<RedimirCodigo />} />
+            </Routes>
+            <BotonWhatsApp desplazado={mostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
+            <InstalarApp onVisibleChange={setMostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
+            <ThemeToggle />
+            {mostrarBottomNav && <BottomNav />}
+        </>
+    );
+}
+
 export default function App() {
     const [mostrarSplash, setMostrarSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
-    const [mostrarInstalarApp, setMostrarInstalarApp] = useState(false);
 
     function cerrarSplash() {
         sessionStorage.setItem(SPLASH_KEY, '1');
@@ -59,24 +97,7 @@ export default function App() {
     return (
         <ThemeProvider>
             <BrowserRouter>
-                <CapturarRef />
-                <Routes>
-                    <Route path="/" element={<RutaProtegida><Home /></RutaProtegida>} />
-                    <Route path="/comprar" element={<RutaProtegida><Comprar /></RutaProtegida>} />
-                    <Route path="/registro" element={<Registro />} />
-                    <Route path="/iniciar-sesion" element={<IniciarSesion />} />
-                    <Route path="/recuperar-password" element={<RecuperarPassword />} />
-                    <Route path="/ingresar" element={<Ingresar />} />
-                    <Route path="/polla" element={<Polla />} />
-                    <Route path="/terminos" element={<Terminos />} />
-                    <Route path="/privacidad" element={<Privacidad />} />
-                    <Route path="/anexo" element={<Anexo />} />
-                    <Route path="/dashboardpollardm" element={<Admin />} />
-                    <Route path="/redimircodigordm" element={<RedimirCodigo />} />
-                </Routes>
-                <BotonWhatsApp desplazado={mostrarInstalarApp} />
-                <InstalarApp onVisibleChange={setMostrarInstalarApp} />
-                <ThemeToggle />
+                <AppRoutes />
             </BrowserRouter>
         </ThemeProvider>
     );

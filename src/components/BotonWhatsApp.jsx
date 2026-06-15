@@ -2,7 +2,8 @@ const WHATSAPP_NUMERO = '573103963708';
 const MENSAJE = 'Hola, necesito ayuda con la Polla Mundialista 🙋';
 
 // Botón flotante de WhatsApp visible en toda la app para soporte a clientes.
-export default function BotonWhatsApp({ desplazado }) {
+export default function BotonWhatsApp({ desplazado, mostrarBottomNav }) {
+    const base = mostrarBottomNav ? 'calc(4rem + env(safe-area-inset-bottom))' : 'env(safe-area-inset-bottom)';
     return (
         <a
             href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(MENSAJE)}`}
@@ -13,8 +14,8 @@ export default function BotonWhatsApp({ desplazado }) {
             style={{
                 right: 'max(1.25rem, env(safe-area-inset-right))',
                 bottom: desplazado
-                    ? 'calc(6rem + env(safe-area-inset-bottom))'
-                    : 'max(1.25rem, env(safe-area-inset-bottom))',
+                    ? `calc(${base} + 5.75rem)`
+                    : `calc(${base} + 1.25rem)`,
             }}
         >
             <span className="text-xl">💬</span>

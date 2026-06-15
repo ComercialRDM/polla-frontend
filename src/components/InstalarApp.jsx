@@ -13,7 +13,7 @@ function yaInstalada() {
 // Banner para invitar a instalar la app en la pantalla de inicio (PWA).
 // En Android/desktop usa el prompt nativo de Chrome (beforeinstallprompt).
 // En iOS, Safari no soporta ese prompt, así que se muestran instrucciones manuales.
-export default function InstalarApp({ onVisibleChange }) {
+export default function InstalarApp({ onVisibleChange, mostrarBottomNav }) {
     const [promptEvent, setPromptEvent] = useState(null);
     const [mostrarIOS] = useState(() => esIOS() && !yaInstalada());
     const [cerrado, setCerrado] = useState(() => localStorage.getItem(STORAGE_KEY) === '1');
@@ -53,8 +53,12 @@ export default function InstalarApp({ onVisibleChange }) {
 
     return (
         <div
-            className="fixed bottom-0 left-0 right-0 z-50 px-4 flex justify-center"
-            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            className="fixed left-0 right-0 z-50 px-4 flex justify-center"
+            style={
+                mostrarBottomNav
+                    ? { bottom: 'calc(4rem + env(safe-area-inset-bottom))', paddingBottom: '0.5rem' }
+                    : { bottom: 0, paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }
+            }
         >
             <div className="w-full max-w-md rounded-2xl border border-amber-400/30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg shadow-[0_4px_25px_rgba(0,0,0,0.1)] dark:shadow-[0_0_25px_rgba(234,179,8,0.25)] p-4 flex items-center gap-3">
                 <span className="text-2xl flex-shrink-0">📲</span>

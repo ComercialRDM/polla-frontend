@@ -1,42 +1,9 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import camisetaImg from '../assets/premios/camiseta.webp';
-import gorraImg from '../assets/premios/gorra.webp';
-import balonImg from '../assets/premios/balon.webp';
-import gafasImg from '../assets/premios/gafas.webp';
 import CountdownPartido from '../components/CountdownPartido';
 import ProximosPartidos from '../components/ProximosPartidos';
 import ResumenPublico from '../components/ResumenPublico';
-import ListaPronosticos from '../components/ListaPronosticos';
-import UltimosResultados from '../components/UltimosResultados';
-import PlanesBono from '../components/PlanesBono';
-import FAQ from '../components/FAQ';
-import Footer from '../components/Footer';
-
-const WHATSAPP_NUMERO = '573103963708';
-const INSTAGRAM_USUARIO = '@retoucherie_col';
-
-const SEDES = [
-    { ciudad: 'Barranquilla', nombre: 'Cc Buenavista', direccion: 'Sótano 2, local 17', telefono: '6053131966' },
-    { ciudad: 'Barranquilla', nombre: 'Cc Viva Barranquilla', direccion: 'Sótano 1', telefono: '6053093750' },
-    { ciudad: 'Barranquilla', nombre: 'Cc Aranjuez', direccion: 'Calle 82 #53', telefono: '6052022021' },
-    { ciudad: 'Cartagena', nombre: 'Cc Caribe Plaza', direccion: 'Sótano 1', telefono: '6056515251' },
-];
-
-const PREMIOS = [
-    { imagen: camisetaImg, titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
-    { imagen: gorraImg, titulo: 'Gorra Edición Especial', descripcion: 'Tricolor bordada' },
-    { imagen: balonImg, titulo: 'Balón Mundialista', descripcion: 'Réplica oficial' },
-    { imagen: gafasImg, titulo: 'Bono Sorpresa', descripcion: 'Servicios Retoucherie' },
-];
-
-const PASOS = [
-    { emoji: '💳', titulo: 'Compra tu Bono Digital', descripcion: 'Elige el plan que más te guste: $50.000, $100.000 o $200.000.' },
-    { emoji: '🎁', titulo: 'Recibe tu bono y tus intentos', descripcion: 'Te llega por correo tu Bono Digital y tus intentos para pronosticar.' },
-    { emoji: '⚽', titulo: 'Predice el marcador de Colombia', descripcion: 'Antes de que inicie el partido, ingresa tu pronóstico exacto.' },
-    { emoji: '🏆', titulo: 'Gana premios si aciertas', descripcion: 'Los pronósticos exactos se llevan premios y usan su bono en La Retoucherie.' },
-];
 
 const COLORES_CONFETI = ['#FCD116', '#003893', '#CE1126', '#ffffff'];
 
@@ -54,7 +21,7 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="min-h-screen flex flex-col items-center bg-white dark:bg-zinc-950 stadium-glow">
+        <div className="min-h-screen flex flex-col items-center bg-white dark:bg-zinc-950 stadium-glow pb-28">
             <div className="w-full flex">
                 <div className="flex-1 bg-colombia-yellow h-2" />
                 <div className="flex-1 bg-colombia-blue h-2" />
@@ -74,32 +41,11 @@ export default function Home() {
                 </p>
             </div>
 
-            {/* Cómo funciona */}
             <div className="w-full max-w-md px-6 mt-6 relative z-10">
-                <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-4">
-                    ¿Cómo funciona?
-                </h2>
-                <div className="flex flex-col gap-3">
-                    {PASOS.map((paso, i) => (
-                        <div
-                            key={paso.titulo}
-                            className="flex items-start gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4"
-                        >
-                            <span className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-lg font-black text-amber-500 dark:text-amber-400">
-                                {i + 1}
-                            </span>
-                            <div>
-                                <p className="text-zinc-900 dark:text-white font-bold text-sm">{paso.emoji} {paso.titulo}</p>
-                                <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">{paso.descripcion}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <CountdownPartido />
             </div>
 
-            <PlanesBono />
-
-            <div className="w-full max-w-md px-6 mt-6 relative z-10">
+            <div className="w-full max-w-md px-6 relative z-10">
                 <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-6 text-center">
                     <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
                         Polla Mundialista
@@ -126,90 +72,9 @@ export default function Home() {
                 </div>
             </div>
 
-            <div className="w-full max-w-md px-6 mt-6 relative z-10">
-                <CountdownPartido />
-            </div>
-
             <ProximosPartidos />
 
-            <UltimosResultados />
-
             <ResumenPublico />
-
-            <ListaPronosticos />
-
-            <FAQ />
-
-            {/* Botín de Premios Mundialistas */}
-            <div className="w-full max-w-md px-6 mt-10 relative z-10">
-                <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-1">
-                    🏆 Botín de Premios Mundialistas
-                </h2>
-                <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-                    Los aciertos más rápidos se llevan estos premios
-                </p>
-
-                <div className="grid grid-cols-2 gap-4">
-                    {PREMIOS.map((premio) => (
-                        <div
-                            key={premio.titulo}
-                            className="group rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 text-center transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:border-transparent hover:bg-gradient-to-r hover:from-yellow-400 hover:via-blue-500 hover:to-red-500"
-                        >
-                            <div className="rounded-xl bg-zinc-100 dark:bg-zinc-950/60 group-hover:bg-zinc-950/10 dark:group-hover:bg-zinc-950/80 p-4 transition-colors">
-                                <img
-                                    src={premio.imagen}
-                                    alt={premio.titulo}
-                                    className="w-full h-24 object-cover rounded-lg shadow-lg shadow-black/40 mb-2"
-                                />
-                                <p className="text-zinc-900 dark:text-white font-bold text-sm">{premio.titulo}</p>
-                                <p className="text-zinc-500 dark:text-zinc-400 text-xs">{premio.descripcion}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Quiénes somos */}
-            <div className="w-full max-w-md px-6 mt-10 relative z-10">
-                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-6 text-center">
-                    <h2 className="text-zinc-900 dark:text-white font-black text-xl mb-2">Quiénes somos</h2>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-                        La Retoucherie es un centro de belleza y bienestar con sedes en Barranquilla y Cartagena.
-                        Esta Polla Mundialista es nuestro regalo para celebrar el Mundial 2026 junto a nuestros clientes.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-left">
-                        {SEDES.map((sede) => (
-                            <div key={sede.nombre} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                                <p className="text-zinc-900 dark:text-white font-bold text-xs">{sede.nombre}</p>
-                                <p className="text-zinc-500 dark:text-zinc-400 text-xs">{sede.ciudad} · {sede.direccion}</p>
-                                <p className="text-zinc-500 dark:text-zinc-400 text-xs">📞 {sede.telefono}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <a
-                            href={`https://instagram.com/${INSTAGRAM_USUARIO.replace('@', '')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-block py-2.5 px-4 rounded-xl font-bold text-sm text-center text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
-                        >
-                            📷 {INSTAGRAM_USUARIO}
-                        </a>
-                        <a
-                            href={`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent('Hola, tengo una pregunta sobre la Polla Mundialista 🙋')}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-block py-2.5 px-4 rounded-xl font-bold text-sm text-center text-white bg-green-600 hover:bg-green-700 transition-colors"
-                        >
-                            💬 Escríbenos por WhatsApp
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <Footer />
         </div>
     );
 }
