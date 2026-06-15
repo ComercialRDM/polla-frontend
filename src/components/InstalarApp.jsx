@@ -52,7 +52,10 @@ export default function InstalarApp({ onVisibleChange }) {
     if (!visible) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 flex justify-center">
+        <div
+            className="fixed bottom-0 left-0 right-0 z-50 px-4 flex justify-center"
+            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        >
             <div className="w-full max-w-md rounded-2xl border border-amber-400/30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg shadow-[0_4px_25px_rgba(0,0,0,0.1)] dark:shadow-[0_0_25px_rgba(234,179,8,0.25)] p-4 flex items-center gap-3">
                 <span className="text-2xl flex-shrink-0">📲</span>
 

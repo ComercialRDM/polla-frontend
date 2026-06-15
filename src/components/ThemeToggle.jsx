@@ -29,7 +29,8 @@ export default function ThemeToggle() {
             onClick={siguienteModo}
             aria-label={`Tema: ${ETIQUETAS[modo]}. Toca para cambiar.`}
             title={ETIQUETAS[modo]}
-            className="fixed top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full border border-black/10 dark:border-white/15 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-md text-lg active:scale-90 transition-transform"
+            className="fixed z-50 w-10 h-10 flex items-center justify-center rounded-full border border-black/10 dark:border-white/15 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg shadow-md text-lg active:scale-90 transition-transform"
+            style={{ top: 'max(1rem, env(safe-area-inset-top))', right: 'max(1rem, env(safe-area-inset-right))' }}
         >
             {ICONOS[modo]}
         </button>
