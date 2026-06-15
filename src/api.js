@@ -160,6 +160,12 @@ export function adminPendientes(token) {
     });
 }
 
+export function adminSimuladorMetricas(token) {
+    return request('/api/admin/simulador/metricas', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminAprobar(token, transaccion_id) {
     return request('/api/admin/aprobar', {
         method: 'POST',

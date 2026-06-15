@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminBuscarBono, adminConsumirBono, obtenerPartidos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminBuscarBono, adminConsumirBono, adminSimuladorMetricas, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
+import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 import EscanerQR from '../components/EscanerQR';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -41,6 +42,10 @@ export default function Admin() {
     const [errorEscaneo, setErrorEscaneo] = useState('');
     const [consumiendoBono, setConsumiendoBono] = useState(false);
 
+    const [metricasSimulador, setMetricasSimulador] = useState(null);
+    const [errorSimulador, setErrorSimulador] = useState('');
+    const [precioSimulado, setPrecioSimulado] = useState(PRECIO_REFERENCIA);
+
     async function cargarDatos(tok) {
         setCargando(true);
         setError('');
@@ -74,10 +79,25 @@ export default function Admin() {
         }
     }
 
+    async function cargarSimulador(tok) {
+        setErrorSimulador('');
+        try {
+            const data = await adminSimuladorMetricas(tok);
+            if (data?.success) {
+                setMetricasSimulador(data);
+            } else {
+                setErrorSimulador(data?.error || 'No se pudo cargar el simulador.');
+            }
+        } catch {
+            setErrorSimulador('Error de conexión al cargar el simulador.');
+        }
+    }
+
     useEffect(() => {
         if (token) {
             cargarDatos(token);
             cargarPartidos();
+            cargarSimulador(token);
         }
     }, []);
 
@@ -94,6 +114,7 @@ export default function Admin() {
                 setPasswordInput('');
                 cargarDatos(data.token);
                 cargarPartidos();
+                cargarSimulador(data.token);
             } else {
                 setError(data?.error || 'Usuario o contraseña incorrectos.');
             }
@@ -349,6 +370,70 @@ export default function Admin() {
                     <Metrica titulo="Aprobadas" valor={aprobadas.length} />
                     <Metrica titulo="Ingresos" valor={formatoPesos(ingresos)} />
                     <Metrica titulo="Total transacciones" valor={transacciones.length} />
+                </div>
+
+                {/* Simulador de ingresos (solo admin) */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-white mb-1">Simulador de ingresos</h2>
+
+                    {errorSimulador && <p className="text-red-400 text-sm">{errorSimulador}</p>}
+
+                    {!metricasSimulador && !errorSimulador && (
+                        <p className="text-zinc-400 text-sm">Cargando datos del simulador...</p>
+                    )}
+
+                    {metricasSimulador && (() => {
+                        const proyeccion = calcularProyeccion({
+                            precio: precioSimulado,
+                            clicsDiariosPromedio: metricasSimulador.clicsDiariosPromedio,
+                            ingresosActuales: metricasSimulador.ingresosActuales,
+                            diasRestantes: metricasSimulador.diasRestantes,
+                        });
+                        const fechaMetaTexto = new Date(`${FECHA_META}T00:00:00`).toLocaleDateString('es-CO', {
+                            day: 'numeric', month: 'long', year: 'numeric',
+                        });
+
+                        return (
+                            <>
+                                <p className="text-xs text-zinc-400 mb-4">
+                                    Meta: {formatoPesos(META_INGRESOS)} antes del {fechaMetaTexto} · Faltan {metricasSimulador.diasRestantes} días ·
+                                    {' '}Ingresos actuales: {formatoPesos(metricasSimulador.ingresosActuales)} ·
+                                    {' '}Clics ManyChat/día (prom.): {metricasSimulador.clicsDiariosPromedio.toFixed(1)} ·
+                                    {' '}Tasa de rebote checkout (30 días): {(metricasSimulador.checkout.tasaRebote * 100).toFixed(1)}%
+                                </p>
+
+                                <label className="block text-sm text-zinc-300 mb-2">
+                                    Precio del bono a simular: <span className="font-bold text-amber-400">{formatoPesos(precioSimulado)}</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    min={PRECIO_SIMULADOR_MIN}
+                                    max={PRECIO_SIMULADOR_MAX}
+                                    step={PRECIO_SIMULADOR_PASO}
+                                    value={precioSimulado}
+                                    onChange={(e) => setPrecioSimulado(Number(e.target.value))}
+                                    className="w-full accent-amber-400 mb-4"
+                                />
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                                    <Metrica titulo="Conversión estimada" valor={`${(proyeccion.tasaConversion * 100).toFixed(1)}%`} />
+                                    <Metrica titulo="Compras/día estimadas" valor={proyeccion.conversionesDiarias.toFixed(1)} />
+                                    <Metrica titulo="Ingreso diario estimado" valor={formatoPesos(Math.round(proyeccion.ingresoDiarioEstimado))} />
+                                    <Metrica titulo="Proyección a la meta" valor={formatoPesos(Math.round(proyeccion.ingresoProyectadoTotal))} />
+                                </div>
+
+                                {proyeccion.cumpleMeta ? (
+                                    <p className="text-green-400 text-sm font-bold">
+                                        ✅ A {formatoPesos(precioSimulado)} y al ritmo actual de clics, se alcanzaría la meta de {formatoPesos(META_INGRESOS)} para el {fechaMetaTexto}.
+                                    </p>
+                                ) : (
+                                    <p className="text-amber-400 text-sm font-bold">
+                                        ⚠️ A {formatoPesos(precioSimulado)} faltarían {formatoPesos(Math.round(proyeccion.faltante))} para la meta. Ajusta el precio (más bajo = más conversión, más alto = más margen) y revisa el resultado.
+                                    </p>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* Crear partido */}
