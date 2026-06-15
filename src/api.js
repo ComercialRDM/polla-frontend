@@ -207,6 +207,20 @@ export function adminNotificarRecompra(token, { partido_id_origen, partido_id_de
     });
 }
 
+export function adminBuscarBono(token, tokenAcceso) {
+    return request(`/api/admin/bono/${tokenAcceso}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminConsumirBono(token, tokenAcceso) {
+    return request('/api/admin/bono/consumir', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ token_acceso: tokenAcceso }),
+    });
+}
+
 export async function adminAbrirComprobante(token, transaccion_id) {
     const res = await fetch(`${API_BASE}/api/admin/comprobante/${transaccion_id}`, {
         headers: { Authorization: `Bearer ${token}` },

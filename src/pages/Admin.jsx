@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, obtenerPartidos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminBuscarBono, adminConsumirBono, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
+import EscanerQR from '../components/EscanerQR';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
 
@@ -34,6 +35,11 @@ export default function Admin() {
     const [recompra, setRecompra] = useState({ origen: '', destino: '' });
     const [enviandoRecompra, setEnviandoRecompra] = useState(false);
     const [resultadoRecompra, setResultadoRecompra] = useState('');
+
+    const [mostrarScanner, setMostrarScanner] = useState(false);
+    const [bonoEscaneado, setBonoEscaneado] = useState(null);
+    const [errorEscaneo, setErrorEscaneo] = useState('');
+    const [consumiendoBono, setConsumiendoBono] = useState(false);
 
     async function cargarDatos(tok) {
         setCargando(true);
@@ -207,6 +213,42 @@ export default function Admin() {
             setResultadoRecompra('Error de conexión al enviar la notificación.');
         } finally {
             setEnviandoRecompra(false);
+        }
+    }
+
+    async function handleEscaneoQR(tokenAcceso) {
+        setMostrarScanner(false);
+        setErrorEscaneo('');
+        setBonoEscaneado(null);
+
+        try {
+            const data = await adminBuscarBono(token, tokenAcceso);
+            if (data?.success) {
+                setBonoEscaneado({ token: tokenAcceso, ...data.bono });
+            } else {
+                setErrorEscaneo(data?.error || 'No se pudo verificar el bono.');
+            }
+        } catch (err) {
+            setErrorEscaneo('Error de conexión al verificar el bono.');
+        }
+    }
+
+    async function handleConsumirBono() {
+        if (!bonoEscaneado) return;
+
+        setConsumiendoBono(true);
+        setErrorEscaneo('');
+        try {
+            const data = await adminConsumirBono(token, bonoEscaneado.token);
+            if (data?.success) {
+                setBonoEscaneado((b) => ({ ...b, consumido: true, consumido_en: new Date().toISOString() }));
+            } else {
+                setErrorEscaneo(data?.error || 'No se pudo marcar el bono como consumido.');
+            }
+        } catch (err) {
+            setErrorEscaneo('Error de conexión al marcar el bono.');
+        } finally {
+            setConsumiendoBono(false);
         }
     }
 
@@ -490,6 +532,68 @@ export default function Admin() {
                         </button>
                     </form>
                     {resultadoRecompra && <p className="text-zinc-300 text-sm mt-2">{resultadoRecompra}</p>}
+                </div>
+
+                {/* Escanear bono */}
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-white mb-3">Escanear bono</h2>
+                    <p className="text-zinc-400 text-sm mb-3">
+                        Escanea el código QR del bono del cliente para verificarlo y marcarlo como usado en el local.
+                    </p>
+
+                    {!mostrarScanner && !bonoEscaneado && (
+                        <button
+                            onClick={() => { setMostrarScanner(true); setErrorEscaneo(''); }}
+                            className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500"
+                        >
+                            Abrir escáner
+                        </button>
+                    )}
+
+                    {mostrarScanner && (
+                        <div className="flex flex-col gap-3">
+                            <EscanerQR onResultado={handleEscaneoQR} onError={setErrorEscaneo} />
+                            <button
+                                onClick={() => setMostrarScanner(false)}
+                                className="self-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-zinc-300 border border-white/10"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    )}
+
+                    {errorEscaneo && <p className="text-red-400 text-sm mt-2">{errorEscaneo}</p>}
+
+                    {bonoEscaneado && (
+                        <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4">
+                            <p className="text-white font-bold mb-1">{bonoEscaneado.nombre}</p>
+                            <p className="text-zinc-400 text-sm mb-1">{bonoEscaneado.celular}</p>
+                            <p className="text-zinc-200 text-lg font-bold mb-3">{formatoPesos(bonoEscaneado.saldo_bono)}</p>
+
+                            {bonoEscaneado.consumido ? (
+                                <p className="text-amber-400 font-semibold text-sm">
+                                    Este bono ya fue usado{bonoEscaneado.consumido_en ? ` el ${new Date(bonoEscaneado.consumido_en).toLocaleString('es-CO')}` : ''}.
+                                </p>
+                            ) : (
+                                <button
+                                    onClick={handleConsumirBono}
+                                    disabled={consumiendoBono}
+                                    className="px-4 py-2 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
+                                >
+                                    {consumiendoBono ? 'Guardando...' : 'Marcar como consumido'}
+                                </button>
+                            )}
+
+                            <div className="mt-3">
+                                <button
+                                    onClick={() => { setBonoEscaneado(null); setErrorEscaneo(''); }}
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-zinc-300 border border-white/10"
+                                >
+                                    Escanear otro
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Pestañas y buscador */}
