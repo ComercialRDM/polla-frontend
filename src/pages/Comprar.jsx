@@ -6,6 +6,8 @@ import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
 import Bandera from '../components/Bandera';
 import { partidosFuturos } from '../utils/partidos';
+import { obtenerSesion } from '../utils/sesion';
+import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 
@@ -28,7 +30,15 @@ export default function Comprar() {
     const [modoCustom, setModoCustom] = useState(false);
     const [montoCustom, setMontoCustom] = useState('');
     const [metodoPago, setMetodoPago] = useState('wompi'); // 'wompi' | 'transferencia'
-    const [form, setForm] = useState({ nombre: '', correo: '', celular: '' });
+    const [form, setForm] = useState(() => {
+        const guardados = obtenerDatosComprador();
+        const sesion = obtenerSesion();
+        return {
+            nombre: sesion?.nombre || guardados.nombre || '',
+            correo: guardados.correo || '',
+            celular: sesion?.celular || guardados.celular || '',
+        };
+    });
     const [comprobante, setComprobante] = useState(null);
     const [enviado, setEnviado] = useState(false);
     const [mensajeExito, setMensajeExito] = useState('');
@@ -58,7 +68,9 @@ export default function Comprar() {
     const residuoCustom = montoCustomNumero % CUPO_VALOR;
 
     function handleChange(e) {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const nuevoForm = { ...form, [e.target.name]: e.target.value };
+        setForm(nuevoForm);
+        guardarDatosComprador(nuevoForm);
     }
 
     async function handleSubmit(e) {

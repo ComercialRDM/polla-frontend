@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registrarCuenta } from '../api';
+import { registrarCuenta, loginConGoogle, completarRegistroGoogle } from '../api';
 import { guardarSesion } from '../utils/sesion';
+import { obtenerDatosComprador, guardarDatosComprador } from '../utils/datosComprador';
 import { MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
 import SelectorEquipos from '../components/SelectorEquipos';
+import GoogleButton from '../components/GoogleButton';
 
 export default function Registro() {
     const navigate = useNavigate();
     const [paso, setPaso] = useState(1);
-    const [celular, setCelular] = useState('');
-    const [nombre, setNombre] = useState('');
+    const [celular, setCelular] = useState(() => obtenerDatosComprador().celular || '');
+    const [nombre, setNombre] = useState(() => obtenerDatosComprador().nombre || '');
     const [password, setPassword] = useState('');
     const [confirmarPassword, setConfirmarPassword] = useState('');
     const [equipos, setEquipos] = useState([]);
@@ -17,12 +19,38 @@ export default function Registro() {
     const [error, setError] = useState('');
     const [enviando, setEnviando] = useState(false);
 
+    // Flujo de registro con Google: si la cuenta no existe, se pide el
+    // celular y se omiten los campos de contraseña.
+    const [modoGoogle, setModoGoogle] = useState(false);
+    const [googleCredential, setGoogleCredential] = useState(null);
+    const [correoGoogle, setCorreoGoogle] = useState('');
+
     function toggleEquipo(equipo) {
         setEquipos((prev) => {
             if (prev.includes(equipo)) return prev.filter((e) => e !== equipo);
             if (prev.length >= MAX_EQUIPOS_FAVORITOS) return prev;
             return [...prev, equipo];
         });
+    }
+
+    async function handleCredencialGoogle(credential) {
+        setError('');
+        try {
+            const data = await loginConGoogle(credential);
+            if (data?.success && data?.usuario) {
+                guardarSesion(data.usuario);
+                navigate('/');
+            } else if (data?.success && data?.nuevo) {
+                setGoogleCredential(credential);
+                setCorreoGoogle(data.datos?.correo || '');
+                if (data.datos?.nombre) setNombre(data.datos.nombre);
+                setModoGoogle(true);
+            } else {
+                setError(data?.error || 'No se pudo continuar con Google.');
+            }
+        } catch {
+            setError('Error de conexión con el servidor.');
+        }
     }
 
     function handleContinuarPaso1(e) {
@@ -33,17 +61,19 @@ export default function Registro() {
             setError('Ingresa un número de celular válido.');
             return;
         }
-        if (!nombre.trim()) {
-            setError('Ingresa tu nombre completo.');
-            return;
-        }
-        if (password.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres.');
-            return;
-        }
-        if (password !== confirmarPassword) {
-            setError('Las contraseñas no coinciden.');
-            return;
+        if (!modoGoogle) {
+            if (!nombre.trim()) {
+                setError('Ingresa tu nombre completo.');
+                return;
+            }
+            if (password.length < 6) {
+                setError('La contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+            if (password !== confirmarPassword) {
+                setError('Las contraseñas no coinciden.');
+                return;
+            }
         }
         if (!aceptaTerminos) {
             setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.');
@@ -57,15 +87,22 @@ export default function Registro() {
         setError('');
         setEnviando(true);
         try {
-            const data = await registrarCuenta({
-                celular: celular.trim(),
-                password,
-                nombre: nombre.trim(),
-                equipos_favoritos: equipos,
-            });
+            const data = modoGoogle
+                ? await completarRegistroGoogle({
+                    credential: googleCredential,
+                    celular: celular.trim(),
+                    equipos_favoritos: equipos,
+                })
+                : await registrarCuenta({
+                    celular: celular.trim(),
+                    password,
+                    nombre: nombre.trim(),
+                    equipos_favoritos: equipos,
+                });
 
             if (data?.success) {
                 guardarSesion(data.usuario);
+                guardarDatosComprador({ nombre: nombre.trim(), celular: celular.trim() });
                 navigate('/');
             } else {
                 setError(data?.error || 'No se pudo completar el registro.');
@@ -97,6 +134,24 @@ export default function Registro() {
 
                 {paso === 1 ? (
                     <form onSubmit={handleContinuarPaso1} className="flex flex-col gap-4">
+                        {!modoGoogle && (
+                            <>
+                                <GoogleButton onCredential={handleCredencialGoogle} />
+
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 h-px bg-white/10" />
+                                    <span className="text-zinc-500 text-xs uppercase">o</span>
+                                    <div className="flex-1 h-px bg-white/10" />
+                                </div>
+                            </>
+                        )}
+
+                        {modoGoogle && (
+                            <p className="text-zinc-400 text-sm">
+                                Continuando con tu cuenta de Google{correoGoogle ? ` (${correoGoogle})` : ''}. Solo falta tu celular.
+                            </p>
+                        )}
+
                         <div>
                             <label className="block text-sm text-zinc-300 mb-1">Número de celular</label>
                             <input
@@ -108,6 +163,8 @@ export default function Registro() {
                             />
                         </div>
 
+                        {!modoGoogle && (
+                        <>
                         <div>
                             <label className="block text-sm text-zinc-300 mb-1">Nombre completo</label>
                             <input
@@ -140,6 +197,8 @@ export default function Registro() {
                                 className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
+                        </>
+                        )}
 
                         <label className="flex items-start gap-2 text-zinc-400 text-xs">
                             <input
