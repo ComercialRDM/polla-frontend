@@ -98,10 +98,10 @@ export function actualizarEquiposFavoritos({ token_acceso, equipos_favoritos }) 
     });
 }
 
-export function votar({ token_acceso, partido_id, marcadores }) {
+export function votar({ token_acceso, partido_id, local, visitante }) {
     return request('/api/polla/votar', {
         method: 'POST',
-        body: JSON.stringify({ token_acceso, partido_id, marcadores }),
+        body: JSON.stringify({ token_acceso, partido_id, local, visitante }),
     });
 }
 

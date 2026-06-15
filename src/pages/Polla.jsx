@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
+import { formatoPesos } from '../config/planes';
 import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
 import EquiposFavoritos from '../components/EquiposFavoritos';
@@ -31,11 +32,11 @@ export default function Polla() {
     const [info, setInfo] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
-    const [msRestantes, setMsRestantes] = useState(null);
-    const [marcadores, setMarcadores] = useState([]);
-    const [enviando, setEnviando] = useState(false);
-    const [mensajeExito, setMensajeExito] = useState('');
-    const [hayCambios, setHayCambios] = useState(false);
+    const [ahora, setAhora] = useState(() => Date.now());
+    const [marcadores, setMarcadores] = useState({});
+    const [enviandoId, setEnviandoId] = useState(null);
+    const [mensajeExitoId, setMensajeExitoId] = useState(null);
+    const [errorPorPartido, setErrorPorPartido] = useState({});
     const [mensajeCopiado, setMensajeCopiado] = useState(false);
 
     useEffect(() => {
@@ -51,10 +52,6 @@ export default function Polla() {
                     setError('No encontramos un bono activo asociado a este link.');
                 } else {
                     setInfo(data);
-                    setMsRestantes(calcularRestante(data.fecha_hora_inicio));
-                    setMarcadores(
-                        Array.from({ length: data.intentos_disponibles }, () => ({ local: '', visitante: '' }))
-                    );
                 }
             })
             .catch(() => setError('Error de conexión con el servidor.'))
@@ -62,56 +59,61 @@ export default function Polla() {
     }, [token]);
 
     useEffect(() => {
-        if (!info) return;
-        const intervalo = setInterval(() => {
-            setMsRestantes(calcularRestante(info.fecha_hora_inicio));
-        }, 1000);
+        const intervalo = setInterval(() => setAhora(Date.now()), 1000);
         return () => clearInterval(intervalo);
+    }, []);
+
+    const partidoDestacado = useMemo(() => {
+        if (!info?.partidos?.length) return null;
+        return info.partidos.find((p) => calcularRestante(p.fecha_hora_inicio) > 0) || info.partidos[0];
     }, [info]);
 
-    const cerrado = useMemo(() => {
-        if (msRestantes === null) return false;
-        return msRestantes < 1000 || info?.estado_partido !== 'activo';
-    }, [msRestantes, info]);
-
-    const enUltimaHora = msRestantes !== null && msRestantes > 0 && msRestantes <= UNA_HORA_MS;
-
-    function actualizarMarcador(index, campo, valor) {
+    function actualizarMarcador(partidoId, campo, valor) {
         const valorLimpio = valor.replace(/[^0-9]/g, '').slice(0, 2);
-        setMarcadores((prev) => prev.map((m, i) => (i === index ? { ...m, [campo]: valorLimpio } : m)));
-        setHayCambios(true);
+        setMarcadores((prev) => ({
+            ...prev,
+            [partidoId]: { ...(prev[partidoId] || { local: '', visitante: '' }), [campo]: valorLimpio },
+        }));
     }
 
-    async function handleSubmit() {
-        setError('');
-        setMensajeExito('');
+    async function handleSubmit(partido) {
+        const m = marcadores[partido.partido_id] || {};
+        setErrorPorPartido((prev) => ({ ...prev, [partido.partido_id]: '' }));
+        setMensajeExitoId(null);
 
-        const marcadoresCompletos = marcadores.filter((m) => m.local !== '' && m.visitante !== '');
-        if (marcadoresCompletos.length === 0) {
-            setError('Completa al menos un pronóstico.');
+        if (m.local === '' || m.local === undefined || m.visitante === '' || m.visitante === undefined) {
+            setErrorPorPartido((prev) => ({ ...prev, [partido.partido_id]: 'Completa el marcador.' }));
             return;
         }
 
-        setEnviando(true);
+        setEnviandoId(partido.partido_id);
         try {
             const data = await votar({
                 token_acceso: token,
-                partido_id: info.partido_id,
-                marcadores: marcadoresCompletos.map((m) => ({ local: Number(m.local), visitante: Number(m.visitante) })),
+                partido_id: partido.partido_id,
+                local: Number(m.local),
+                visitante: Number(m.visitante),
             });
 
             if (data?.success) {
-                setMensajeExito('¡Pronósticos guardados con éxito! Mucha suerte 🇨🇴');
-                setInfo((prev) => ({ ...prev, intentos_disponibles: data.intentos_disponibles }));
-                setMarcadores(Array.from({ length: data.intentos_disponibles }, () => ({ local: '', visitante: '' })));
-                setHayCambios(false);
+                setMensajeExitoId(partido.partido_id);
+                setInfo((prev) => ({
+                    ...prev,
+                    cupos_disponibles: data.cupos_disponibles,
+                    dinero_disponible: data.dinero_disponible,
+                    partidos: prev.partidos.map((p) =>
+                        p.partido_id === partido.partido_id
+                            ? { ...p, ya_pronosticado: true, pronostico: { local: Number(m.local), visitante: Number(m.visitante) } }
+                            : p
+                    ),
+                }));
             } else {
-                setError(data?.error || 'No se pudieron guardar los pronósticos.');
+                setErrorPorPartido((prev) => ({ ...prev, [partido.partido_id]: data?.error || 'No se pudo guardar el pronóstico.' }));
             }
-        } catch (err) {
-            setError('Error de conexión con el servidor.');
+        } catch {
+            setErrorPorPartido((prev) => ({ ...prev, [partido.partido_id]: 'Error de conexión con el servidor.' }));
         } finally {
-            setEnviando(false);
+            setEnviandoId(null);
         }
     }
 
@@ -132,8 +134,6 @@ export default function Polla() {
         );
     }
 
-    const mostrarFormulario = !cerrado && info.intentos_disponibles > 0;
-
     return (
         <div className="min-h-screen relative bg-zinc-950 stadium-glow px-4 sm:px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
@@ -142,28 +142,27 @@ export default function Polla() {
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className={`w-full max-w-md mt-6 relative ${mostrarFormulario ? 'pb-28 sm:pb-0' : ''}`}>
+            <div className="w-full max-w-md mt-6 relative">
                 <h1 className="text-2xl font-extrabold text-white mb-1">¡Hola, {info.nombre}!</h1>
                 <p className="text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
 
-                {/* Marcador tipo estadio */}
-                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-6 mb-6 text-center">
-                    <p className="text-amber-400 font-bold text-lg mb-3 flex items-center justify-center gap-2">
-                        <Bandera equipo={info.equipo_local} className="w-7 h-7" />
-                        {info.equipo_local} vs
-                        <Bandera equipo={info.equipo_visitante} className="w-7 h-7" />
-                        {info.equipo_visitante}
+                {/* Monedero de cupos */}
+                <div className="rounded-2xl border border-amber-400/30 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-5 mb-6 text-center">
+                    <p className="text-zinc-400 text-xs mb-1">Tu monedero de pronósticos</p>
+                    <p className="text-amber-400 font-black text-3xl mb-1">
+                        {info.cupos_disponibles} {info.cupos_disponibles === 1 ? 'cupo' : 'cupos'}
                     </p>
-                    <p className="text-xs text-zinc-400 mb-1">
-                        {cerrado ? 'Votación cerrada' : enUltimaHora ? '¡Última hora para votar!' : 'Tiempo restante para predecir'}
+                    <p className="text-zinc-300 text-sm">
+                        Dinero disponible: <span className="font-bold text-white">{formatoPesos(info.dinero_disponible)}</span>
                     </p>
-                    <div
-                        className={`font-scoreboard text-4xl sm:text-5xl font-black tracking-widest bg-black rounded-xl py-2 ${
-                            cerrado ? 'text-zinc-500' : enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'
-                        }`}
-                    >
-                        {cerrado ? '00:00:00' : formatearTiempo(msRestantes)}
-                    </div>
+                    {info.cupos_disponibles === 0 && (
+                        <Link
+                            to="/comprar"
+                            className="inline-block mt-3 px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]"
+                        >
+                            Recargar cupos
+                        </Link>
+                    )}
                 </div>
 
                 {/* Equipos favoritos */}
@@ -185,7 +184,7 @@ export default function Polla() {
                     <div className="flex flex-col sm:flex-row gap-2">
                         <a
                             href={`https://wa.me/?text=${encodeURIComponent(
-                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de ${info.equipo_local} vs ${info.equipo_visitante} y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí: ${window.location.origin}/?ref=${token}`
+                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de los partidos de Colombia y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí: ${window.location.origin}/?ref=${token}`
                             )}`}
                             target="_blank"
                             rel="noreferrer"
@@ -206,99 +205,109 @@ export default function Polla() {
                     </div>
                 </div>
 
-                {/* Ranking en vivo */}
-                <RankingEnVivo partidoId={info.partido_id} />
+                {/* Ranking en vivo del próximo partido */}
+                {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
 
-                {cerrado ? (
-                    <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-5 text-center text-zinc-300">
-                        El partido ya comenzó o la votación está cerrada. ¡Gracias por participar!
+                {/* Tarjetas de pronóstico por partido */}
+                <p className="text-white font-bold text-base mb-3">Partidos disponibles para predecir</p>
+
+                {info.partidos.length === 0 && (
+                    <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-5 text-center text-zinc-300 mb-4">
+                        No hay partidos activos por el momento.
                     </div>
-                ) : info.intentos_disponibles === 0 ? (
-                    <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-5 text-center text-zinc-300">
-                        Ya usaste todos tus intentos para este partido. ¡Mucha suerte! 🍀
-                    </div>
-                ) : (
-                    <>
-                        <p className="text-sm text-zinc-300 mb-3">
-                            Tienes <span className="text-amber-400 font-bold">{info.intentos_disponibles}</span> intento(s) disponibles.
-                        </p>
-
-                        <div className="flex flex-col gap-5 mb-4">
-                            {marcadores.map((m, i) => (
-                                <div
-                                    key={i}
-                                    className="relative rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-5 pt-6"
-                                >
-                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-xs font-black px-3 py-1 rounded-full shadow-md whitespace-nowrap">
-                                        Intento #{i + 1}
-                                    </span>
-
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                            <Bandera equipo={info.equipo_local} className="w-9 h-9 sm:w-10 sm:h-10 drop-shadow-md" />
-                                            <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide truncate max-w-full">
-                                                {info.equipo_local}
-                                            </span>
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                value={m.local}
-                                                onChange={(e) => actualizarMarcador(i, 'local', e.target.value)}
-                                                className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
-                                            />
-                                        </div>
-
-                                        <span className="text-amber-400 font-black text-xl sm:text-2xl font-scoreboard">VS</span>
-
-                                        <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                            <Bandera equipo={info.equipo_visitante} className="w-9 h-9 sm:w-10 sm:h-10 drop-shadow-md" />
-                                            <span className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wide truncate max-w-full">
-                                                {info.equipo_visitante}
-                                            </span>
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                value={m.visitante}
-                                                onChange={(e) => actualizarMarcador(i, 'visitante', e.target.value)}
-                                                className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-                        {mensajeExito && (
-                            <div className="mb-3">
-                                <p className="text-green-400 text-sm mb-2">{mensajeExito}</p>
-                                <a
-                                    href={`https://wa.me/?text=${encodeURIComponent(
-                                        `¡Ya registré mi pronóstico para ${info.equipo_local} vs ${info.equipo_visitante} en la Polla Mundialista de La Retoucherie de Manuela! 🇨🇴⚽\n\nCompra tu Bono Digital y participa tú también: ${window.location.origin}/?ref=${token}`
-                                    )}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-block w-full py-3 rounded-xl font-bold text-white text-center bg-green-600 hover:bg-green-700 transition-colors"
-                                >
-                                    📲 Compartir en WhatsApp
-                                </a>
-                            </div>
-                        )}
-
-                        {/* Botón flotante en móvil, normal en desktop */}
-                        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent z-20 sm:static sm:bg-none sm:p-0">
-                            <button
-                                onClick={handleSubmit}
-                                disabled={enviando}
-                                className={`w-full max-w-md mx-auto block py-4 rounded-xl font-black text-slate-950 text-center text-base sm:text-lg bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60 ${
-                                    hayCambios && !enviando ? 'animate-pulse' : ''
-                                }`}
-                            >
-                                {enviando ? 'Guardando...' : 'Guardar pronósticos'}
-                            </button>
-                        </div>
-                    </>
                 )}
+
+                <div className="flex flex-col gap-5 mb-4">
+                    {info.partidos.map((p) => {
+                        const msRestantes = new Date(p.fecha_hora_inicio).getTime() - ahora;
+                        const cerrado = msRestantes < 1000 || p.estado_partido !== 'activo';
+                        const enUltimaHora = msRestantes > 0 && msRestantes <= UNA_HORA_MS;
+                        const m = marcadores[p.partido_id] || { local: '', visitante: '' };
+
+                        return (
+                            <div
+                                key={p.partido_id}
+                                className="relative rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-5 pt-6"
+                            >
+                                <p className="text-amber-400 font-bold text-sm mb-2 flex items-center justify-center gap-1.5 text-center">
+                                    <Bandera equipo={p.equipo_local} className="w-6 h-6" />
+                                    {p.equipo_local} vs
+                                    <Bandera equipo={p.equipo_visitante} className="w-6 h-6" />
+                                    {p.equipo_visitante}
+                                </p>
+
+                                {!cerrado && (
+                                    <div
+                                        className={`text-center font-scoreboard text-xl font-black tracking-widest bg-black rounded-lg py-1 mb-3 ${
+                                            enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'
+                                        }`}
+                                    >
+                                        {formatearTiempo(msRestantes)}
+                                    </div>
+                                )}
+
+                                {p.ya_pronosticado ? (
+                                    <div className="text-center text-zinc-300 text-sm">
+                                        <p className="mb-1">Tu pronóstico:</p>
+                                        <p className="text-2xl font-black text-lime-400 font-scoreboard">
+                                            {p.pronostico.local} - {p.pronostico.visitante}
+                                        </p>
+                                    </div>
+                                ) : cerrado ? (
+                                    <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
+                                ) : info.cupos_disponibles === 0 ? (
+                                    <div className="text-center">
+                                        <p className="text-zinc-400 text-sm mb-2">No tienes cupos disponibles para predecir este partido.</p>
+                                        <Link to="/comprar" className="text-amber-400 underline text-sm font-bold">
+                                            Recarga para predecir este partido
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={m.local}
+                                                    onChange={(e) => actualizarMarcador(p.partido_id, 'local', e.target.value)}
+                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
+                                                />
+                                            </div>
+
+                                            <span className="text-amber-400 font-black text-xl sm:text-2xl font-scoreboard">VS</span>
+
+                                            <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={m.visitante}
+                                                    onChange={(e) => actualizarMarcador(p.partido_id, 'visitante', e.target.value)}
+                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {errorPorPartido[p.partido_id] && (
+                                            <p className="text-red-400 text-sm text-center mt-3">{errorPorPartido[p.partido_id]}</p>
+                                        )}
+                                        {mensajeExitoId === p.partido_id && (
+                                            <p className="text-green-400 text-sm text-center mt-3">¡Pronóstico guardado con éxito! 🇨🇴</p>
+                                        )}
+
+                                        <button
+                                            onClick={() => handleSubmit(p)}
+                                            disabled={enviandoId === p.partido_id}
+                                            className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                                        >
+                                            {enviandoId === p.partido_id ? 'Guardando...' : 'Guardar pronóstico (1 cupo)'}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

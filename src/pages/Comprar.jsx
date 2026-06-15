@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { PLANES, formatoPesos } from '../config/planes';
+import { PLANES, CUPO_VALOR, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
@@ -25,6 +25,8 @@ export default function Comprar() {
         const planUrl = Number(searchParams.get('plan'));
         return PLANES.some((p) => p.valor === planUrl) ? planUrl : PLANES[0].valor;
     });
+    const [modoCustom, setModoCustom] = useState(false);
+    const [montoCustom, setMontoCustom] = useState('');
     const [metodoPago, setMetodoPago] = useState('wompi'); // 'wompi' | 'transferencia'
     const [form, setForm] = useState({ nombre: '', correo: '', celular: '' });
     const [comprobante, setComprobante] = useState(null);
@@ -50,6 +52,11 @@ export default function Comprar() {
 
     const partidoSeleccionado = partidos.find((p) => p.id === partidoId) ?? null;
 
+    const montoCustomNumero = Number(montoCustom) || 0;
+    const valorAPagar = modoCustom ? montoCustomNumero : planSeleccionado;
+    const cuposCustom = calcularCupos(montoCustomNumero);
+    const residuoCustom = montoCustomNumero % CUPO_VALOR;
+
     function handleChange(e) {
         setForm({ ...form, [e.target.name]: e.target.value });
     }
@@ -72,6 +79,17 @@ export default function Comprar() {
             return;
         }
 
+        if (modoCustom) {
+            if (
+                !Number.isInteger(montoCustomNumero) ||
+                montoCustomNumero < MONTO_PERSONALIZADO_MIN ||
+                montoCustomNumero > MONTO_PERSONALIZADO_MAX
+            ) {
+                setError(`Ingresa un monto entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}.`);
+                return;
+            }
+        }
+
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
 
         setCargando(true);
@@ -82,7 +100,7 @@ export default function Comprar() {
                     correo: form.correo.trim(),
                     celular: form.celular.trim(),
                     partido_id: partidoId,
-                    valor: planSeleccionado,
+                    valor: valorAPagar,
                     comprobante,
                     ref,
                 });
@@ -101,7 +119,7 @@ export default function Comprar() {
                 correo: form.correo.trim(),
                 celular: form.celular.trim(),
                 partido_id: partidoId,
-                valor: planSeleccionado,
+                valor: valorAPagar,
                 ref,
             });
 
@@ -157,18 +175,21 @@ export default function Comprar() {
                     Elige tu bono y participa en la Polla Mundialista.
                 </p>
 
-                <div className="grid grid-cols-1 gap-3 mb-6">
+                <div className="grid grid-cols-1 gap-3 mb-3">
                     {PLANES.map((plan) => (
                         <button
                             key={plan.valor}
                             type="button"
-                            onClick={() => setPlanSeleccionado(plan.valor)}
+                            onClick={() => {
+                                setModoCustom(false);
+                                setPlanSeleccionado(plan.valor);
+                            }}
                             className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
                                 plan.destacado === 'premium'
-                                    ? planSeleccionado === plan.valor
+                                    ? !modoCustom && planSeleccionado === plan.valor
                                         ? 'border-amber-400 bg-amber-400/15 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] scale-[1.02]'
                                         : 'border-amber-400/60 bg-amber-400/5 scale-[1.02]'
-                                    : planSeleccionado === plan.valor
+                                    : !modoCustom && planSeleccionado === plan.valor
                                         ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
                                         : 'border-white/10 bg-slate-900/60'
                             }`}
@@ -192,11 +213,72 @@ export default function Comprar() {
                             </div>
                         </button>
                     ))}
+
+                    <button
+                        type="button"
+                        onClick={() => setModoCustom(true)}
+                        className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
+                            modoCustom
+                                ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
+                                : 'border-white/10 bg-slate-900/60'
+                        }`}
+                    >
+                        <div className="flex justify-between items-center mt-1">
+                            <div>
+                                <p className="text-white font-bold">Ingresa tu propio monto</p>
+                                <p className="text-xs text-zinc-400">
+                                    Cada {formatoPesos(CUPO_VALOR)} = 1 cupo para predecir un partido distinto
+                                </p>
+                            </div>
+                            <span className="text-amber-400 font-bold text-sm">Otro monto</span>
+                        </div>
+
+                        {modoCustom && (
+                            <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                    type="number"
+                                    inputMode="numeric"
+                                    min={MONTO_PERSONALIZADO_MIN}
+                                    max={MONTO_PERSONALIZADO_MAX}
+                                    step={CUPO_VALOR}
+                                    value={montoCustom}
+                                    onChange={(e) => setMontoCustom(e.target.value)}
+                                    placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
+                                    className="w-full rounded-lg bg-slate-950/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                />
+                                {montoCustomNumero > 0 && (
+                                    <div className="mt-2 text-xs text-zinc-300 space-y-1">
+                                        <p>
+                                            Tu recarga equivale a{' '}
+                                            <span className="text-amber-400 font-bold">
+                                                {cuposCustom} {cuposCustom === 1 ? 'resultado' : 'resultados'}
+                                            </span>{' '}
+                                            de partidos distintos.
+                                        </p>
+                                        <p className="text-zinc-400">
+                                            Bono de servicio: {formatoPesos(calcularSaldoBono(montoCustomNumero))}
+                                        </p>
+                                        {residuoCustom > 0 && (
+                                            <p className="text-zinc-400">
+                                                Saldo sin usar para un próximo cupo: {formatoPesos(residuoCustom)}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </button>
                 </div>
+                <p className="text-zinc-400 text-xs mb-6">
+                    Tus cupos se acumulan en tu cuenta y puedes usarlos cualquier día, en cualquier partido activo.
+                </p>
 
                 {/* Selección del partido */}
                 <div className="mb-6">
-                    <p className="block text-sm text-zinc-300 mb-2">Elige el partido en el que quieres participar</p>
+                    <p className="block text-sm text-zinc-300 mb-1">Elige el partido en el que quieres participar</p>
+                    <p className="text-zinc-500 text-xs mb-2">
+                        Tus cupos se pueden usar en cualquier partido activo, no solo en este.
+                    </p>
                     <div className="flex flex-col gap-2">
                         {partidos.map((p) => {
                             const fecha = new Date(p.fecha_hora_inicio);
@@ -269,7 +351,7 @@ export default function Comprar() {
                             <li><span className="text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
                             <li><span className="text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
                             <li><span className="text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
-                            <li className="pt-1 text-amber-400 font-bold">Valor a transferir: {formatoPesos(planSeleccionado)}</li>
+                            <li className="pt-1 text-amber-400 font-bold">Valor a transferir: {formatoPesos(valorAPagar)}</li>
                         </ul>
                         <p className="text-zinc-400 text-xs mt-3">
                             Realiza la transferencia y sube la foto o captura del comprobante. Nuestro equipo la revisará y aprobará tu bono.
