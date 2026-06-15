@@ -132,16 +132,16 @@ export default function RedimirCodigo() {
 
     if (!autenticado) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 px-6">
                 <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col gap-4">
-                    <h1 className="text-2xl font-extrabold text-white text-center mb-2">Redimir bono</h1>
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white text-center mb-2">Redimir bono</h1>
                     <input
                         type="text"
                         value={usuarioInput}
                         onChange={(e) => setUsuarioInput(e.target.value)}
                         placeholder="Usuario del local"
                         autoComplete="username"
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     <input
                         type="password"
@@ -149,7 +149,7 @@ export default function RedimirCodigo() {
                         onChange={(e) => setPasswordInput(e.target.value)}
                         placeholder="Contraseña"
                         autoComplete="current-password"
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     {error && <p className="text-red-400 text-sm">{error}</p>}
                     <button
@@ -165,13 +165,13 @@ export default function RedimirCodigo() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 px-4 sm:px-6 py-8">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 px-4 sm:px-6 py-8">
             <div className="max-w-lg mx-auto">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-extrabold text-white">Redimir bono{nombreLocal ? ` · ${nombreLocal}` : ''}</h1>
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">Redimir bono{nombreLocal ? ` · ${nombreLocal}` : ''}</h1>
                     <button
                         onClick={handleSalir}
-                        className="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-zinc-300 border border-white/10"
+                        className="px-3 py-2 rounded-lg text-xs font-semibold bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10"
                     >
                         Salir
                     </button>
@@ -187,9 +187,9 @@ export default function RedimirCodigo() {
                 )}
 
                 {/* Escanear bono */}
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    <h2 className="text-lg font-bold text-white mb-3">Escanear bono</h2>
-                    <p className="text-zinc-400 text-sm mb-3">
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Escanear bono</h2>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-3">
                         Escanea el código QR del bono del cliente para verificarlo y marcarlo como usado en el local.
                     </p>
 
@@ -207,7 +207,7 @@ export default function RedimirCodigo() {
                             <EscanerQR onResultado={handleEscaneoQR} onError={setErrorEscaneo} />
                             <button
                                 onClick={() => setMostrarScanner(false)}
-                                className="self-center px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-zinc-300 border border-white/10"
+                                className="self-center px-4 py-2 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10"
                             >
                                 Cancelar
                             </button>
@@ -217,13 +217,13 @@ export default function RedimirCodigo() {
                     {errorEscaneo && <p className="text-red-400 text-sm mt-2">{errorEscaneo}</p>}
 
                     {bonoEscaneado && (
-                        <div className="mt-4 rounded-lg border border-white/10 bg-white/5 p-4">
-                            <p className="text-white font-bold mb-1">{bonoEscaneado.nombre}</p>
-                            <p className="text-zinc-400 text-sm mb-1">{bonoEscaneado.celular}</p>
-                            <p className="text-zinc-200 text-lg font-bold mb-3">{formatoPesos(bonoEscaneado.saldo_bono)}</p>
+                        <div className="mt-4 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                            <p className="text-zinc-900 dark:text-white font-bold mb-1">{bonoEscaneado.nombre}</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-1">{bonoEscaneado.celular}</p>
+                            <p className="text-zinc-700 dark:text-zinc-200 text-lg font-bold mb-3">{formatoPesos(bonoEscaneado.saldo_bono)}</p>
 
                             {bonoEscaneado.consumido ? (
-                                <p className="text-amber-400 font-semibold text-sm">
+                                <p className="text-amber-500 dark:text-amber-400 font-semibold text-sm">
                                     Este bono ya fue usado{bonoEscaneado.consumido_en ? ` el ${new Date(bonoEscaneado.consumido_en).toLocaleString('es-CO')}` : ''}.
                                 </p>
                             ) : (
@@ -239,7 +239,7 @@ export default function RedimirCodigo() {
                             <div className="mt-3">
                                 <button
                                     onClick={() => { setBonoEscaneado(null); setErrorEscaneo(''); }}
-                                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-zinc-300 border border-white/10"
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10"
                                 >
                                     Escanear otro
                                 </button>
@@ -254,9 +254,9 @@ export default function RedimirCodigo() {
 
 function Metrica({ titulo, valor }) {
     return (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-xs text-zinc-400 mb-1">{titulo}</p>
-            <p className="text-xl font-bold text-white">{valor}</p>
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{titulo}</p>
+            <p className="text-xl font-bold text-zinc-900 dark:text-white">{valor}</p>
         </div>
     );
 }

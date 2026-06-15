@@ -277,16 +277,16 @@ export default function Admin() {
 
     if (!autenticado) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 px-6">
                 <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col gap-4">
-                    <h1 className="text-2xl font-extrabold text-white text-center mb-2">Panel Admin</h1>
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white text-center mb-2">Panel Admin</h1>
                     <input
                         type="text"
                         value={usuarioInput}
                         onChange={(e) => setUsuarioInput(e.target.value)}
                         placeholder="Usuario"
                         autoComplete="username"
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     <input
                         type="password"
@@ -294,7 +294,7 @@ export default function Admin() {
                         onChange={(e) => setPasswordInput(e.target.value)}
                         placeholder="Contraseña"
                         autoComplete="current-password"
-                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     {error && <p className="text-red-400 text-sm">{error}</p>}
                     <button
@@ -326,9 +326,9 @@ export default function Admin() {
         });
 
     return (
-        <div className="min-h-screen bg-zinc-950 px-4 sm:px-6 py-8">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 px-4 sm:px-6 py-8">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-2xl font-extrabold text-white mb-6">Panel Admin - Polla Mundialista</h1>
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-6">Panel Admin - Polla Mundialista</h1>
 
                 {/* Menú de secciones */}
                 <div className="flex gap-2 mb-6 flex-wrap">
@@ -337,7 +337,7 @@ export default function Admin() {
                             key={s.id}
                             onClick={() => setSeccionActiva(s.id)}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
-                                seccionActiva === s.id ? 'bg-amber-400 text-zinc-950' : 'bg-white/5 text-zinc-300 border border-white/10'
+                                seccionActiva === s.id ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10'
                             }`}
                         >
                             {s.label}
@@ -347,13 +347,13 @@ export default function Admin() {
 
                 {/* Simulador de ingresos (solo admin) */}
                 {seccionActiva === 'simulador' && (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
-                    <h2 className="text-lg font-bold text-white mb-1">Simulador de ingresos</h2>
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Simulador de ingresos</h2>
 
                     {errorSimulador && <p className="text-red-400 text-sm">{errorSimulador}</p>}
 
                     {!metricasSimulador && !errorSimulador && (
-                        <p className="text-zinc-400 text-sm">Cargando datos del simulador...</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">Cargando datos del simulador...</p>
                     )}
 
                     {metricasSimulador && (() => {
@@ -369,15 +369,15 @@ export default function Admin() {
 
                         return (
                             <>
-                                <p className="text-xs text-zinc-400 mb-4">
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
                                     Meta: {formatoPesos(META_INGRESOS)} antes del {fechaMetaTexto} · Faltan {metricasSimulador.diasRestantes} días ·
                                     {' '}Ingresos actuales: {formatoPesos(metricasSimulador.ingresosActuales)} ·
                                     {' '}Clics ManyChat/día (prom.): {metricasSimulador.clicsDiariosPromedio.toFixed(1)} ·
                                     {' '}Tasa de rebote checkout (30 días): {(metricasSimulador.checkout.tasaRebote * 100).toFixed(1)}%
                                 </p>
 
-                                <label className="block text-sm text-zinc-300 mb-2">
-                                    Precio del bono a simular: <span className="font-bold text-amber-400">{formatoPesos(precioSimulado)}</span>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-2">
+                                    Precio del bono a simular: <span className="font-bold text-amber-500 dark:text-amber-400">{formatoPesos(precioSimulado)}</span>
                                 </label>
                                 <input
                                     type="range"
@@ -401,7 +401,7 @@ export default function Admin() {
                                         ✅ A {formatoPesos(precioSimulado)} y al ritmo actual de clics, se alcanzaría la meta de {formatoPesos(META_INGRESOS)} para el {fechaMetaTexto}.
                                     </p>
                                 ) : (
-                                    <p className="text-amber-400 text-sm font-bold">
+                                    <p className="text-amber-500 dark:text-amber-400 text-sm font-bold">
                                         ⚠️ A {formatoPesos(precioSimulado)} faltarían {formatoPesos(Math.round(proyeccion.faltante))} para la meta. Ajusta el precio (más bajo = más conversión, más alto = más margen) y revisa el resultado.
                                     </p>
                                 )}
@@ -414,28 +414,28 @@ export default function Admin() {
                 {/* Partidos: crear, editar y notificar recompra */}
                 {seccionActiva === 'partidos' && (
                 <>
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
-                    <h2 className="text-lg font-bold text-white mb-3">Crear partido</h2>
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Crear partido</h2>
                     <form onSubmit={handleCrearPartido} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <input
                             type="text"
                             value={nuevoPartido.equipo_local}
                             onChange={(e) => setNuevoPartido((p) => ({ ...p, equipo_local: e.target.value }))}
                             placeholder="Equipo local"
-                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                         <input
                             type="text"
                             value={nuevoPartido.equipo_visitante}
                             onChange={(e) => setNuevoPartido((p) => ({ ...p, equipo_visitante: e.target.value }))}
                             placeholder="Equipo visitante"
-                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                         <input
                             type="datetime-local"
                             value={nuevoPartido.fecha_hora_inicio}
                             onChange={(e) => setNuevoPartido((p) => ({ ...p, fecha_hora_inicio: e.target.value }))}
-                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                         <button
                             type="submit"
@@ -448,9 +448,9 @@ export default function Admin() {
                     {errorPartido && <p className="text-red-400 text-sm mt-2">{errorPartido}</p>}
 
                     {partidos.length > 0 && (
-                        <div className="mt-4 overflow-x-auto rounded-lg border border-white/10">
+                        <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 dark:border-white/10">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-white/5 text-zinc-400">
+                                <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
                                     <tr>
                                         <th className="px-3 py-2">Partido</th>
                                         <th className="px-3 py-2">Fecha</th>
@@ -463,15 +463,15 @@ export default function Admin() {
                                     {partidos.map((p) => {
                                         const editando = editandoPartido === p.id;
                                         return (
-                                            <tr key={p.id} className="border-t border-white/5 text-zinc-200">
+                                            <tr key={p.id} className="border-t border-zinc-100 dark:border-white/5 text-zinc-700 dark:text-zinc-200">
                                                 <td className="px-3 py-2">{p.equipo_local} vs {p.equipo_visitante}</td>
-                                                <td className="px-3 py-2 text-zinc-400">
+                                                <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">
                                                     {editando ? (
                                                         <input
                                                             type="datetime-local"
                                                             value={edicionPartido.fecha_hora_inicio}
                                                             onChange={(e) => setEdicionPartido((ed) => ({ ...ed, fecha_hora_inicio: e.target.value }))}
-                                                            className="rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                                                         />
                                                     ) : (
                                                         new Date(p.fecha_hora_inicio).toLocaleString('es-CO')
@@ -484,14 +484,14 @@ export default function Admin() {
                                                                 type="number"
                                                                 value={edicionPartido.goles_local}
                                                                 onChange={(e) => setEdicionPartido((ed) => ({ ...ed, goles_local: e.target.value }))}
-                                                                className="w-14 rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                                className="w-14 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                                                             />
                                                             <span>-</span>
                                                             <input
                                                                 type="number"
                                                                 value={edicionPartido.goles_visitante}
                                                                 onChange={(e) => setEdicionPartido((ed) => ({ ...ed, goles_visitante: e.target.value }))}
-                                                                className="w-14 rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                                className="w-14 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                                                             />
                                                         </div>
                                                     ) : (
@@ -503,7 +503,7 @@ export default function Admin() {
                                                         <select
                                                             value={edicionPartido.estado}
                                                             onChange={(e) => setEdicionPartido((ed) => ({ ...ed, estado: e.target.value }))}
-                                                            className="rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                                                         >
                                                             <option value="activo">activo</option>
                                                             <option value="cerrado">cerrado</option>
@@ -525,7 +525,7 @@ export default function Admin() {
                                                                 </button>
                                                                 <button
                                                                     onClick={handleCancelarEdicionPartido}
-                                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-white/10 text-zinc-300 hover:bg-white/20"
+                                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-200 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/20"
                                                                 >
                                                                     Cancelar
                                                                 </button>
@@ -558,9 +558,9 @@ export default function Admin() {
                 </div>
 
                 {/* Notificar recompra */}
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
-                    <h2 className="text-lg font-bold text-white mb-3">Notificar recompra para el siguiente partido</h2>
-                    <p className="text-zinc-400 text-sm mb-3">
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Notificar recompra para el siguiente partido</h2>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-3">
                         Envía un correo a quienes compraron bono para el partido de origen, invitándolos a comprar
                         su bono para el partido de destino.
                     </p>
@@ -568,7 +568,7 @@ export default function Admin() {
                         <select
                             value={recompra.origen}
                             onChange={(e) => setRecompra((r) => ({ ...r, origen: e.target.value }))}
-                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                         >
                             <option value="">Partido de origen</option>
                             {partidos.map((p) => (
@@ -578,7 +578,7 @@ export default function Admin() {
                         <select
                             value={recompra.destino}
                             onChange={(e) => setRecompra((r) => ({ ...r, destino: e.target.value }))}
-                            className="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
                         >
                             <option value="">Partido de destino</option>
                             {partidos.map((p) => (
@@ -593,7 +593,7 @@ export default function Admin() {
                             {enviandoRecompra ? 'Enviando...' : 'Notificar'}
                         </button>
                     </form>
-                    {resultadoRecompra && <p className="text-zinc-300 text-sm mt-2">{resultadoRecompra}</p>}
+                    {resultadoRecompra && <p className="text-zinc-600 dark:text-zinc-300 text-sm mt-2">{resultadoRecompra}</p>}
                 </div>
                 </>
                 )}
@@ -617,7 +617,7 @@ export default function Admin() {
                                 key={f}
                                 onClick={() => setFiltro(f)}
                                 className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                                    filtro === f ? 'bg-amber-400 text-zinc-950' : 'bg-white/5 text-zinc-300 border border-white/10'
+                                    filtro === f ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10'
                                 }`}
                             >
                                 {f}
@@ -629,11 +629,11 @@ export default function Admin() {
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.target.value)}
                         placeholder="Buscar por nombre, correo o celular..."
-                        className="flex-1 rounded-lg bg-white/5 border border-white/10 px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="flex-1 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     <button
                         onClick={() => cargarDatos(token)}
-                        className="px-4 py-2 rounded-lg text-sm font-semibold bg-white/5 text-zinc-300 border border-white/10"
+                        className="px-4 py-2 rounded-lg text-sm font-semibold bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10"
                     >
                         Refrescar
                     </button>
@@ -642,9 +642,9 @@ export default function Admin() {
                 {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
                 {/* Tabla */}
-                <div className="overflow-x-auto rounded-xl border border-white/10">
+                <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-white/5 text-zinc-400">
+                        <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
                             <tr>
                                 <th className="px-4 py-3">Cliente</th>
                                 <th className="px-4 py-3">Contacto</th>
@@ -657,9 +657,9 @@ export default function Admin() {
                         </thead>
                         <tbody>
                             {listaFiltrada.map((t) => (
-                                <tr key={t.id} className="border-t border-white/5 text-zinc-200">
+                                <tr key={t.id} className="border-t border-zinc-100 dark:border-white/5 text-zinc-700 dark:text-zinc-200">
                                     <td className="px-4 py-3">{t.nombre}</td>
-                                    <td className="px-4 py-3 text-zinc-400">
+                                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                                         {t.correo}<br />{t.celular}
                                     </td>
                                     <td className="px-4 py-3">{formatoPesos(t.valorPagado)}</td>
@@ -673,7 +673,7 @@ export default function Admin() {
                                             {t.estado}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 text-zinc-400">{new Date(t.fecha).toLocaleString('es-CO')}</td>
+                                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">{new Date(t.fecha).toLocaleString('es-CO')}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex gap-2 flex-wrap">
                                             {t.tieneComprobante && (
@@ -706,7 +706,7 @@ export default function Admin() {
                             ))}
                             {listaFiltrada.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="px-4 py-6 text-center text-zinc-500">
+                                    <td colSpan={7} className="px-4 py-6 text-center text-zinc-400 dark:text-zinc-500">
                                         No hay transacciones para mostrar.
                                     </td>
                                 </tr>
@@ -723,9 +723,9 @@ export default function Admin() {
 
 function Metrica({ titulo, valor }) {
     return (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-xs text-zinc-400 mb-1">{titulo}</p>
-            <p className="text-xl font-bold text-white">{valor}</p>
+        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{titulo}</p>
+            <p className="text-xl font-bold text-zinc-900 dark:text-white">{valor}</p>
         </div>
     );
 }

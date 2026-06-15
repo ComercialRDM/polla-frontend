@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function Anexo() {
     return (
-        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -10,22 +10,22 @@ export default function Anexo() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                <Link to="/terminos" className="text-zinc-400 text-sm hover:text-white">&larr; Volver a Términos y Condiciones</Link>
+                <Link to="/terminos" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver a Términos y Condiciones</Link>
 
-                <h1 className="text-2xl font-extrabold text-white mt-4 mb-1">
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">
                     Anexo 1 — Calendario de Partidos e Incentivos Comerciales
                 </h1>
-                <p className="text-zinc-500 text-xs mb-6">Versión 1.0 — 15 de junio de 2026</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-6">Versión 1.0 — 15 de junio de 2026</p>
 
-                <div className="flex flex-col gap-4 text-zinc-300 text-sm">
+                <div className="flex flex-col gap-4 text-zinc-600 dark:text-zinc-300 text-sm">
                     <p>
                         Este Anexo hace parte integral de los{' '}
-                        <Link to="/terminos" className="text-amber-400 underline">Términos y Condiciones</Link> de la
+                        <Link to="/terminos" className="text-amber-500 dark:text-amber-400 underline">Términos y Condiciones</Link> de la
                         actividad comercial "Gana con Retoucherie", operada por RDM MASTER COLOMBIA SAS
                         (NIT 901.765.354-3).
                     </p>
 
-                    <h2 className="text-white font-bold text-base mt-2">1. Calendario de partidos</h2>
+                    <h2 className="text-zinc-900 dark:text-white font-bold text-base mt-2">1. Calendario de partidos</h2>
                     <p>
                         El calendario de partidos de la Selección Colombia habilitados para el Concurso de Habilidad,
                         así como sus fechas y horas de inicio (kick-off), se publican y administran de forma dinámica
@@ -33,15 +33,15 @@ export default function Anexo() {
                         "Polla" antes del inicio de cada partido.
                     </p>
 
-                    <h2 className="text-white font-bold text-base mt-2">2. Tabla de incentivos comerciales</h2>
-                    <table className="w-full text-left text-xs border border-white/10 rounded-lg overflow-hidden">
-                        <thead className="bg-white/5 text-zinc-400">
+                    <h2 className="text-zinc-900 dark:text-white font-bold text-base mt-2">2. Tabla de incentivos comerciales</h2>
+                    <table className="w-full text-left text-xs border border-zinc-200 dark:border-white/10 rounded-lg overflow-hidden">
+                        <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
                             <tr>
                                 <th className="p-2">Concepto</th>
                                 <th className="p-2">Incentivo</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/10">
+                        <tbody className="divide-y divide-zinc-200 dark:divide-white/10">
                             <tr>
                                 <td className="p-2">Marcador exacto acertado (partido de fase regular)</td>
                                 <td className="p-2">100 puntos</td>
@@ -76,7 +76,7 @@ export default function Anexo() {
                         Participante que primero haya registrado el pronóstico que generó el puntaje en disputa.
                     </p>
 
-                    <h2 className="text-white font-bold text-base mt-2">3. Procedimiento de reclamación de incentivos</h2>
+                    <h2 className="text-zinc-900 dark:text-white font-bold text-base mt-2">3. Procedimiento de reclamación de incentivos</h2>
                     <p>
                         Una vez finalizado el partido o el Mundial, según corresponda, y verificado el Participante
                         ganador, el Operador intentará contactarlo a través de los datos de contacto registrados en el

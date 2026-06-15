@@ -16,7 +16,7 @@ export default function Bandera({ equipo, className = 'w-6 h-6' }) {
             src={`https://flagcdn.com/w40/${codigo}.png`}
             alt={equipo}
             title={equipo}
-            className={`inline-block rounded-full object-cover border border-white/20 ${className}`}
+            className={`inline-block rounded-full object-cover border border-zinc-200 dark:border-white/20 ${className}`}
         />
     );
 }

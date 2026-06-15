@@ -14,6 +14,9 @@ import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Anexo from './pages/Anexo';
 import BotonWhatsApp from './components/BotonWhatsApp';
+import InstalarApp from './components/InstalarApp';
+import ThemeToggle from './components/ThemeToggle';
+import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
 
 const SPLASH_KEY = 'polla_splash_visto';
@@ -38,6 +41,7 @@ function RutaProtegida({ children }) {
 
 export default function App() {
     const [mostrarSplash, setMostrarSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
+    const [mostrarInstalarApp, setMostrarInstalarApp] = useState(false);
 
     function cerrarSplash() {
         sessionStorage.setItem(SPLASH_KEY, '1');
@@ -45,27 +49,35 @@ export default function App() {
     }
 
     if (mostrarSplash) {
-        return <Splash onFinish={cerrarSplash} />;
+        return (
+            <ThemeProvider>
+                <Splash onFinish={cerrarSplash} />
+            </ThemeProvider>
+        );
     }
 
     return (
-        <BrowserRouter>
-            <CapturarRef />
-            <Routes>
-                <Route path="/" element={<RutaProtegida><Home /></RutaProtegida>} />
-                <Route path="/comprar" element={<RutaProtegida><Comprar /></RutaProtegida>} />
-                <Route path="/registro" element={<Registro />} />
-                <Route path="/iniciar-sesion" element={<IniciarSesion />} />
-                <Route path="/recuperar-password" element={<RecuperarPassword />} />
-                <Route path="/ingresar" element={<Ingresar />} />
-                <Route path="/polla" element={<Polla />} />
-                <Route path="/terminos" element={<Terminos />} />
-                <Route path="/privacidad" element={<Privacidad />} />
-                <Route path="/anexo" element={<Anexo />} />
-                <Route path="/dashboardpollardm" element={<Admin />} />
-                <Route path="/redimircodigordm" element={<RedimirCodigo />} />
-            </Routes>
-            <BotonWhatsApp />
-        </BrowserRouter>
+        <ThemeProvider>
+            <BrowserRouter>
+                <CapturarRef />
+                <Routes>
+                    <Route path="/" element={<RutaProtegida><Home /></RutaProtegida>} />
+                    <Route path="/comprar" element={<RutaProtegida><Comprar /></RutaProtegida>} />
+                    <Route path="/registro" element={<Registro />} />
+                    <Route path="/iniciar-sesion" element={<IniciarSesion />} />
+                    <Route path="/recuperar-password" element={<RecuperarPassword />} />
+                    <Route path="/ingresar" element={<Ingresar />} />
+                    <Route path="/polla" element={<Polla />} />
+                    <Route path="/terminos" element={<Terminos />} />
+                    <Route path="/privacidad" element={<Privacidad />} />
+                    <Route path="/anexo" element={<Anexo />} />
+                    <Route path="/dashboardpollardm" element={<Admin />} />
+                    <Route path="/redimircodigordm" element={<RedimirCodigo />} />
+                </Routes>
+                <BotonWhatsApp desplazado={mostrarInstalarApp} />
+                <InstalarApp onVisibleChange={setMostrarInstalarApp} />
+                <ThemeToggle />
+            </BrowserRouter>
+        </ThemeProvider>
     );
 }

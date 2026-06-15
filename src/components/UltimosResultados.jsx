@@ -29,7 +29,7 @@ export default function UltimosResultados() {
 
     return (
         <div className="w-full max-w-md px-6 mt-6 relative z-10">
-            <h2 className="text-white font-black text-lg mb-3">Resultados recientes</h2>
+            <h2 className="text-zinc-900 dark:text-white font-black text-lg mb-3">Resultados recientes</h2>
             <div className="flex flex-col gap-2">
                 {partidos.map((partido) => {
                     const inicio = new Date(partido.fecha_hora_inicio);
@@ -39,12 +39,12 @@ export default function UltimosResultados() {
                     return (
                         <div
                             key={partido.id}
-                            className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4"
+                            className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4"
                         >
                             <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2 flex-1 min-w-0">
                                     <Bandera equipo={partido.equipo_local} className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-white font-bold text-sm truncate">{partido.equipo_local}</span>
+                                    <span className="text-zinc-900 dark:text-white font-bold text-sm truncate">{partido.equipo_local}</span>
                                 </div>
 
                                 <div className="flex flex-col items-center px-2">
@@ -53,21 +53,21 @@ export default function UltimosResultados() {
                                             ● En vivo
                                         </span>
                                     ) : finalizado ? (
-                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wide mb-1">
+                                        <span className="text-[10px] font-black text-zinc-400 dark:text-zinc-400 uppercase tracking-wide mb-1">
                                             Finalizado
                                         </span>
                                     ) : (
-                                        <span className="text-[10px] font-black text-amber-400 uppercase tracking-wide mb-1">
+                                        <span className="text-[10px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-wide mb-1">
                                             Próximo
                                         </span>
                                     )}
 
                                     {enVivo || finalizado ? (
-                                        <span className="font-scoreboard text-xl font-black text-amber-400">
+                                        <span className="font-scoreboard text-xl font-black text-amber-500 dark:text-amber-400">
                                             {partido.goles_local} - {partido.goles_visitante}
                                         </span>
                                     ) : (
-                                        <span className="text-xs text-zinc-400 whitespace-nowrap">
+                                        <span className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                                             {formatearFecha(partido.fecha_hora_inicio)}
                                         </span>
                                     )}
@@ -75,7 +75,7 @@ export default function UltimosResultados() {
 
                                 <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
                                     <Bandera equipo={partido.equipo_visitante} className="w-7 h-7 flex-shrink-0" />
-                                    <span className="text-white font-bold text-sm truncate">{partido.equipo_visitante}</span>
+                                    <span className="text-zinc-900 dark:text-white font-bold text-sm truncate">{partido.equipo_visitante}</span>
                                 </div>
                             </div>
                         </div>

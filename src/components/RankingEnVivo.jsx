@@ -57,9 +57,9 @@ export default function RankingEnVivo({ partidoId }) {
     if (!ranking || !ranking.marcador) return null;
 
     return (
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-4 sm:p-5 mb-6">
+        <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.12)] backdrop-blur-lg p-4 sm:p-5 mb-6">
             <div className="flex items-center justify-between mb-3">
-                <h2 className="text-white font-black text-base sm:text-lg flex items-center gap-2">
+                <h2 className="text-zinc-900 dark:text-white font-black text-base sm:text-lg flex items-center gap-2">
                     🏆 Ranking en Vivo
                 </h2>
                 <span className="font-scoreboard text-lime-400 neon-green bg-black rounded-md px-3 py-1 text-sm font-bold border border-white/10">
@@ -68,7 +68,7 @@ export default function RankingEnVivo({ partidoId }) {
             </div>
 
             {ranking.ganadores.length === 0 ? (
-                <p className="text-zinc-400 text-sm text-center py-4">
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm text-center py-4">
                     Nadie ha acertado el marcador todavía. ¡Puedes ser el primero! 🍀
                 </p>
             ) : (
@@ -76,18 +76,18 @@ export default function RankingEnVivo({ partidoId }) {
                     {ranking.ganadores.map((g) => (
                         <div
                             key={`${g.usuario_id}-${g.posicion}`}
-                            className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/5 px-3 py-2"
+                            className="flex items-center gap-3 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/5 px-3 py-2"
                         >
                             <span
                                 className={`flex items-center justify-center w-8 h-8 rounded-full font-black text-sm shrink-0 ${
-                                    MEDALLAS[g.posicion - 1] || 'bg-white/10 text-white'
+                                    MEDALLAS[g.posicion - 1] || 'bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-white'
                                 }`}
                             >
                                 {g.posicion <= 3 ? ['🥇', '🥈', '🥉'][g.posicion - 1] : g.posicion}
                             </span>
                             <div className="flex-1 min-w-0">
-                                <p className="text-white font-semibold text-sm truncate">{enmascarar(g.nombre)}</p>
-                                <p className="text-zinc-400 text-xs flex items-center gap-1">
+                                <p className="text-zinc-900 dark:text-white font-semibold text-sm truncate">{enmascarar(g.nombre)}</p>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-xs flex items-center gap-1">
                                     🕐 {tiempoRelativo(g.fecha_registro)}
                                 </p>
                             </div>

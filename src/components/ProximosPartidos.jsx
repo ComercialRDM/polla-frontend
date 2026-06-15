@@ -19,10 +19,10 @@ export default function ProximosPartidos() {
 
     return (
         <div className="w-full max-w-md px-6 mt-6 relative z-10">
-            <h2 className="text-center text-white font-black text-xl mb-1">
+            <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-1">
                 ⚽ Próximos partidos
             </h2>
-            <p className="text-center text-zinc-400 text-sm mb-4">
+            <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                 Elige un partido, compra tu bono y juega tu pronóstico 🔥
             </p>
 
@@ -34,23 +34,23 @@ export default function ProximosPartidos() {
                     <Link
                         key={p.id}
                         to={`/comprar?partido=${p.id}`}
-                        className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 active:scale-95 hover:border-amber-400/40 transition-all"
+                        className="flex flex-col gap-2 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 active:scale-95 hover:border-amber-400/40 transition-all"
                     >
                         <div className="flex justify-center items-baseline gap-1.5">
-                            <span className="text-amber-400 text-xs font-bold">
+                            <span className="text-amber-500 dark:text-amber-400 text-xs font-bold">
                                 {fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
                             </span>
-                            <span className="text-zinc-400 text-[10px]">
+                            <span className="text-zinc-400 dark:text-zinc-400 text-[10px]">
                                 {fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
                                 {esHoy ? ' (Hoy)' : ''}
                             </span>
                         </div>
                         <div className="flex items-center justify-center gap-2">
                             <Bandera equipo={p.equipo_local} className="w-6 h-6 flex-shrink-0" />
-                            <span className="text-white font-bold text-sm truncate max-w-[34%]">{p.equipo_local}</span>
-                            <span className="text-zinc-500 text-xs font-semibold flex-shrink-0">vs</span>
+                            <span className="text-zinc-900 dark:text-white font-bold text-sm truncate max-w-[34%]">{p.equipo_local}</span>
+                            <span className="text-zinc-400 dark:text-zinc-500 text-xs font-semibold flex-shrink-0">vs</span>
                             <Bandera equipo={p.equipo_visitante} className="w-6 h-6 flex-shrink-0" />
-                            <span className="text-white font-bold text-sm truncate max-w-[34%]">{p.equipo_visitante}</span>
+                            <span className="text-zinc-900 dark:text-white font-bold text-sm truncate max-w-[34%]">{p.equipo_visitante}</span>
                         </div>
                     </Link>
                     );

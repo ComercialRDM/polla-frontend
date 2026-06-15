@@ -40,12 +40,12 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
     if (!editando) {
         return (
             <>
-                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 mb-6">
+                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 mb-6">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-white font-bold text-sm">⭐ Tus equipos favoritos:</span>
+                            <span className="text-zinc-900 dark:text-white font-bold text-sm">⭐ Tus equipos favoritos:</span>
                             {seleccionados.map((equipo) => (
-                                <span key={equipo} className="inline-flex items-center gap-1 bg-white/5 border border-white/10 rounded-full px-2 py-0.5 text-xs text-zinc-200">
+                                <span key={equipo} className="inline-flex items-center gap-1 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-full px-2 py-0.5 text-xs text-zinc-700 dark:text-zinc-200">
                                     <Bandera equipo={equipo} className="w-4 h-4" />
                                     {equipo}
                                 </span>
@@ -53,7 +53,7 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
                         </div>
                         <button
                             onClick={() => setEditando(true)}
-                            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 border border-amber-400/30 hover:bg-amber-400/10 transition-colors"
+                            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-500 dark:text-amber-400 border border-amber-400/30 hover:bg-amber-400/10 transition-colors"
                         >
                             Editar
                         </button>
@@ -66,9 +66,9 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
     }
 
     return (
-        <div className="rounded-2xl border border-amber-400/20 bg-slate-900/60 backdrop-blur-lg p-4 mb-6">
-            <p className="text-white font-bold text-sm mb-1">⭐ Elige tus equipos favoritos</p>
-            <p className="text-zinc-400 text-xs mb-3">
+        <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 mb-6">
+            <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">⭐ Elige tus equipos favoritos</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
                 Opcional: selecciona hasta {MAX_EQUIPOS_FAVORITOS} equipos para personalizar tu experiencia ({seleccionados.length}/{MAX_EQUIPOS_FAVORITOS}).
             </p>
 
@@ -81,8 +81,8 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
                             onClick={() => toggleEquipo(equipo)}
                             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors ${
                                 activo
-                                    ? 'bg-amber-400/20 border-amber-400 text-amber-400'
-                                    : 'bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10'
+                                    ? 'bg-amber-400/20 border-amber-400 text-amber-600 dark:text-amber-400'
+                                    : 'bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10'
                             }`}
                         >
                             <Bandera equipo={equipo} className="w-4 h-4" />
@@ -109,7 +109,7 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
                             setError('');
                             setEditando(false);
                         }}
-                        className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white text-center border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                        className="flex-1 py-2.5 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
                     >
                         Cancelar
                     </button>

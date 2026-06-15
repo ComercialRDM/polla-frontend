@@ -22,7 +22,7 @@ export default function Splash({ onFinish }) {
     }, [onFinish]);
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-center px-6 py-10 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-gradient-to-br from-white via-zinc-100 to-white dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 text-center px-6 py-10 overflow-y-auto">
             {/* Franja tricolor superior */}
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
@@ -35,12 +35,12 @@ export default function Splash({ onFinish }) {
                     LM
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
-                    Compra tu <span className="text-amber-400">Bono Digital</span> y participa GRATIS en la Polla Mundialista
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white leading-tight">
+                    Compra tu <span className="text-amber-500 dark:text-amber-400">Bono Digital</span> y participa GRATIS en la Polla Mundialista
                 </h1>
 
-                <p className="text-zinc-300 text-sm sm:text-base">
-                    <span className="font-semibold text-white">La Retoucherie de Manuela</span> te regala intentos para predecir el marcador de la Selección Colombia 🇨🇴
+                <p className="text-zinc-600 dark:text-zinc-300 text-sm sm:text-base">
+                    <span className="font-semibold text-zinc-900 dark:text-white">La Retoucherie de Manuela</span> te regala intentos para predecir el marcador de la Selección Colombia 🇨🇴
                     {' '}por cada Bono Digital que compres para tus servicios de belleza. Si aciertas, ganas premios.
                 </p>
 
@@ -51,7 +51,7 @@ export default function Splash({ onFinish }) {
                             className={`relative rounded-xl border p-4 flex flex-col items-center gap-1 backdrop-blur-sm ${
                                 plan.destacado === 'premium'
                                     ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 scale-105'
-                                    : 'border-amber-400/30 bg-white/5'
+                                    : 'border-amber-400/30 bg-zinc-100 dark:bg-white/5'
                             }`}
                         >
                             {plan.destacado === 'popular' && (
@@ -64,20 +64,20 @@ export default function Splash({ onFinish }) {
                                     🏆 Mejor valor
                                 </span>
                             )}
-                            <span className="text-xs text-zinc-400 mt-2">Pagas {formatoPesos(plan.valor)}</span>
-                            <span className="text-xl font-bold text-amber-400">{formatoPesos(plan.saldoBono)}</span>
-                            <span className="text-xs text-zinc-300">en bono + {plan.etiqueta}</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">Pagas {formatoPesos(plan.valor)}</span>
+                            <span className="text-xl font-bold text-amber-500 dark:text-amber-400">{formatoPesos(plan.saldoBono)}</span>
+                            <span className="text-xs text-zinc-600 dark:text-zinc-300">en bono + {plan.etiqueta}</span>
                         </div>
                     ))}
                 </div>
 
-                <p className="text-xs text-zinc-500 mt-2">
+                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-2">
                     Premios para quienes adivinen el marcador exacto del partido 🏆
                 </p>
             </div>
 
             <div className="w-full max-w-md flex flex-col items-center gap-3">
-                <div className="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
                     <div
                         className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-75"
                         style={{ width: `${progreso}%` }}
@@ -85,7 +85,7 @@ export default function Splash({ onFinish }) {
                 </div>
                 <button
                     onClick={onFinish}
-                    className="w-full py-3 rounded-xl font-bold text-center text-white border border-white/15 bg-white/5 backdrop-blur-sm active:scale-95 transition-transform"
+                    className="w-full py-3 rounded-xl font-bold text-center text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 backdrop-blur-sm active:scale-95 transition-transform"
                 >
                     Entrar ahora →
                 </button>

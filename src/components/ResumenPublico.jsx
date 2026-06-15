@@ -23,16 +23,16 @@ export default function ResumenPublico() {
 
     return (
         <div className="w-full max-w-md px-6 mt-6 relative z-10">
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 text-center">
-                <p className="text-white font-bold text-sm mb-1">
+            <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 text-center">
+                <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">
                     🔥 {resumen.totalParticipantes} {resumen.totalParticipantes === 1 ? 'persona ya compró' : 'personas ya compraron'} su bono
                 </p>
                 {resumen.top.length > 0 && (
-                    <div className="mt-2 text-xs text-zinc-400">
+                    <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                         <p className="mb-1">Van acertando el marcador exacto:</p>
                         <ul className="flex flex-col gap-0.5">
                             {resumen.top.map((g) => (
-                                <li key={g.posicion} className="text-zinc-300">
+                                <li key={g.posicion} className="text-zinc-600 dark:text-zinc-300">
                                     {g.posicion}. {g.nombre}
                                 </li>
                             ))}

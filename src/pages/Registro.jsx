@@ -122,7 +122,7 @@ export default function Registro() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -130,10 +130,10 @@ export default function Registro() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                <h1 className="text-2xl font-extrabold text-white mb-1">
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
                     {paso === 1 ? '¡Bienvenido! 🇨🇴' : paso === 2 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
                 </h1>
-                <p className="text-zinc-400 text-sm mb-6">
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     {paso === 1
                         ? 'Crea tu cuenta para participar en la Polla Mundialista de La Retoucherie.'
                         : paso === 2
@@ -148,68 +148,68 @@ export default function Registro() {
                                 <GoogleButton onCredential={handleCredencialGoogle} />
 
                                 <div className="flex items-center gap-3">
-                                    <div className="flex-1 h-px bg-white/10" />
-                                    <span className="text-zinc-500 text-xs uppercase">o</span>
-                                    <div className="flex-1 h-px bg-white/10" />
+                                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
+                                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
                                 </div>
                             </>
                         )}
 
                         {modoGoogle && (
-                            <p className="text-zinc-400 text-sm">
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
                                 Continuando con tu cuenta de Google{correoGoogle ? ` (${correoGoogle})` : ''}. Solo falta tu celular.
                             </p>
                         )}
 
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Número de celular</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
                             <input
                                 type="tel"
                                 value={celular}
                                 onChange={(e) => setCelular(e.target.value)}
                                 placeholder="Ej: 3001234567"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
 
                         {!modoGoogle && (
                         <>
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Nombre completo</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                             <input
                                 type="text"
                                 value={nombre}
                                 onChange={(e) => setNombre(e.target.value)}
                                 placeholder="Tu nombre completo"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Contraseña</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Contraseña</label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Mínimo 6 caracteres"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Confirmar contraseña</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Confirmar contraseña</label>
                             <input
                                 type="password"
                                 value={confirmarPassword}
                                 onChange={(e) => setConfirmarPassword(e.target.value)}
                                 placeholder="Repite tu contraseña"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
                         </>
                         )}
 
-                        <label className="flex items-start gap-2 text-zinc-400 text-xs">
+                        <label className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400 text-xs">
                             <input
                                 type="checkbox"
                                 checked={aceptaTerminos}
@@ -218,11 +218,11 @@ export default function Registro() {
                             />
                             <span>
                                 Acepto los{' '}
-                                <Link to="/terminos" target="_blank" className="text-amber-400 underline">
+                                <Link to="/terminos" target="_blank" className="text-amber-500 dark:text-amber-400 underline">
                                     Términos y Condiciones
                                 </Link>{' '}
                                 y la{' '}
-                                <Link to="/privacidad" target="_blank" className="text-amber-400 underline">
+                                <Link to="/privacidad" target="_blank" className="text-amber-500 dark:text-amber-400 underline">
                                     Política de Privacidad y Tratamiento de Datos Personales
                                 </Link>
                                 .
@@ -238,9 +238,9 @@ export default function Registro() {
                             Continuar
                         </button>
 
-                        <p className="text-center text-zinc-400 text-sm">
+                        <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
                             ¿Ya tienes cuenta?{' '}
-                            <Link to="/iniciar-sesion" className="text-amber-400 font-semibold underline">
+                            <Link to="/iniciar-sesion" className="text-amber-500 dark:text-amber-400 font-semibold underline">
                                 Inicia sesión
                             </Link>
                         </p>
@@ -255,7 +255,7 @@ export default function Registro() {
                             <button
                                 type="button"
                                 onClick={() => setPaso(1)}
-                                className="flex-1 py-3 rounded-xl font-bold text-white text-center border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                                className="flex-1 py-3 rounded-xl font-bold text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
                             >
                                 Atrás
                             </button>

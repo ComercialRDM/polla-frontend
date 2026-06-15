@@ -50,11 +50,11 @@ export default function CountdownPartido({ partido: partidoProp } = {}) {
 
     return (
         <div className={`rounded-2xl border p-4 mb-6 text-center backdrop-blur-lg ${
-            enUltimaHora ? 'border-red-500/40 bg-red-500/10' : 'border-amber-400/30 bg-slate-900/60'
+            enUltimaHora ? 'border-red-500/40 bg-red-500/10' : 'border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
         }`}>
-            <p className="text-xs text-zinc-300 mb-1 flex items-center justify-center gap-2 flex-wrap">
+            <p className="text-xs text-zinc-600 dark:text-zinc-300 mb-1 flex items-center justify-center gap-2 flex-wrap">
                 {enUltimaHora ? '⏰ ¡Últimos minutos para comprar y participar!' : 'Faltan para'}{' '}
-                <span className="font-semibold text-white inline-flex items-center gap-1.5">
+                <span className="font-semibold text-zinc-900 dark:text-white inline-flex items-center gap-1.5">
                     <Bandera equipo={partido.equipo_local} className="w-5 h-5" /> {partido.equipo_local} vs <Bandera equipo={partido.equipo_visitante} className="w-5 h-5" /> {partido.equipo_visitante}
                 </span>
             </p>
@@ -63,7 +63,7 @@ export default function CountdownPartido({ partido: partidoProp } = {}) {
             }`}>
                 {formatearTiempo(msRestantes)}
             </div>
-            <p className="text-zinc-400 text-xs mt-1">
+            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
                 Compra tu bono antes de que inicie el partido para poder pronosticar.
             </p>
         </div>

@@ -75,7 +75,7 @@ export default function RecuperarPassword() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -83,10 +83,10 @@ export default function RecuperarPassword() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                <Link to="/iniciar-sesion" className="text-zinc-400 text-sm hover:text-white">&larr; Volver</Link>
+                <Link to="/iniciar-sesion" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
-                <h1 className="text-2xl font-extrabold text-white mt-4 mb-1">Recuperar contraseña</h1>
-                <p className="text-zinc-400 text-sm mb-6">
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Recuperar contraseña</h1>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     {paso === 1
                         ? 'Ingresa el celular con el que te registraste y te enviaremos un código por WhatsApp.'
                         : 'Ingresa el código que recibiste por WhatsApp y tu nueva contraseña.'}
@@ -95,13 +95,13 @@ export default function RecuperarPassword() {
                 {paso === 1 ? (
                     <form onSubmit={handleSolicitarCodigo} className="flex flex-col gap-4">
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Número de celular</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
                             <input
                                 type="tel"
                                 value={celular}
                                 onChange={(e) => setCelular(e.target.value)}
                                 placeholder="Ej: 3001234567"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
 
@@ -120,36 +120,36 @@ export default function RecuperarPassword() {
                         {mensaje && <p className="text-green-400 text-sm">{mensaje}</p>}
 
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Código recibido por WhatsApp</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código recibido por WhatsApp</label>
                             <input
                                 type="text"
                                 inputMode="numeric"
                                 value={codigo}
                                 onChange={(e) => setCodigo(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
                                 placeholder="123456"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400 text-center text-2xl font-scoreboard tracking-widest"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400 text-center text-2xl font-scoreboard tracking-widest"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Nueva contraseña</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nueva contraseña</label>
                             <input
                                 type="password"
                                 value={nuevaPassword}
                                 onChange={(e) => setNuevaPassword(e.target.value)}
                                 placeholder="Mínimo 6 caracteres"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Confirmar nueva contraseña</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Confirmar nueva contraseña</label>
                             <input
                                 type="password"
                                 value={confirmarPassword}
                                 onChange={(e) => setConfirmarPassword(e.target.value)}
                                 placeholder="Repite tu contraseña"
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
 
@@ -166,7 +166,7 @@ export default function RecuperarPassword() {
                         <button
                             type="button"
                             onClick={() => { setPaso(1); setMensaje(''); setError(''); }}
-                            className="text-center text-zinc-400 text-sm underline"
+                            className="text-center text-zinc-500 dark:text-zinc-400 text-sm underline"
                         >
                             ¿No te llegó? Solicitar otro código
                         </button>

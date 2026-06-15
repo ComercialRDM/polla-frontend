@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#facc15"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <!-- Soccer ball (scaled down + centered for maskable safe zone) -->
+  <circle cx="256" cy="220" r="92" fill="#0f172a"/>
+  <circle cx="256" cy="220" r="86" fill="#ffffff"/>
+
+  <g fill="#0f172a">
+    <polygon points="256,158 288,182 276,222 236,222 224,182"/>
+    <polygon points="200,250 224,282 206,314 170,306 164,268"/>
+    <polygon points="312,250 348,268 342,306 306,314 288,282"/>
+    <circle cx="256" cy="220" r="86" fill="none" stroke="#0f172a" stroke-width="5"/>
+  </g>
+
+  <!-- Colombia flag stripe -->
+  <g>
+    <rect x="136" y="350" width="240" height="22" rx="5" fill="#FCD116"/>
+    <rect x="136" y="372" width="240" height="11" rx="3" fill="#003893"/>
+    <rect x="136" y="383" width="240" height="11" rx="3" fill="#CE1126"/>
+  </g>
+</svg>

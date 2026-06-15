@@ -5,12 +5,13 @@ import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
 import balonImg from '../assets/premios/balon.webp';
 import gafasImg from '../assets/premios/gafas.webp';
-import promoFlyer from '../assets/promo-flyer.jpg';
 import CountdownPartido from '../components/CountdownPartido';
 import ProximosPartidos from '../components/ProximosPartidos';
 import ResumenPublico from '../components/ResumenPublico';
 import ListaPronosticos from '../components/ListaPronosticos';
 import UltimosResultados from '../components/UltimosResultados';
+import PlanesBono from '../components/PlanesBono';
+import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
 
 const WHATSAPP_NUMERO = '573103963708';
@@ -39,13 +40,6 @@ const PASOS = [
 
 const COLORES_CONFETI = ['#FCD116', '#003893', '#CE1126', '#ffffff'];
 
-// Áreas clicables sobre las cajas "Elige tu bono" del flyer (posiciones en % sobre la imagen)
-const BONOS_FLYER = [
-    { valor: 50000, left: '2.5%', width: '31%' },
-    { valor: 100000, left: '34.5%', width: '31%' },
-    { valor: 200000, left: '66.5%', width: '31%' },
-];
-
 export default function Home() {
     useEffect(() => {
         if (localStorage.getItem('confeti_bienvenida')) return;
@@ -60,7 +54,7 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="min-h-screen flex flex-col items-center bg-zinc-950 stadium-glow">
+        <div className="min-h-screen flex flex-col items-center bg-white dark:bg-zinc-950 stadium-glow">
             <div className="w-full flex">
                 <div className="flex-1 bg-colombia-yellow h-2" />
                 <div className="flex-1 bg-colombia-blue h-2" />
@@ -72,37 +66,46 @@ export default function Home() {
                 <span className="inline-block bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-bold px-3 py-1 rounded-full mb-3">
                     🇨🇴 Mundial 2026
                 </span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-2">
-                    Compra tu <span className="text-amber-400">Bono Digital</span> de La Retoucherie de Manuela y participa GRATIS en la Polla Mundialista
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white leading-tight mb-2">
+                    Compra tu <span className="text-amber-500 dark:text-amber-400">Bono Digital</span> de La Retoucherie de Manuela y participa GRATIS en la Polla Mundialista
                 </h1>
-                <p className="text-zinc-400 text-sm">
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm">
                     Compra servicios de belleza con tu bono y, de regalo, recibe intentos para predecir el marcador de la Selección Colombia. Si aciertas, ganas premios 🏆
                 </p>
             </div>
 
-            {/* Flyer promocional con áreas clicables para elegir el bono */}
+            {/* Cómo funciona */}
             <div className="w-full max-w-md px-6 mt-6 relative z-10">
-                <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
-                    <img src={promoFlyer} alt="Promoción Polla Mundialista - Elige tu bono" className="w-full block" />
-                    {BONOS_FLYER.map((bono) => (
-                        <Link
-                            key={bono.valor}
-                            to={`/comprar?plan=${bono.valor}`}
-                            aria-label={`Comprar bono de ${bono.valor.toLocaleString('es-CO')}`}
-                            className="absolute top-[54%] h-[20%] rounded-lg active:scale-95 active:bg-amber-400/20 transition-transform"
-                            style={{ left: bono.left, width: bono.width }}
-                        />
+                <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-4">
+                    ¿Cómo funciona?
+                </h2>
+                <div className="flex flex-col gap-3">
+                    {PASOS.map((paso, i) => (
+                        <div
+                            key={paso.titulo}
+                            className="flex items-start gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4"
+                        >
+                            <span className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-lg font-black text-amber-500 dark:text-amber-400">
+                                {i + 1}
+                            </span>
+                            <div>
+                                <p className="text-zinc-900 dark:text-white font-bold text-sm">{paso.emoji} {paso.titulo}</p>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">{paso.descripcion}</p>
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>
 
+            <PlanesBono />
+
             <div className="w-full max-w-md px-6 mt-6 relative z-10">
-                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-6 text-center">
-                    <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-1">
+                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-6 text-center">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
                         Polla Mundialista
                     </h2>
-                    <p className="text-amber-400 font-semibold mb-1">La Retoucherie de Manuela</p>
-                    <p className="text-zinc-400 text-sm mb-6">
+                    <p className="text-amber-500 dark:text-amber-400 font-semibold mb-1">La Retoucherie de Manuela</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                         Compra tu Bono Digital y participa prediciendo el marcador de la Selección Colombia 🇨🇴
                     </p>
 
@@ -115,7 +118,7 @@ export default function Home() {
                         </Link>
                         <Link
                             to="/ingresar"
-                            className="w-full py-4 rounded-xl font-bold text-center text-white border border-white/15 bg-white/5 backdrop-blur-sm active:scale-95 transition-transform"
+                            className="w-full py-4 rounded-xl font-bold text-center text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 backdrop-blur-sm active:scale-95 transition-transform"
                         >
                             Ya compré mi bono → Ingresar
                         </Link>
@@ -135,35 +138,14 @@ export default function Home() {
 
             <ListaPronosticos />
 
-            {/* Cómo funciona */}
-            <div className="w-full max-w-md px-6 mt-10 relative z-10">
-                <h2 className="text-center text-white font-black text-xl mb-4">
-                    ¿Cómo funciona?
-                </h2>
-                <div className="flex flex-col gap-3">
-                    {PASOS.map((paso, i) => (
-                        <div
-                            key={paso.titulo}
-                            className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4"
-                        >
-                            <span className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-lg font-black text-amber-400">
-                                {i + 1}
-                            </span>
-                            <div>
-                                <p className="text-white font-bold text-sm">{paso.emoji} {paso.titulo}</p>
-                                <p className="text-zinc-400 text-xs mt-0.5">{paso.descripcion}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <FAQ />
 
             {/* Botín de Premios Mundialistas */}
             <div className="w-full max-w-md px-6 mt-10 relative z-10">
-                <h2 className="text-center text-white font-black text-xl mb-1">
+                <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-1">
                     🏆 Botín de Premios Mundialistas
                 </h2>
-                <p className="text-center text-zinc-400 text-sm mb-4">
+                <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                     Los aciertos más rápidos se llevan estos premios
                 </p>
 
@@ -171,16 +153,16 @@ export default function Home() {
                     {PREMIOS.map((premio) => (
                         <div
                             key={premio.titulo}
-                            className="group rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4 text-center transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:border-transparent hover:bg-gradient-to-r hover:from-yellow-400 hover:via-blue-500 hover:to-red-500"
+                            className="group rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 text-center transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:border-transparent hover:bg-gradient-to-r hover:from-yellow-400 hover:via-blue-500 hover:to-red-500"
                         >
-                            <div className="rounded-xl bg-zinc-950/60 group-hover:bg-zinc-950/80 p-4 transition-colors">
+                            <div className="rounded-xl bg-zinc-100 dark:bg-zinc-950/60 group-hover:bg-zinc-950/10 dark:group-hover:bg-zinc-950/80 p-4 transition-colors">
                                 <img
                                     src={premio.imagen}
                                     alt={premio.titulo}
                                     className="w-full h-24 object-cover rounded-lg shadow-lg shadow-black/40 mb-2"
                                 />
-                                <p className="text-white font-bold text-sm">{premio.titulo}</p>
-                                <p className="text-zinc-400 text-xs">{premio.descripcion}</p>
+                                <p className="text-zinc-900 dark:text-white font-bold text-sm">{premio.titulo}</p>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-xs">{premio.descripcion}</p>
                             </div>
                         </div>
                     ))}
@@ -189,19 +171,19 @@ export default function Home() {
 
             {/* Quiénes somos */}
             <div className="w-full max-w-md px-6 mt-10 relative z-10">
-                <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-6 text-center">
-                    <h2 className="text-white font-black text-xl mb-2">Quiénes somos</h2>
-                    <p className="text-zinc-400 text-sm mb-4">
+                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-6 text-center">
+                    <h2 className="text-zinc-900 dark:text-white font-black text-xl mb-2">Quiénes somos</h2>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                         La Retoucherie es un centro de belleza y bienestar con sedes en Barranquilla y Cartagena.
                         Esta Polla Mundialista es nuestro regalo para celebrar el Mundial 2026 junto a nuestros clientes.
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-left">
                         {SEDES.map((sede) => (
-                            <div key={sede.nombre} className="rounded-xl border border-white/10 bg-white/5 p-3">
-                                <p className="text-white font-bold text-xs">{sede.nombre}</p>
-                                <p className="text-zinc-400 text-xs">{sede.ciudad} · {sede.direccion}</p>
-                                <p className="text-zinc-400 text-xs">📞 {sede.telefono}</p>
+                            <div key={sede.nombre} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                <p className="text-zinc-900 dark:text-white font-bold text-xs">{sede.nombre}</p>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-xs">{sede.ciudad} · {sede.direccion}</p>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-xs">📞 {sede.telefono}</p>
                             </div>
                         ))}
                     </div>
@@ -211,7 +193,7 @@ export default function Home() {
                             href={`https://instagram.com/${INSTAGRAM_USUARIO.replace('@', '')}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-block py-2.5 px-4 rounded-xl font-bold text-sm text-center text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                            className="inline-block py-2.5 px-4 rounded-xl font-bold text-sm text-center text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
                         >
                             📷 {INSTAGRAM_USUARIO}
                         </a>

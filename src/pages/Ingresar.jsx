@@ -37,7 +37,7 @@ export default function Ingresar() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -45,10 +45,10 @@ export default function Ingresar() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                <Link to="/" className="text-zinc-400 text-sm hover:text-white">&larr; Volver</Link>
+                <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
-                <h1 className="text-2xl font-extrabold text-white mt-4 mb-1">Ingresar a la Polla</h1>
-                <p className="text-zinc-400 text-sm mb-6">
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Ingresar a la Polla</h1>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     Escribe el correo o celular con el que compraste tu bono.
                 </p>
 
@@ -58,7 +58,7 @@ export default function Ingresar() {
                         value={contacto}
                         onChange={(e) => setContacto(e.target.value)}
                         placeholder="Correo o número de celular"
-                        className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
 
                     {error && <p className="text-red-400 text-sm">{error}</p>}
@@ -73,9 +73,9 @@ export default function Ingresar() {
                 </form>
 
                 {sinAcceso && (
-                    <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-5 text-center">
-                        <p className="text-white font-semibold mb-2">No encontramos un bono activo 😕</p>
-                        <p className="text-zinc-400 text-sm mb-4">
+                    <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.12)] backdrop-blur-lg p-5 text-center">
+                        <p className="text-zinc-900 dark:text-white font-semibold mb-2">No encontramos un bono activo 😕</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                             Si ya pagaste, espera unos minutos a que se confirme tu pago, o escríbenos por WhatsApp y te ayudamos.
                         </p>
                         <a

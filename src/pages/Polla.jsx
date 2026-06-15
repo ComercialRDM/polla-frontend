@@ -119,7 +119,7 @@ export default function Polla() {
 
     if (cargando) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
                 Cargando...
             </div>
         );
@@ -127,15 +127,15 @@ export default function Polla() {
 
     if (error && !info) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-6 text-center gap-4">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white px-6 text-center gap-4">
                 <p className="text-red-400">{error}</p>
-                <Link to="/" className="text-amber-400 underline">Volver al inicio</Link>
+                <Link to="/" className="text-amber-500 dark:text-amber-400 underline">Volver al inicio</Link>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen relative bg-zinc-950 stadium-glow px-4 sm:px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen relative bg-white dark:bg-zinc-950 stadium-glow px-4 sm:px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -143,17 +143,17 @@ export default function Polla() {
             </div>
 
             <div className="w-full max-w-md mt-6 relative">
-                <h1 className="text-2xl font-extrabold text-white mb-1">¡Hola, {info.nombre}!</h1>
-                <p className="text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">¡Hola, {info.nombre}!</h1>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
 
                 {/* Monedero de cupos */}
-                <div className="rounded-2xl border border-amber-400/30 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.15)] p-5 mb-6 text-center">
-                    <p className="text-zinc-400 text-xs mb-1">Tu monedero de pronósticos</p>
-                    <p className="text-amber-400 font-black text-3xl mb-1">
+                <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-5 mb-6 text-center">
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-1">Tu monedero de pronósticos</p>
+                    <p className="text-amber-500 dark:text-amber-400 font-black text-3xl mb-1">
                         {info.cupos_disponibles} {info.cupos_disponibles === 1 ? 'cupo' : 'cupos'}
                     </p>
-                    <p className="text-zinc-300 text-sm">
-                        Dinero disponible: <span className="font-bold text-white">{formatoPesos(info.dinero_disponible)}</span>
+                    <p className="text-zinc-600 dark:text-zinc-300 text-sm">
+                        Dinero disponible: <span className="font-bold text-zinc-900 dark:text-white">{formatoPesos(info.dinero_disponible)}</span>
                     </p>
                     {info.cupos_disponibles === 0 && (
                         <Link
@@ -177,9 +177,9 @@ export default function Polla() {
                 <PartidosFavoritos equipos={info.equipos_favoritos} />
 
                 {/* Reta a un amigo */}
-                <div className="rounded-2xl border border-amber-400/20 bg-slate-900/60 backdrop-blur-lg p-4 mb-6 text-center">
-                    <p className="text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
-                    <p className="text-zinc-400 text-xs mb-3">
+                <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 mb-6 text-center">
+                    <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
                         Comparte tu link y reta a tus amigos a participar.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -199,7 +199,7 @@ export default function Polla() {
                                 setMensajeCopiado(true);
                                 setTimeout(() => setMensajeCopiado(false), 2000);
                             }}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white text-center border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
                         >
                             {mensajeCopiado ? '¡Copiado! ✅' : '🔗 Copiar link'}
                         </button>
@@ -210,10 +210,10 @@ export default function Polla() {
                 {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
 
                 {/* Tarjetas de pronóstico por partido */}
-                <p className="text-white font-bold text-base mb-3">Partidos disponibles para predecir</p>
+                <p className="text-zinc-900 dark:text-white font-bold text-base mb-3">Partidos disponibles para predecir</p>
 
                 {info.partidos.length === 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-5 text-center text-zinc-300 mb-4">
+                    <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-5 text-center text-zinc-600 dark:text-zinc-300 mb-4">
                         No hay partidos activos por el momento.
                     </div>
                 )}
@@ -228,9 +228,9 @@ export default function Polla() {
                         return (
                             <div
                                 key={p.partido_id}
-                                className="relative rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg shadow-[0_0_15px_rgba(234,179,8,0.12)] p-5 pt-6"
+                                className="relative rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.12)] backdrop-blur-lg p-5 pt-6"
                             >
-                                <p className="text-amber-400 font-bold text-sm mb-2 flex items-center justify-center gap-1.5 text-center">
+                                <p className="text-amber-500 dark:text-amber-400 font-bold text-sm mb-2 flex items-center justify-center gap-1.5 text-center">
                                     <Bandera equipo={p.equipo_local} className="w-6 h-6" />
                                     {p.equipo_local} vs
                                     <Bandera equipo={p.equipo_visitante} className="w-6 h-6" />
@@ -248,18 +248,18 @@ export default function Polla() {
                                 )}
 
                                 {p.ya_pronosticado ? (
-                                    <div className="text-center text-zinc-300 text-sm">
+                                    <div className="text-center text-zinc-600 dark:text-zinc-300 text-sm">
                                         <p className="mb-1">Tu pronóstico:</p>
                                         <p className="text-2xl font-black text-lime-400 font-scoreboard">
                                             {p.pronostico.local} - {p.pronostico.visitante}
                                         </p>
                                     </div>
                                 ) : cerrado ? (
-                                    <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
+                                    <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
                                 ) : info.cupos_disponibles === 0 ? (
                                     <div className="text-center">
-                                        <p className="text-zinc-400 text-sm mb-2">No tienes cupos disponibles para predecir este partido.</p>
-                                        <Link to="/comprar" className="text-amber-400 underline text-sm font-bold">
+                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-2">No tienes cupos disponibles para predecir este partido.</p>
+                                        <Link to="/comprar" className="text-amber-500 dark:text-amber-400 underline text-sm font-bold">
                                             Recarga para predecir este partido
                                         </Link>
                                     </div>

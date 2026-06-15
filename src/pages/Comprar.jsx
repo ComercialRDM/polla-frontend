@@ -149,7 +149,7 @@ export default function Comprar() {
 
     if (enviado) {
         return (
-            <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+            <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
                 <div className="absolute top-0 left-0 right-0 h-2 flex">
                     <div className="flex-1 bg-colombia-yellow" />
                     <div className="flex-1 bg-colombia-blue" />
@@ -158,8 +158,8 @@ export default function Comprar() {
 
                 <div className="w-full max-w-md mt-20 text-center">
                     <span className="text-5xl block mb-4">✅</span>
-                    <h1 className="text-2xl font-extrabold text-white mb-2">¡Comprobante recibido!</h1>
-                    <p className="text-zinc-400 text-sm mb-8">{mensajeExito}</p>
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">¡Comprobante recibido!</h1>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">{mensajeExito}</p>
                     <Link
                         to="/"
                         className="inline-block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform"
@@ -172,7 +172,7 @@ export default function Comprar() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
@@ -180,10 +180,10 @@ export default function Comprar() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                <Link to="/" className="text-zinc-400 text-sm hover:text-white">&larr; Volver</Link>
+                <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
-                <h1 className="text-2xl font-extrabold text-white mt-4 mb-1">Compra tu Bono Digital</h1>
-                <p className="text-zinc-400 text-sm mb-6">
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Compra tu Bono Digital</h1>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     Elige tu bono y participa en la Polla Mundialista.
                 </p>
 
@@ -203,7 +203,7 @@ export default function Comprar() {
                                         : 'border-amber-400/60 bg-amber-400/5 scale-[1.02]'
                                     : !modoCustom && planSeleccionado === plan.valor
                                         ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
-                                        : 'border-white/10 bg-slate-900/60'
+                                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
                             }`}
                         >
                             {plan.destacado === 'popular' && (
@@ -218,10 +218,10 @@ export default function Comprar() {
                             )}
                             <div className="flex justify-between items-center mt-1">
                                 <div>
-                                    <p className="text-white font-bold">{formatoPesos(plan.valor)}</p>
-                                    <p className="text-xs text-zinc-400">Bono de {formatoPesos(plan.saldoBono)}</p>
+                                    <p className="text-zinc-900 dark:text-white font-bold">{formatoPesos(plan.valor)}</p>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Bono de {formatoPesos(plan.saldoBono)}</p>
                                 </div>
-                                <span className="text-amber-400 font-bold text-sm">{plan.etiqueta}</span>
+                                <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">{plan.etiqueta}</span>
                             </div>
                         </button>
                     ))}
@@ -232,17 +232,17 @@ export default function Comprar() {
                         className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
                             modoCustom
                                 ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
-                                : 'border-white/10 bg-slate-900/60'
+                                : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
                         }`}
                     >
                         <div className="flex justify-between items-center mt-1">
                             <div>
-                                <p className="text-white font-bold">Ingresa tu propio monto</p>
-                                <p className="text-xs text-zinc-400">
+                                <p className="text-zinc-900 dark:text-white font-bold">Ingresa tu propio monto</p>
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                                     Cada {formatoPesos(CUPO_VALOR)} = 1 cupo para predecir un partido distinto
                                 </p>
                             </div>
-                            <span className="text-amber-400 font-bold text-sm">Otro monto</span>
+                            <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">Otro monto</span>
                         </div>
 
                         {modoCustom && (
@@ -256,22 +256,22 @@ export default function Comprar() {
                                     value={montoCustom}
                                     onChange={(e) => setMontoCustom(e.target.value)}
                                     placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
-                                    className="w-full rounded-lg bg-slate-950/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    className="w-full rounded-lg bg-zinc-50 dark:bg-slate-950/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                                 />
                                 {montoCustomNumero > 0 && (
-                                    <div className="mt-2 text-xs text-zinc-300 space-y-1">
+                                    <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
                                         <p>
                                             Tu recarga equivale a{' '}
-                                            <span className="text-amber-400 font-bold">
+                                            <span className="text-amber-500 dark:text-amber-400 font-bold">
                                                 {cuposCustom} {cuposCustom === 1 ? 'resultado' : 'resultados'}
                                             </span>{' '}
                                             de partidos distintos.
                                         </p>
-                                        <p className="text-zinc-400">
+                                        <p className="text-zinc-500 dark:text-zinc-400">
                                             Bono de servicio: {formatoPesos(calcularSaldoBono(montoCustomNumero))}
                                         </p>
                                         {residuoCustom > 0 && (
-                                            <p className="text-zinc-400">
+                                            <p className="text-zinc-500 dark:text-zinc-400">
                                                 Saldo sin usar para un próximo cupo: {formatoPesos(residuoCustom)}
                                             </p>
                                         )}
@@ -281,14 +281,14 @@ export default function Comprar() {
                         )}
                     </button>
                 </div>
-                <p className="text-zinc-400 text-xs mb-6">
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-6">
                     Tus cupos se acumulan en tu cuenta y puedes usarlos cualquier día, en cualquier partido activo.
                 </p>
 
                 {/* Selección del partido */}
                 <div className="mb-6">
-                    <p className="block text-sm text-zinc-300 mb-1">Elige el partido en el que quieres participar</p>
-                    <p className="text-zinc-500 text-xs mb-2">
+                    <p className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Elige el partido en el que quieres participar</p>
+                    <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">
                         Tus cupos se pueden usar en cualquier partido activo, no solo en este.
                     </p>
                     <div className="flex flex-col gap-2">
@@ -307,19 +307,19 @@ export default function Comprar() {
                                     onClick={() => setPartidoId(p.id)}
                                     className={`rounded-xl border p-3 text-left transition-all backdrop-blur-lg flex items-center justify-between gap-2 ${
                                         partidoId === p.id
-                                            ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-white'
-                                            : 'border-white/10 bg-slate-900/60 text-zinc-300'
+                                            ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
+                                            : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
                                     }`}
                                 >
                                     <span className="font-bold text-sm inline-flex items-center gap-1.5">
                                         <Bandera equipo={p.equipo_local} className="w-5 h-5" /> {p.equipo_local} vs <Bandera equipo={p.equipo_visitante} className="w-5 h-5" /> {p.equipo_visitante}
                                     </span>
-                                    <span className="text-xs text-zinc-400 whitespace-nowrap">{fechaTexto}</span>
+                                    <span className="text-xs text-zinc-400 dark:text-zinc-400 whitespace-nowrap">{fechaTexto}</span>
                                 </button>
                             );
                         })}
                         {partidos.length === 0 && (
-                            <p className="text-sm text-zinc-400">No hay partidos disponibles por el momento.</p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">No hay partidos disponibles por el momento.</p>
                         )}
                     </div>
                 </div>
@@ -328,15 +328,15 @@ export default function Comprar() {
 
                 {/* Selección del método de pago */}
                 <div className="mb-6">
-                    <p className="block text-sm text-zinc-300 mb-2">Método de pago</p>
+                    <p className="block text-sm text-zinc-600 dark:text-zinc-300 mb-2">Método de pago</p>
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
                             onClick={() => setMetodoPago('wompi')}
                             className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
                                 metodoPago === 'wompi'
-                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-white'
-                                    : 'border-white/10 bg-slate-900/60 text-zinc-300'
+                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
+                                    : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
                             }`}
                         >
                             💳 Tarjeta / PSE (Wompi)
@@ -346,8 +346,8 @@ export default function Comprar() {
                             onClick={() => setMetodoPago('transferencia')}
                             className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
                                 metodoPago === 'transferencia'
-                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-white'
-                                    : 'border-white/10 bg-slate-900/60 text-zinc-300'
+                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
+                                    : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
                             }`}
                         >
                             🏦 Transferencia
@@ -356,16 +356,16 @@ export default function Comprar() {
                 </div>
 
                 {metodoPago === 'transferencia' && (
-                    <div className="mb-6 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-lg p-4">
-                        <p className="text-white font-bold text-sm mb-2">Datos para tu transferencia</p>
-                        <ul className="text-zinc-300 text-sm space-y-1">
-                            <li><span className="text-zinc-400">Banco:</span> {CUENTA_TRANSFERENCIA.banco}</li>
-                            <li><span className="text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
-                            <li><span className="text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
-                            <li><span className="text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
-                            <li className="pt-1 text-amber-400 font-bold">Valor a transferir: {formatoPesos(valorAPagar)}</li>
+                    <div className="mb-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4">
+                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-2">Datos para tu transferencia</p>
+                        <ul className="text-zinc-600 dark:text-zinc-300 text-sm space-y-1">
+                            <li><span className="text-zinc-400 dark:text-zinc-400">Banco:</span> {CUENTA_TRANSFERENCIA.banco}</li>
+                            <li><span className="text-zinc-400 dark:text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
+                            <li><span className="text-zinc-400 dark:text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
+                            <li><span className="text-zinc-400 dark:text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
+                            <li className="pt-1 text-amber-500 dark:text-amber-400 font-bold">Valor a transferir: {formatoPesos(valorAPagar)}</li>
                         </ul>
-                        <p className="text-zinc-400 text-xs mt-3">
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-3">
                             Realiza la transferencia y sube la foto o captura del comprobante. Nuestro equipo la revisará y aprobará tu bono.
                         </p>
                     </div>
@@ -373,59 +373,59 @@ export default function Comprar() {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
-                        <label className="block text-sm text-zinc-300 mb-1">Nombre completo</label>
+                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                         <input
                             type="text"
                             name="nombre"
                             value={form.nombre}
                             onChange={handleChange}
                             placeholder="Ej: Manuela Pérez"
-                            className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm text-zinc-300 mb-1">Correo electrónico</label>
+                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
                         <input
                             type="email"
                             name="correo"
                             value={form.correo}
                             onChange={handleChange}
                             placeholder="tucorreo@email.com"
-                            className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm text-zinc-300 mb-1">Celular (WhatsApp)</label>
+                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Celular (WhatsApp)</label>
                         <input
                             type="tel"
                             name="celular"
                             value={form.celular}
                             onChange={handleChange}
                             placeholder="3001234567"
-                            className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
 
                     {metodoPago === 'transferencia' && (
                         <div>
-                            <label className="block text-sm text-zinc-300 mb-1">Comprobante de pago (foto o captura)</label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Comprobante de pago (foto o captura)</label>
                             <input
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => setComprobante(e.target.files?.[0] || null)}
-                                className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-zinc-300 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-400 file:text-slate-950 file:font-bold file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-600 dark:text-zinc-300 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-400 file:text-slate-950 file:font-bold file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
                     )}
 
                     {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
-                        <p className="text-zinc-300 text-xs flex items-center justify-center gap-1.5 flex-wrap">
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3 text-center">
+                        <p className="text-zinc-600 dark:text-zinc-300 text-xs flex items-center justify-center gap-1.5 flex-wrap">
                             🔒 Pago seguro con Wompi · La Retoucherie de Manuela · NIT 901765354
                         </p>
                         {metodoPago === 'transferencia' && (
-                            <p className="text-zinc-400 text-xs mt-1">
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
                                 Tu bono se activa en minutos tras revisar el comprobante.
                             </p>
                         )}
