@@ -13,6 +13,7 @@ export default function Registro() {
     const [password, setPassword] = useState('');
     const [confirmarPassword, setConfirmarPassword] = useState('');
     const [equipos, setEquipos] = useState([]);
+    const [aceptaTerminos, setAceptaTerminos] = useState(false);
     const [error, setError] = useState('');
     const [enviando, setEnviando] = useState(false);
 
@@ -42,6 +43,10 @@ export default function Registro() {
         }
         if (password !== confirmarPassword) {
             setError('Las contraseñas no coinciden.');
+            return;
+        }
+        if (!aceptaTerminos) {
+            setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.');
             return;
         }
 
@@ -135,6 +140,26 @@ export default function Registro() {
                                 className="w-full rounded-lg bg-slate-900/60 backdrop-blur-lg border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
                         </div>
+
+                        <label className="flex items-start gap-2 text-zinc-400 text-xs">
+                            <input
+                                type="checkbox"
+                                checked={aceptaTerminos}
+                                onChange={(e) => setAceptaTerminos(e.target.checked)}
+                                className="mt-0.5 accent-amber-400"
+                            />
+                            <span>
+                                Acepto los{' '}
+                                <Link to="/terminos" target="_blank" className="text-amber-400 underline">
+                                    Términos y Condiciones
+                                </Link>{' '}
+                                y la{' '}
+                                <Link to="/privacidad" target="_blank" className="text-amber-400 underline">
+                                    Política de Privacidad y Tratamiento de Datos Personales
+                                </Link>
+                                .
+                            </span>
+                        </label>
 
                         {error && <p className="text-red-400 text-sm">{error}</p>}
 

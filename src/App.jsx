@@ -11,6 +11,7 @@ import Polla from './pages/Polla';
 import Admin from './pages/Admin';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
+import Anexo from './pages/Anexo';
 import BotonWhatsApp from './components/BotonWhatsApp';
 import { obtenerSesion } from './utils/sesion';
 
@@ -59,6 +60,7 @@ export default function App() {
                 <Route path="/polla" element={<Polla />} />
                 <Route path="/terminos" element={<Terminos />} />
                 <Route path="/privacidad" element={<Privacidad />} />
+                <Route path="/anexo" element={<Anexo />} />
                 <Route path="/dashboardpollardm" element={<Admin />} />
             </Routes>
             <BotonWhatsApp />
