@@ -133,9 +133,10 @@ export function restablecerPassword({ celular, codigo, nueva_password }) {
     });
 }
 
-export function adminLogin(token) {
-    return request('/api/admin/pendientes', {
-        headers: { Authorization: `Bearer ${token}` },
+export function adminLogin(usuario, password) {
+    return request('/api/admin/login', {
+        method: 'POST',
+        body: JSON.stringify({ usuario, password }),
     });
 }
 

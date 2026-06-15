@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, obtenerPartidos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, obtenerPartidos } from '../api';
 import { formatoPesos } from '../config/planes';
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -13,7 +13,8 @@ function aDatetimeLocal(iso) {
 
 export default function Admin() {
     const [token, setToken] = useState(() => localStorage.getItem(TOKEN_STORAGE_KEY) || '');
-    const [tokenInput, setTokenInput] = useState('');
+    const [usuarioInput, setUsuarioInput] = useState('');
+    const [passwordInput, setPasswordInput] = useState('');
     const [autenticado, setAutenticado] = useState(false);
     const [transacciones, setTransacciones] = useState([]);
     const [cargando, setCargando] = useState(false);
@@ -74,12 +75,27 @@ export default function Admin() {
         }
     }, []);
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
         e.preventDefault();
-        if (!tokenInput.trim()) return;
-        setToken(tokenInput.trim());
-        cargarDatos(tokenInput.trim());
-        cargarPartidos();
+        if (!usuarioInput.trim() || !passwordInput.trim()) return;
+
+        setCargando(true);
+        setError('');
+        try {
+            const data = await adminLogin(usuarioInput.trim(), passwordInput);
+            if (data?.success) {
+                setToken(data.token);
+                setPasswordInput('');
+                cargarDatos(data.token);
+                cargarPartidos();
+            } else {
+                setError(data?.error || 'Usuario o contraseña incorrectos.');
+            }
+        } catch (err) {
+            setError('Error de conexión al iniciar sesión.');
+        } finally {
+            setCargando(false);
+        }
     }
 
     async function handleCrearPartido(e) {
@@ -236,10 +252,19 @@ export default function Admin() {
                 <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col gap-4">
                     <h1 className="text-2xl font-extrabold text-white text-center mb-2">Panel Admin</h1>
                     <input
+                        type="text"
+                        value={usuarioInput}
+                        onChange={(e) => setUsuarioInput(e.target.value)}
+                        placeholder="Usuario"
+                        autoComplete="username"
+                        className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    <input
                         type="password"
-                        value={tokenInput}
-                        onChange={(e) => setTokenInput(e.target.value)}
-                        placeholder="Token de administrador"
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        placeholder="Contraseña"
+                        autoComplete="current-password"
                         className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     {error && <p className="text-red-400 text-sm">{error}</p>}
