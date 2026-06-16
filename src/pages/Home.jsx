@@ -93,6 +93,22 @@ export default function Home() {
                 </div>
             </header>
 
+            {/* Botones auth */}
+            <div className="w-full max-w-md px-4 mt-3 flex gap-3">
+                <Link
+                    to="/registro"
+                    className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm border-2 border-[#FCD116] text-[#FCD116] bg-transparent active:scale-95 transition-transform"
+                >
+                    Registrarse
+                </Link>
+                <Link
+                    to="/iniciar-sesion"
+                    className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform"
+                >
+                    Iniciar Sesión
+                </Link>
+            </div>
+
             <div className="w-full max-w-md px-4 mt-4">
                 <img
                     src={campanaImg}
@@ -115,21 +131,6 @@ export default function Home() {
             </div>
 
             <PlanesBono />
-
-            <div className="w-full max-w-md px-4 mt-3 flex gap-3">
-                <Link
-                    to="/registro"
-                    className="flex-1 flex items-center justify-center py-3 rounded-xl font-bold text-sm border-2 border-zinc-900 text-zinc-900 bg-white dark:border-white dark:text-white dark:bg-transparent active:scale-95 transition-transform"
-                >
-                    Registrarse
-                </Link>
-                <Link
-                    to="/iniciar-sesion"
-                    className="flex-1 flex items-center justify-center py-3 rounded-xl font-bold text-sm text-white bg-zinc-900 dark:bg-zinc-700 active:scale-95 transition-transform"
-                >
-                    Iniciar Sesión
-                </Link>
-            </div>
 
             <SeccionHeader titulo="Partidos del día" id="partidos" />
             <ProximosPartidos />
