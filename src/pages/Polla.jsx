@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
 import { formatoPesos } from '../config/planes';
 import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
 import EquiposFavoritos from '../components/EquiposFavoritos';
 import PartidosFavoritos from '../components/PartidosFavoritos';
+import { cerrarSesion } from '../utils/sesion';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
 
@@ -27,7 +28,13 @@ function formatearTiempo(ms) {
 
 export default function Polla() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const token = searchParams.get('token');
+
+    function handleCerrarSesion() {
+        cerrarSesion();
+        navigate('/');
+    }
 
     const [info, setInfo] = useState(null);
     const [cargando, setCargando] = useState(true);
@@ -144,7 +151,15 @@ export default function Polla() {
             </div>
 
             <div className="w-full max-w-md mt-6 relative">
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">¡Hola, {info.nombre}!</h1>
+                <div className="flex items-start justify-between mb-1">
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
+                    <button
+                        onClick={handleCerrarSesion}
+                        className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-500 hover:border-red-500 transition-colors"
+                    >
+                        Cerrar sesión
+                    </button>
+                </div>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
 
                 {/* Monedero de cupos */}
