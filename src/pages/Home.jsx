@@ -97,7 +97,7 @@ export default function Home() {
             <div className="w-full max-w-md px-4 mt-3 flex gap-3">
                 <Link
                     to="/registro"
-                    className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm border-2 border-[#FCD116] text-[#FCD116] bg-transparent active:scale-95 transition-transform"
+                    className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-white bg-zinc-900 active:scale-95 transition-transform"
                 >
                     Registrarse
                 </Link>
