@@ -15,7 +15,7 @@ function esHoraNocturna() {
 // 'light' / 'dark' = elegido manualmente por el usuario, fijo.
 function leerModoGuardado() {
     const guardado = localStorage.getItem(STORAGE_KEY);
-    return guardado === 'light' || guardado === 'dark' ? guardado : 'auto';
+    return guardado === 'light' || guardado === 'dark' || guardado === 'auto' ? guardado : 'light';
 }
 
 function calcularTema(modo) {
