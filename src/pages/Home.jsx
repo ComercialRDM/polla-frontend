@@ -20,8 +20,8 @@ const COLORES_CONFETI = ['#FCD116', '#000000', '#CE1126', '#ffffff'];
 const PREMIOS = [
     { imagen: camisetaImg, titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
     { imagen: gorraImg, titulo: 'Gorra Edición Especial', descripcion: 'Tricolor bordada' },
-    { imagen: balonImg, titulo: 'Balón Mundialista', descripcion: 'Réplica oficial' },
-    { imagen: gafasImg, titulo: 'Bono Sorpresa', descripcion: 'Servicios Retoucherie' },
+    { imagen: balonImg, titulo: 'Balón Mundialista', descripcion: 'colores disponibles' },
+    { imagen: gafasImg, titulo: 'Gafas oficiales', descripcion: 'colores disponibles' },
 ];
 
 const PASOS = [
