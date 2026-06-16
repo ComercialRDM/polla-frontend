@@ -30,7 +30,7 @@ export default function IniciarSesion() {
             } else if (data?.success && data?.nuevo) {
                 setGoogleCredential(credential);
             } else {
-                setError(data?.error || 'No se pudo iniciar sesión con Google.');
+                setError((data?.error || 'No se pudo iniciar sesión con Google.') + (data?.detalle ? ` (${data.detalle})` : ''));
             }
         } catch {
             setError('Error de conexión con el servidor.');

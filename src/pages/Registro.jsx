@@ -54,7 +54,7 @@ export default function Registro() {
                 if (data.datos?.nombre) setNombre(data.datos.nombre);
                 setModoGoogle(true);
             } else {
-                setError(data?.error || 'No se pudo continuar con Google.');
+                setError((data?.error || 'No se pudo continuar con Google.') + (data?.detalle ? ` (${data.detalle})` : ''));
             }
         } catch {
             setError('Error de conexión con el servidor.');
