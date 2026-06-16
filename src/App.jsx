@@ -54,11 +54,11 @@ function AppRoutes() {
         <>
             <CapturarRef />
             <Routes>
-                <Route path="/" element={<RutaProtegida><Home /></RutaProtegida>} />
-                <Route path="/premios" element={<RutaProtegida><Premios /></RutaProtegida>} />
-                <Route path="/como-participo" element={<RutaProtegida><ComoParticipo /></RutaProtegida>} />
-                <Route path="/nosotros" element={<RutaProtegida><Nosotros /></RutaProtegida>} />
-                <Route path="/comprar" element={<RutaProtegida><Comprar /></RutaProtegida>} />
+                <Route path="/" element={<Home />} />
+                <Route path="/premios" element={<Premios />} />
+                <Route path="/como-participo" element={<ComoParticipo />} />
+                <Route path="/nosotros" element={<Nosotros />} />
+                <Route path="/comprar" element={<Comprar />} />
                 <Route path="/registro" element={<Registro />} />
                 <Route path="/iniciar-sesion" element={<IniciarSesion />} />
                 <Route path="/recuperar-password" element={<RecuperarPassword />} />

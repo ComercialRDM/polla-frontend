@@ -7,6 +7,12 @@ import { MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
 import SelectorEquipos from '../components/SelectorEquipos';
 import GoogleButton from '../components/GoogleButton';
 import AgendarCalendario from '../components/AgendarCalendario';
+import camisetaImg from '../assets/premios/camiseta.webp';
+import gorraImg from '../assets/premios/gorra.webp';
+import balonImg from '../assets/premios/balon.webp';
+import gafasImg from '../assets/premios/gafas.webp';
+
+const PREMIOS_VISTAZO = [camisetaImg, gorraImg, balonImg, gafasImg];
 
 export default function Registro() {
     const navigate = useNavigate();
@@ -130,6 +136,24 @@ export default function Registro() {
             </div>
 
             <div className="w-full max-w-md mt-6">
+                {paso === 1 && (
+                    <div className="mb-6 text-center">
+                        <h2 className="text-zinc-900 dark:text-white font-black text-lg mb-3">
+                            🏆 ¡Regístrate y participa por estos premios!
+                        </h2>
+                        <div className="grid grid-cols-4 gap-2">
+                            {PREMIOS_VISTAZO.map((img, i) => (
+                                <div
+                                    key={i}
+                                    className="rounded-xl overflow-hidden border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-950/60"
+                                >
+                                    <img src={img} alt="Premio" className="w-full h-16 object-cover" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
                     {paso === 1 ? '¡Bienvenido! 🇨🇴' : paso === 2 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
                 </h1>
@@ -145,11 +169,14 @@ export default function Registro() {
                     <form onSubmit={handleContinuarPaso1} className="flex flex-col gap-4">
                         {!modoGoogle && (
                             <>
+                                <p className="text-center text-amber-500 dark:text-amber-400 text-xs font-bold uppercase tracking-wide">
+                                    ⚡ Regístrate en 1 clic
+                                </p>
                                 <GoogleButton onCredential={handleCredencialGoogle} />
 
                                 <div className="flex items-center gap-3">
                                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
+                                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o completa tus datos</span>
                                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
                                 </div>
                             </>

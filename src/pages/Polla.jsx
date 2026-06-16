@@ -38,6 +38,7 @@ export default function Polla() {
     const [mensajeExitoId, setMensajeExitoId] = useState(null);
     const [errorPorPartido, setErrorPorPartido] = useState({});
     const [mensajeCopiado, setMensajeCopiado] = useState(false);
+    const [partidosVisibles, setPartidosVisibles] = useState(3);
 
     useEffect(() => {
         if (!token) {
@@ -213,13 +214,13 @@ export default function Polla() {
                 <p className="text-zinc-900 dark:text-white font-bold text-base mb-3">Partidos disponibles para predecir</p>
 
                 {info.partidos.length === 0 && (
-                    <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-5 text-center text-zinc-600 dark:text-zinc-300 mb-4">
+                    <div className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-center text-zinc-300 mb-4">
                         No hay partidos activos por el momento.
                     </div>
                 )}
 
                 <div className="flex flex-col gap-5 mb-4">
-                    {info.partidos.map((p) => {
+                    {info.partidos.slice(0, partidosVisibles).map((p) => {
                         const msRestantes = new Date(p.fecha_hora_inicio).getTime() - ahora;
                         const cerrado = msRestantes < 1000 || p.estado_partido !== 'activo';
                         const enUltimaHora = msRestantes > 0 && msRestantes <= UNA_HORA_MS;
@@ -228,18 +229,24 @@ export default function Polla() {
                         return (
                             <div
                                 key={p.partido_id}
-                                className="relative rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.12)] backdrop-blur-lg p-5 pt-6"
+                                className="relative rounded-2xl border border-white/10 bg-slate-900 shadow-[0_0_20px_rgba(234,179,8,0.1)] p-5 pt-6"
                             >
-                                <p className="text-amber-500 dark:text-amber-400 font-bold text-sm mb-2 flex items-center justify-center gap-1.5 text-center">
-                                    <Bandera equipo={p.equipo_local} className="w-6 h-6" />
-                                    {p.equipo_local} vs
-                                    <Bandera equipo={p.equipo_visitante} className="w-6 h-6" />
-                                    {p.equipo_visitante}
-                                </p>
+                                {/* Equipos */}
+                                <div className="flex items-center justify-center gap-3 mb-3">
+                                    <div className="flex flex-col items-center gap-1 flex-1">
+                                        <Bandera equipo={p.equipo_local} className="w-10 h-10" />
+                                        <span className="text-white font-bold text-xs text-center leading-tight">{p.equipo_local}</span>
+                                    </div>
+                                    <span className="text-amber-400 font-black text-lg">VS</span>
+                                    <div className="flex flex-col items-center gap-1 flex-1">
+                                        <Bandera equipo={p.equipo_visitante} className="w-10 h-10" />
+                                        <span className="text-white font-bold text-xs text-center leading-tight">{p.equipo_visitante}</span>
+                                    </div>
+                                </div>
 
                                 {!cerrado && (
                                     <div
-                                        className={`text-center font-scoreboard text-xl font-black tracking-widest bg-black rounded-lg py-1 mb-3 ${
+                                        className={`text-center font-scoreboard text-xl font-black tracking-widest bg-black/60 rounded-lg py-1 mb-3 ${
                                             enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'
                                         }`}
                                     >
@@ -248,18 +255,18 @@ export default function Polla() {
                                 )}
 
                                 {p.ya_pronosticado ? (
-                                    <div className="text-center text-zinc-600 dark:text-zinc-300 text-sm">
+                                    <div className="text-center text-zinc-300 text-sm">
                                         <p className="mb-1">Tu pronóstico:</p>
                                         <p className="text-2xl font-black text-lime-400 font-scoreboard">
                                             {p.pronostico.local} - {p.pronostico.visitante}
                                         </p>
                                     </div>
                                 ) : cerrado ? (
-                                    <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
+                                    <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
                                 ) : info.cupos_disponibles === 0 ? (
                                     <div className="text-center">
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-2">No tienes cupos disponibles para predecir este partido.</p>
-                                        <Link to="/comprar" className="text-amber-500 dark:text-amber-400 underline text-sm font-bold">
+                                        <p className="text-zinc-400 text-sm mb-2">No tienes cupos disponibles para predecir este partido.</p>
+                                        <Link to="/comprar" className="text-amber-400 underline text-sm font-bold">
                                             Recarga para predecir este partido
                                         </Link>
                                     </div>
@@ -272,7 +279,7 @@ export default function Polla() {
                                                     inputMode="numeric"
                                                     value={m.local}
                                                     onChange={(e) => actualizarMarcador(p.partido_id, 'local', e.target.value)}
-                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
+                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
                                                 />
                                             </div>
 
@@ -284,7 +291,7 @@ export default function Polla() {
                                                     inputMode="numeric"
                                                     value={m.visitante}
                                                     onChange={(e) => actualizarMarcador(p.partido_id, 'visitante', e.target.value)}
-                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/30 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
+                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
                                                 />
                                             </div>
                                         </div>
@@ -309,6 +316,28 @@ export default function Polla() {
                         );
                     })}
                 </div>
+
+                {/* Ver más / ver menos */}
+                {info.partidos.length > 3 && (
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                        {partidosVisibles < info.partidos.length && (
+                            <button
+                                onClick={() => setPartidosVisibles((v) => v + 3)}
+                                className="px-6 py-2.5 rounded-xl font-bold text-sm text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                            >
+                                Ver más partidos ({info.partidos.length - partidosVisibles} restantes)
+                            </button>
+                        )}
+                        {partidosVisibles > 3 && (
+                            <button
+                                onClick={() => setPartidosVisibles(3)}
+                                className="text-zinc-500 text-xs underline hover:text-zinc-300 transition-colors"
+                            >
+                                Mostrar menos
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
