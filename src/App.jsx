@@ -23,7 +23,7 @@ import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
 
-const RUTAS_CON_BOTTOM_NAV = ['/', '/premios', '/como-participo', '/nosotros'];
+const RUTAS_CON_BOTTOM_NAV = ['/'];
 
 const SPLASH_KEY = 'polla_splash_visto';
 const REF_STORAGE_KEY = 'polla_ref_token';
