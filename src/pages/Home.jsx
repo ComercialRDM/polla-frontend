@@ -116,12 +116,18 @@ export default function Home() {
 
             <PlanesBono />
 
-            <div className="w-full max-w-md px-4 mt-3">
+            <div className="w-full max-w-md px-4 mt-3 flex gap-3">
                 <Link
-                    to="/ingresar"
-                    className="w-full flex items-center justify-center py-3 rounded-xl font-bold text-sm text-zinc-400 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 active:scale-95 transition-transform"
+                    to="/registro"
+                    className="flex-1 flex items-center justify-center py-3 rounded-xl font-bold text-sm border-2 border-zinc-900 text-zinc-900 bg-white dark:border-white dark:text-white dark:bg-transparent active:scale-95 transition-transform"
                 >
-                    Ya tengo mi bono → Ingresar
+                    Registrarse
+                </Link>
+                <Link
+                    to="/iniciar-sesion"
+                    className="flex-1 flex items-center justify-center py-3 rounded-xl font-bold text-sm text-white bg-zinc-900 dark:bg-zinc-700 active:scale-95 transition-transform"
+                >
+                    Iniciar Sesión
                 </Link>
             </div>
 
