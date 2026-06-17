@@ -256,10 +256,10 @@ export function adminNotificarRecompra(token, { partido_id_origen, partido_id_de
     });
 }
 
-export function localLogin(usuario, password) {
+export function localLogin(usuario, password, totp_code) {
     return request('/api/local/login', {
         method: 'POST',
-        body: JSON.stringify({ usuario, password }),
+        body: JSON.stringify({ usuario, password, ...(totp_code ? { totp_code } : {}) }),
     });
 }
 
@@ -346,6 +346,30 @@ export function adminMarcarReclamado(token, id) {
     return request(`/api/admin/bonos-colombia/${id}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function local2faEstado(token) {
+    return request('/api/local/2fa/estado', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function local2faSetup(token) {
+    return request('/api/local/2fa/setup', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function local2faConfirmar(token, code) {
+    return request('/api/local/2fa/confirmar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code }),
+    });
+}
+
+export function local2faDesactivar(token, code) {
+    return request('/api/local/2fa/desactivar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code }),
     });
 }
 
