@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { obtenerResumenUsuario } from '../api';
-import BiometriaRegistro from './BiometriaRegistro';
 import MisPronosticos from './MisPronosticos';
 
 export default function DashboardUsuario({ sesion, onSalir }) {
@@ -83,10 +82,7 @@ export default function DashboardUsuario({ sesion, onSalir }) {
                     </>
                 )}
 
-                {/* Biometría */}
-                <div className="px-3 pb-3 border-t border-white/5 pt-2">
-                    <BiometriaRegistro usuarioId={sesion.id} />
-                </div>
+
             </div>
 
             {/* Reta a un amigo */}
