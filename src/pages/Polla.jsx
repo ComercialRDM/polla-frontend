@@ -8,6 +8,7 @@ import EquiposFavoritos from '../components/EquiposFavoritos';
 import PartidosFavoritos from '../components/PartidosFavoritos';
 import CompartirPronostico from '../components/CompartirPronostico';
 import { cerrarSesion } from '../utils/sesion';
+import PozoPremios from '../components/PozoPremios';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
 
@@ -182,8 +183,11 @@ export default function Polla() {
                     )}
                 </div>
 
+                {/* Pozo de premios en tiempo real */}
+                <PozoPremios compact />
+
                 {/* Tarjetas de pronóstico por partido */}
-                <p className="text-zinc-900 dark:text-white font-bold text-base mb-3">Partidos disponibles para predecir</p>
+                <p className="text-zinc-900 dark:text-white font-bold text-base mb-3 mt-6">Partidos disponibles para predecir</p>
 
                 {info.partidos.length === 0 && (
                     <div className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-center text-zinc-300 mb-4">

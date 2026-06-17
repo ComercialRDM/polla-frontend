@@ -5,6 +5,7 @@ import gafasImg from '../assets/premios/gafas.webp';
 import PlanesBono from '../components/PlanesBono';
 import UltimosResultados from '../components/UltimosResultados';
 import ListaPronosticos from '../components/ListaPronosticos';
+import PozoPremios from '../components/PozoPremios';
 
 const PREMIOS = [
     { imagen: camisetaImg, titulo: 'Camiseta Oficial', descripcion: 'Selección Colombia 2026' },
@@ -33,7 +34,11 @@ export default function Premios() {
 
             <PlanesBono />
 
-            <div className="w-full max-w-md px-6 mt-10 relative z-10">
+            <div className="w-full max-w-md px-6 mt-8 relative z-10">
+                <PozoPremios />
+            </div>
+
+            <div className="w-full max-w-md px-6 mt-2 relative z-10">
                 <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-1">
                     🏆 Botín de Premios Mundialistas
                 </h2>

@@ -296,6 +296,10 @@ export function urlCalendarioIcs(calendarioToken) {
     return `${API_BASE}/api/polla/calendario/${calendarioToken}.ics`;
 }
 
+export function obtenerPozo() {
+    return request('/api/polla/pozo');
+}
+
 export function registrarCompartida(token_acceso, partido_id) {
     return request('/api/polla/registrar-compartida', {
         method: 'POST',
