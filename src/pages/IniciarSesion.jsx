@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { iniciarSesion, loginConGoogle, completarRegistroGoogle } from '../api';
+import { iniciarSesion } from '../api';
 import { guardarSesion } from '../utils/sesion';
-import GoogleButton from '../components/GoogleButton';
 
 export default function IniciarSesion() {
     const navigate = useNavigate();
@@ -11,59 +10,6 @@ export default function IniciarSesion() {
     const [error, setError] = useState('');
     const [sinCuenta, setSinCuenta] = useState(false);
     const [cargando, setCargando] = useState(false);
-
-    // Flujo de cuenta nueva con Google: si el backend no encuentra la cuenta,
-    // se pide el celular antes de crearla.
-    const [googleCredential, setGoogleCredential] = useState(null);
-    const [celularGoogle, setCelularGoogle] = useState('');
-    const [errorGoogle, setErrorGoogle] = useState('');
-    const [enviandoGoogle, setEnviandoGoogle] = useState(false);
-
-    async function handleCredencialGoogle(credential) {
-        setError('');
-        setErrorGoogle('');
-        try {
-            const data = await loginConGoogle(credential);
-            if (data?.success && data?.usuario) {
-                guardarSesion(data.usuario);
-                navigate('/');
-            } else if (data?.success && data?.nuevo) {
-                setGoogleCredential(credential);
-            } else {
-                setError((data?.error || 'No se pudo iniciar sesión con Google.') + (data?.detalle ? ` (${data.detalle})` : ''));
-            }
-        } catch {
-            setError('Error de conexión con el servidor.');
-        }
-    }
-
-    async function handleCompletarGoogle(e) {
-        e.preventDefault();
-        setErrorGoogle('');
-
-        if (!celularGoogle.trim() || celularGoogle.trim().length < 7) {
-            setErrorGoogle('Ingresa un número de celular válido.');
-            return;
-        }
-
-        setEnviandoGoogle(true);
-        try {
-            const data = await completarRegistroGoogle({
-                credential: googleCredential,
-                celular: celularGoogle.trim(),
-            });
-            if (data?.success) {
-                guardarSesion(data.usuario);
-                navigate('/');
-            } else {
-                setErrorGoogle(data?.error || 'No se pudo completar el registro.');
-            }
-        } catch {
-            setErrorGoogle('Error de conexión con el servidor.');
-        } finally {
-            setEnviandoGoogle(false);
-        }
-    }
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -102,50 +48,10 @@ export default function IniciarSesion() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                {googleCredential ? (
-                    <>
-                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">Un último paso</h1>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-                            Ingresa tu número de celular para terminar de crear tu cuenta con Google.
-                        </p>
-
-                        <form onSubmit={handleCompletarGoogle} className="flex flex-col gap-4">
-                            <div>
-                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
-                                <input
-                                    type="tel"
-                                    value={celularGoogle}
-                                    onChange={(e) => setCelularGoogle(e.target.value)}
-                                    placeholder="Ej: 3001234567"
-                                    className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                />
-                            </div>
-
-                            {errorGoogle && <p className="text-red-400 text-sm">{errorGoogle}</p>}
-
-                            <button
-                                type="submit"
-                                disabled={enviandoGoogle}
-                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                            >
-                                {enviandoGoogle ? 'Guardando...' : 'Continuar'}
-                            </button>
-                        </form>
-                    </>
-                ) : (
-                <>
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">Inicia sesión</h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     Ingresa con tu número de celular y tu contraseña.
                 </p>
-
-                <GoogleButton onCredential={handleCredencialGoogle} />
-
-                <div className="flex items-center gap-3 my-4">
-                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
-                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
@@ -207,8 +113,6 @@ export default function IniciarSesion() {
                             Crear contraseña / Registrarme
                         </Link>
                     </div>
-                )}
-                </>
                 )}
             </div>
         </div>
