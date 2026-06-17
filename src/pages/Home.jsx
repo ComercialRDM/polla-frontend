@@ -124,7 +124,7 @@ export default function Home() {
 
             {!sesion && (
                 <div className="w-full max-w-md px-4 mt-4">
-                    <Link to="/ingresar">
+                    <Link to="/iniciar-sesion">
                         <img
                             src={campanaImg}
                             alt="Polla Mundialista La Retoucherie"
