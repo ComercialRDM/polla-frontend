@@ -131,6 +131,21 @@ export default function Admin() {
         }
     }
 
+    async function limpiarUsuariosPrueba() {
+        if (!window.confirm('¿Borrar todos los usuarios de prueba? Solo quedarán los 3 reales.')) return;
+        try {
+            const r = await adminLimpiarUsuariosPrueba(token);
+            if (r.success) {
+                alert('✅ ' + r.eliminados + ' usuarios eliminados.');
+                cargarUsuarios();
+            } else {
+                alert('Error: ' + r.error);
+            }
+        } catch (err) {
+            alert('Error de conexión.');
+        }
+    }
+
     async function cargarUsuarios() {
         setUsuariosCargando(true);
         try {
@@ -1178,7 +1193,7 @@ export default function Admin() {
                             <button onClick={cargarUsuarios} disabled={usuariosCargando} className="text-xs px-3 py-1.5 rounded-lg bg-amber-400 text-zinc-950 font-bold disabled:opacity-50">
                                 {usuariosCargando ? 'Cargando...' : '↻ Actualizar'}
                             </button>
-                            <button onClick={async () => { if (!window.confirm('¿Borrar todos los usuarios de prueba? Solo quedarán los 3 reales.')) return; const r = await adminLimpiarUsuariosPrueba(token); alert(r.success ? `✅ ${r.eliminados} usuarios eliminados.` : r.error); if (r.success) cargarUsuarios(); }} className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white font-bold">
+                            <button onClick={limpiarUsuariosPrueba} className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white font-bold">
                                 🗑 Limpiar pruebas
                             </button>
                         </div>
