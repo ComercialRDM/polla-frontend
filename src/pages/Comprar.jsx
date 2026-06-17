@@ -217,7 +217,7 @@ export default function Comprar() {
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className="w-full max-w-md mt-6">
+            <div className="w-full max-w-md mt-6 pb-36">
                 <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Compra tu Bono Digital</h1>
@@ -332,24 +332,13 @@ export default function Comprar() {
                 )}
 
                 {/* Formulario */}
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form id="comprar-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
 
-                    {/* 1. Botón Wompi — primero y prominente */}
+                    {/* Trust badges */}
                     {!mostrarTransferencia && (
-                        <>
-                            <button
-                                type="submit"
-                                disabled={cargando || (esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
-                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60 text-lg"
-                            >
-                                {cargando
-                                    ? 'Generando link de pago...'
-                                    : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''} con Wompi`}
-                            </button>
-                            <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                                <TrustBadges />
-                            </div>
-                        </>
+                        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                            <TrustBadges />
+                        </div>
                     )}
 
                     {/* 2. Datos del cliente */}
@@ -452,18 +441,9 @@ export default function Comprar() {
                     {error && <p className="text-red-400 text-sm">{error}</p>}
 
                     {mostrarTransferencia && (
-                        <>
-                            <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                                <TrustBadges />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={cargando}
-                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                            >
-                                {cargando ? 'Enviando comprobante...' : 'Enviar comprobante de transferencia'}
-                            </button>
-                        </>
+                        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                            <TrustBadges />
+                        </div>
                     )}
 
                     <button
@@ -477,6 +457,28 @@ export default function Comprar() {
             </div>
 
             <Footer />
+
+            {/* ── Sticky bottom bar ── */}
+            <div
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md border-t border-zinc-200 dark:border-white/10 px-4 pt-3 shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
+                style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+            >
+                {error && (
+                    <p className="text-red-500 text-xs text-center font-medium mb-2">{error}</p>
+                )}
+                <button
+                    form="comprar-form"
+                    type="submit"
+                    disabled={cargando || (!mostrarTransferencia && esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
+                    className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform disabled:opacity-60 text-base"
+                >
+                    {cargando
+                        ? (mostrarTransferencia ? 'Enviando comprobante...' : 'Generando link de pago...')
+                        : mostrarTransferencia
+                            ? 'Enviar comprobante de transferencia'
+                            : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''} con Wompi`}
+                </button>
+            </div>
         </div>
     );
 }
