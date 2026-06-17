@@ -193,11 +193,11 @@ export function adminAprobar(token, transaccion_id) {
     });
 }
 
-export function adminCrearPartido(token, { equipo_local, equipo_visitante, fecha_hora_inicio }) {
+export function adminCrearPartido(token, { equipo_local, equipo_visitante, fecha_hora_inicio, fase = 'grupos' }) {
     return request('/api/admin/partidos', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ equipo_local, equipo_visitante, fecha_hora_inicio }),
+        body: JSON.stringify({ equipo_local, equipo_visitante, fecha_hora_inicio, fase }),
     });
 }
 

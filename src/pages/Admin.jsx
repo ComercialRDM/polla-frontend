@@ -31,7 +31,7 @@ export default function Admin() {
     const [busqueda, setBusqueda] = useState('');
 
     const [partidos, setPartidos] = useState([]);
-    const [nuevoPartido, setNuevoPartido] = useState({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '' });
+    const [nuevoPartido, setNuevoPartido] = useState({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '', fase: 'grupos' });
     const [creandoPartido, setCreandoPartido] = useState(false);
     const [errorPartido, setErrorPartido] = useState('');
 
@@ -153,9 +153,10 @@ export default function Admin() {
                 equipo_local: equipo_local.trim(),
                 equipo_visitante: equipo_visitante.trim(),
                 fecha_hora_inicio: new Date(fecha_hora_inicio).toISOString(),
+                fase: nuevoPartido.fase,
             });
             if (data?.success) {
-                setNuevoPartido({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '' });
+                setNuevoPartido({ equipo_local: '', equipo_visitante: '', fecha_hora_inicio: '', fase: 'grupos' });
                 cargarPartidos();
             } else {
                 setErrorPartido(data?.error || 'No se pudo crear el partido.');
@@ -190,6 +191,7 @@ export default function Admin() {
             goles_local: p.goles_local ?? 0,
             goles_visitante: p.goles_visitante ?? 0,
             estado: p.estado,
+            fase: p.fase || 'grupos',
         });
     }
 
@@ -207,6 +209,7 @@ export default function Admin() {
                 goles_local: Number(edicionPartido.goles_local),
                 goles_visitante: Number(edicionPartido.goles_visitante),
                 estado: edicionPartido.estado,
+                fase: edicionPartido.fase,
             });
             if (data?.success) {
                 setEditandoPartido(null);
@@ -680,7 +683,7 @@ export default function Admin() {
                 <>
                 <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Crear partido</h2>
-                    <form onSubmit={handleCrearPartido} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <form onSubmit={handleCrearPartido} className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                         <input
                             type="text"
                             value={nuevoPartido.equipo_local}
@@ -701,6 +704,18 @@ export default function Admin() {
                             onChange={(e) => setNuevoPartido((p) => ({ ...p, fecha_hora_inicio: e.target.value }))}
                             className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
+                        <select
+                            value={nuevoPartido.fase}
+                            onChange={(e) => setNuevoPartido((p) => ({ ...p, fase: e.target.value }))}
+                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                            <option value="grupos">Grupos (1 cupo)</option>
+                            <option value="dieciseisavos">Dieciseisavos (1 cupo)</option>
+                            <option value="octavos">Octavos (1 cupo)</option>
+                            <option value="cuartos">Cuartos de Final (2 cupos)</option>
+                            <option value="semifinal">Semifinal (2 cupos)</option>
+                            <option value="final">Gran Final (4 cupos)</option>
+                        </select>
                         <button
                             type="submit"
                             disabled={creandoPartido}
@@ -717,6 +732,7 @@ export default function Admin() {
                                 <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
                                     <tr>
                                         <th className="px-3 py-2">Partido</th>
+                                        <th className="px-3 py-2">Fase</th>
                                         <th className="px-3 py-2">Fecha</th>
                                         <th className="px-3 py-2">Marcador</th>
                                         <th className="px-3 py-2">Estado</th>
@@ -729,6 +745,24 @@ export default function Admin() {
                                         return (
                                             <tr key={p.id} className="border-t border-zinc-100 dark:border-white/5 text-zinc-700 dark:text-zinc-200">
                                                 <td className="px-3 py-2">{p.equipo_local} vs {p.equipo_visitante}</td>
+                                                <td className="px-3 py-2">
+                                                    {editando ? (
+                                                        <select
+                                                            value={edicionPartido.fase}
+                                                            onChange={(e) => setEdicionPartido((ed) => ({ ...ed, fase: e.target.value }))}
+                                                            className="rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-1 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                        >
+                                                            <option value="grupos">Grupos</option>
+                                                            <option value="dieciseisavos">Dieciseisavos</option>
+                                                            <option value="octavos">Octavos</option>
+                                                            <option value="cuartos">Cuartos</option>
+                                                            <option value="semifinal">Semifinal</option>
+                                                            <option value="final">Gran Final</option>
+                                                        </select>
+                                                    ) : (
+                                                        p.fase || 'grupos'
+                                                    )}
+                                                </td>
                                                 <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">
                                                     {editando ? (
                                                         <input
