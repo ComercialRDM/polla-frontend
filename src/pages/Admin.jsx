@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
@@ -72,9 +75,11 @@ export default function Admin() {
     const [totp2faMsg, setTotp2faMsg] = useState('');
 
     // ── Usuarios ──────────────────────────────────────────────────────────────
-    const [usuarios, setUsuarios]               = useState([]);
-    const [usuariosCargando, setUsuariosCargando] = useState(false);
-    const [usuariosBusqueda, setUsuariosBusqueda] = useState('');
+    const [usuarios, setUsuarios]                   = useState([]);
+    const [usuariosCargando, setUsuariosCargando]   = useState(false);
+    const [usuariosBusqueda, setUsuariosBusqueda]   = useState('');
+    const [usuariosFechaInicio, setUsuariosFechaInicio] = useState('');
+    const [usuariosFechaFin,    setUsuariosFechaFin]    = useState('');
 
     // ── Reportes ──────────────────────────────────────────────────────────────
     const [reporteFechaInicio, setReporteFechaInicio] = useState('');
@@ -141,6 +146,69 @@ export default function Admin() {
         } finally {
             setUsuariosCargando(false);
         }
+    }
+
+    function usuariosFiltrados() {
+        return usuarios.filter((u) => {
+            const q = usuariosBusqueda.toLowerCase();
+            const matchQ = !q || u.nombre?.toLowerCase().includes(q) || u.correo?.toLowerCase().includes(q) || u.celular?.includes(q);
+            const fecha = new Date(u.fecha_registro);
+            const matchInicio = !usuariosFechaInicio || fecha >= new Date(usuariosFechaInicio);
+            const matchFin    = !usuariosFechaFin    || fecha <= new Date(usuariosFechaFin + 'T23:59:59');
+            return matchQ && matchInicio && matchFin;
+        });
+    }
+
+    function exportarUsuariosCSV() {
+        const datos = usuariosFiltrados();
+        const headers = ['Nombre', 'Celular', 'Correo', 'Compras aprobadas', 'Total pagado', 'Fecha registro'];
+        const filas = datos.map((u) => [
+            u.nombre, u.celular, u.correo || '',
+            u.compras_aprobadas, Number(u.total_pagado),
+            new Date(u.fecha_registro).toLocaleDateString('es-CO'),
+        ]);
+        const csv = [headers, ...filas].map((r) => r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'usuarios_polla.csv';
+        a.click();
+    }
+
+    function exportarUsuariosExcel() {
+        const datos = usuariosFiltrados();
+        const ws = XLSX.utils.json_to_sheet(datos.map((u) => ({
+            Nombre: u.nombre, Celular: u.celular, Correo: u.correo || '',
+            'Compras aprobadas': Number(u.compras_aprobadas),
+            'Total pagado': Number(u.total_pagado),
+            'Fecha registro': new Date(u.fecha_registro).toLocaleDateString('es-CO'),
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Usuarios');
+        XLSX.writeFile(wb, 'usuarios_polla.xlsx');
+    }
+
+    function exportarUsuariosPDF() {
+        const datos = usuariosFiltrados();
+        const doc = new jsPDF();
+        doc.setFontSize(14);
+        doc.text('Usuarios Registrados - Polla Mundialista', 14, 15);
+        doc.setFontSize(9);
+        doc.setTextColor(120);
+        doc.text('La Retoucherie de Manuela · ' + new Date().toLocaleDateString('es-CO'), 14, 22);
+        autoTable(doc, {
+            startY: 28,
+            head: [['Nombre', 'Celular', 'Correo', 'Compras', 'Total pagado', 'Registro']],
+            body: datos.map((u) => [
+                u.nombre, u.celular, u.correo || '',
+                u.compras_aprobadas,
+                Number(u.total_pagado) > 0 ? '$' + Number(u.total_pagado).toLocaleString('es-CO') : '—',
+                new Date(u.fecha_registro).toLocaleDateString('es-CO'),
+            ]),
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [234, 179, 8], textColor: 0 },
+        });
+        doc.save('usuarios_polla.pdf');
     }
 
     async function cargarBonosColombia() {
@@ -1174,19 +1242,50 @@ export default function Admin() {
                     <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                         <h2 className="text-lg font-bold text-zinc-900 dark:text-white">👥 Usuarios Registrados</h2>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">{usuarios.length} en total</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">{usuariosFiltrados().length} / {usuarios.length}</span>
                             <button onClick={cargarUsuarios} disabled={usuariosCargando} className="text-xs px-3 py-1.5 rounded-lg bg-amber-400 text-zinc-950 font-bold disabled:opacity-50">
                                 {usuariosCargando ? 'Cargando...' : '↻ Actualizar'}
                             </button>
                         </div>
                     </div>
-                    <input
-                        type="text"
-                        placeholder="Buscar por nombre, correo o celular..."
-                        value={usuariosBusqueda}
-                        onChange={(e) => setUsuariosBusqueda(e.target.value)}
+
+                    {/* Filtros */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div>
+                            <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Desde</label>
+                            <input type="date" value={usuariosFechaInicio} onChange={(e) => setUsuariosFechaInicio(e.target.value)}
+                                className="w-full rounded-lg bg-white dark:bg-slate-900/60 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                        </div>
+                        <div>
+                            <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Hasta</label>
+                            <input type="date" value={usuariosFechaFin} onChange={(e) => setUsuariosFechaFin(e.target.value)}
+                                className="w-full rounded-lg bg-white dark:bg-slate-900/60 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400" />
+                        </div>
+                    </div>
+                    <input type="text" placeholder="Buscar por nombre, correo o celular..."
+                        value={usuariosBusqueda} onChange={(e) => setUsuariosBusqueda(e.target.value)}
                         className="w-full mb-3 rounded-lg bg-white dark:bg-slate-900/60 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
+
+                    {/* Botones de exportación */}
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                        <button onClick={exportarUsuariosCSV} className="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-700">
+                            ⬇ CSV
+                        </button>
+                        <button onClick={exportarUsuariosExcel} className="text-xs px-3 py-1.5 rounded-lg bg-green-700 text-white font-bold hover:bg-green-800">
+                            ⬇ Excel
+                        </button>
+                        <button onClick={exportarUsuariosPDF} className="text-xs px-3 py-1.5 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700">
+                            ⬇ PDF
+                        </button>
+                        {(usuariosFechaInicio || usuariosFechaFin || usuariosBusqueda) && (
+                            <button onClick={() => { setUsuariosFechaInicio(''); setUsuariosFechaFin(''); setUsuariosBusqueda(''); }}
+                                className="text-xs px-3 py-1.5 rounded-lg bg-zinc-300 dark:bg-zinc-700 text-zinc-800 dark:text-white font-bold">
+                                ✕ Limpiar filtros
+                            </button>
+                        )}
+                    </div>
+
                     {usuariosCargando ? (
                         <p className="text-zinc-400 text-sm text-center py-4">Cargando usuarios...</p>
                     ) : (
@@ -1203,12 +1302,7 @@ export default function Admin() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {usuarios
-                                        .filter((u) => {
-                                            const q = usuariosBusqueda.toLowerCase();
-                                            return !q || u.nombre?.toLowerCase().includes(q) || u.correo?.toLowerCase().includes(q) || u.celular?.includes(q);
-                                        })
-                                        .map((u) => (
+                                    {usuariosFiltrados().map((u) => (
                                         <tr key={u.id} className="border-b border-zinc-100 dark:border-white/5 hover:bg-zinc-100 dark:hover:bg-white/5">
                                             <td className="py-2 pr-3 font-medium text-zinc-900 dark:text-white">{u.nombre}</td>
                                             <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">{u.celular}</td>
@@ -1219,7 +1313,7 @@ export default function Admin() {
                                                 </span>
                                             </td>
                                             <td className="py-2 pr-3 text-right text-zinc-900 dark:text-white font-medium">
-                                                {Number(u.total_pagado) > 0 ? `$${Number(u.total_pagado).toLocaleString('es-CO')}` : '—'}
+                                                {Number(u.total_pagado) > 0 ? '$' + Number(u.total_pagado).toLocaleString('es-CO') : '—'}
                                             </td>
                                             <td className="py-2 text-zinc-400 whitespace-nowrap">
                                                 {new Date(u.fecha_registro).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: '2-digit' })}
@@ -1228,10 +1322,7 @@ export default function Admin() {
                                     ))}
                                 </tbody>
                             </table>
-                            {usuarios.filter((u) => {
-                                const q = usuariosBusqueda.toLowerCase();
-                                return !q || u.nombre?.toLowerCase().includes(q) || u.correo?.toLowerCase().includes(q) || u.celular?.includes(q);
-                            }).length === 0 && (
+                            {usuariosFiltrados().length === 0 && (
                                 <p className="text-zinc-400 text-sm text-center py-4">No hay usuarios que coincidan.</p>
                             )}
                         </div>
