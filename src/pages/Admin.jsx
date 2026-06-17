@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -69,6 +69,13 @@ export default function Admin() {
     const [totp2faQr, setTotp2faQr] = useState(null);
     const [totp2faCode, setTotp2faCode] = useState('');
     const [totp2faMsg, setTotp2faMsg] = useState('');
+
+    // ── Reportes ──────────────────────────────────────────────────────────────
+    const [reporteFechaInicio, setReporteFechaInicio] = useState('');
+    const [reporteFechaFin,    setReporteFechaFin]    = useState('');
+    const [reporteData,        setReporteData]        = useState(null);
+    const [reporteCargando,    setReporteCargando]    = useState(false);
+    const [reporteError,       setReporteError]       = useState('');
 
     const [seccionActiva, setSeccionActiva] = useState('transacciones');
 
@@ -526,6 +533,25 @@ export default function Admin() {
             );
         } finally {
             setExportando('');
+        }
+    }
+
+    async function generarReporte() {
+        if (!reporteFechaInicio || !reporteFechaFin) {
+            setReporteError('Selecciona fecha de inicio y fin.');
+            return;
+        }
+        setReporteCargando(true);
+        setReporteError('');
+        setReporteData(null);
+        try {
+            const data = await adminReportes(token, reporteFechaInicio, reporteFechaFin);
+            if (data?.success) setReporteData(data);
+            else setReporteError(data?.error || 'Error generando reporte');
+        } catch {
+            setReporteError('Error de conexión');
+        } finally {
+            setReporteCargando(false);
         }
     }
 
@@ -1395,6 +1421,93 @@ export default function Admin() {
                     <Metrica titulo="Aprobadas" valor={aprobadas.length} />
                     <Metrica titulo="Ingresos" valor={formatoPesos(ingresos)} />
                     <Metrica titulo="Total transacciones" valor={transacciones.length} />
+                </div>
+
+                {/* Reporte por rango de fechas */}
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <h2 className="text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-3">📅 Reporte por período</h2>
+                    <div className="flex flex-col sm:flex-row gap-3 items-end flex-wrap">
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs text-zinc-500 dark:text-zinc-400">Desde</label>
+                            <input
+                                type="date"
+                                value={reporteFechaInicio}
+                                onChange={e => { setReporteFechaInicio(e.target.value); setReporteData(null); }}
+                                className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs text-zinc-500 dark:text-zinc-400">Hasta</label>
+                            <input
+                                type="date"
+                                value={reporteFechaFin}
+                                onChange={e => { setReporteFechaFin(e.target.value); setReporteData(null); }}
+                                className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                            />
+                        </div>
+                        <button
+                            onClick={generarReporte}
+                            disabled={reporteCargando || !reporteFechaInicio || !reporteFechaFin}
+                            className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
+                        >
+                            {reporteCargando ? 'Generando...' : 'Generar reporte'}
+                        </button>
+                    </div>
+                    {reporteError && <p className="text-red-400 text-sm mt-2">{reporteError}</p>}
+
+                    {reporteData && (
+                        <div className="mt-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                                <Metrica titulo="Total" valor={reporteData.resumen.total} />
+                                <Metrica titulo="Aprobadas" valor={reporteData.resumen.aprobadas} />
+                                <Metrica titulo="Pendientes" valor={reporteData.resumen.pendientes} />
+                                <Metrica titulo="Ingresos período" valor={formatoPesos(reporteData.resumen.ingresos)} />
+                            </div>
+                            {reporteData.transacciones.length > 0 ? (
+                                <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                            <tr>
+                                                <th className="px-3 py-2">Cliente</th>
+                                                <th className="px-3 py-2">Contacto</th>
+                                                <th className="px-3 py-2">Valor</th>
+                                                <th className="px-3 py-2">Método</th>
+                                                <th className="px-3 py-2">Estado</th>
+                                                <th className="px-3 py-2">Fecha</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                            {reporteData.transacciones.map(t => (
+                                                <tr key={t.id} className="text-zinc-700 dark:text-zinc-200">
+                                                    <td className="px-3 py-2 font-medium">{t.nombre}</td>
+                                                    <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 text-xs">
+                                                        {t.correo && <div>{t.correo}</div>}
+                                                        <div>{t.celular}</div>
+                                                    </td>
+                                                    <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">
+                                                        {formatoPesos(t.valorPagado)}
+                                                    </td>
+                                                    <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 capitalize">{t.metodo}</td>
+                                                    <td className="px-3 py-2">
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                                                            t.estado === 'APROBADO'  ? 'bg-green-500/20 text-green-600 dark:text-green-400' :
+                                                            t.estado === 'PENDIENTE' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' :
+                                                            'bg-red-500/20 text-red-500'
+                                                        }`}>{t.estado}</span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-xs text-zinc-400 whitespace-nowrap">
+                                                        {new Date(t.fecha).toLocaleString('es-CO')}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <p className="text-zinc-400 text-sm text-center py-3">No hay transacciones en este período.</p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Pestañas y buscador */}

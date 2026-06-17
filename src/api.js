@@ -408,6 +408,12 @@ export function adminToggleLocalUsuario(token, id) {
     });
 }
 
+export function adminReportes(token, fecha_inicio, fecha_fin) {
+    return request(`/api/admin/reportes?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function registrarCompartida(token_acceso, partido_id) {
     return request('/api/polla/registrar-compartida', {
         method: 'POST',
