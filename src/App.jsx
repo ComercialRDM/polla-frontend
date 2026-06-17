@@ -13,6 +13,7 @@ import RecuperarPassword from './pages/RecuperarPassword';
 import Polla from './pages/Polla';
 import Admin from './pages/Admin';
 import RedimirCodigo from './pages/RedimirCodigo';
+import AdminQR from './pages/AdminQR';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Anexo from './pages/Anexo';
@@ -69,6 +70,7 @@ function AppRoutes() {
                 <Route path="/anexo" element={<Anexo />} />
                 <Route path="/dashboardpollardm" element={<Admin />} />
                 <Route path="/redimircodigordm" element={<RedimirCodigo />} />
+                <Route path="/adminqr" element={<AdminQR />} />
             </Routes>
             <BotonWhatsApp desplazado={mostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
             <InstalarApp onVisibleChange={setMostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />

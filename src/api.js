@@ -259,6 +259,14 @@ export function localEstadisticas(token) {
     });
 }
 
+export function localRedimirBono(token, tokenAcceso, monto) {
+    return request('/api/local/bono/redimir', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ token_acceso: tokenAcceso, monto }),
+    });
+}
+
 export async function adminAbrirComprobante(token, transaccion_id) {
     const res = await fetch(`${API_BASE}/api/admin/comprobante/${transaccion_id}`, {
         headers: { Authorization: `Bearer ${token}` },
