@@ -9,6 +9,7 @@ import UltimosResultados from '../components/UltimosResultados';
 import ListaPronosticos from '../components/ListaPronosticos';
 import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
+import PartidosFlash from '../components/PartidosFlash';
 import campanaImg from '../assets/Polla Mundialista Retoucherie_Comprimida.webp';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
@@ -114,6 +115,8 @@ export default function Home() {
                     className="w-full rounded-xl shadow-lg object-cover"
                 />
             </div>
+
+            <PartidosFlash />
 
             <div className="w-full max-w-md px-4 mt-4">
                 <Link

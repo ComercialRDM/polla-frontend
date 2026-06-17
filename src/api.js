@@ -25,6 +25,17 @@ export function obtenerPartidos() {
     return request('/api/partidos');
 }
 
+export function obtenerPartidosFlash() {
+    return request('/api/polla/flash');
+}
+
+export function votarFlash({ usuario_id, partido_id, local, visitante }) {
+    return request('/api/polla/votar-flash', {
+        method: 'POST',
+        body: JSON.stringify({ usuario_id, partido_id, local, visitante }),
+    });
+}
+
 export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref }) {
     return request('/api/transacciones/crear-link', {
         method: 'POST',
