@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
 const SECCIONES = [
     { id: 'transacciones', label: 'Transacciones' },
-    { id: 'simulador', label: 'Simulador' },
-    { id: 'partidos', label: 'Partidos' },
+    { id: 'apuestas',      label: 'Apuestas' },
+    { id: 'simulador',     label: 'Simulador' },
+    { id: 'partidos',      label: 'Partidos' },
 ];
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -47,6 +48,15 @@ export default function Admin() {
     const [metricasSimulador, setMetricasSimulador] = useState(null);
     const [errorSimulador, setErrorSimulador] = useState('');
     const [precioSimulado, setPrecioSimulado] = useState(PRECIO_REFERENCIA);
+
+    // ── Apuestas ──────────────────────────────────────────────────────────────
+    const [apPartidoId, setApPartidoId]   = useState('');
+    const [apBusqueda, setApBusqueda]     = useState('');
+    const [apData, setApData]             = useState(null);
+    const [apPage, setApPage]             = useState(1);
+    const [apCargando, setApCargando]     = useState(false);
+    const [apError, setApError]           = useState('');
+    const [exportando, setExportando]     = useState('');
 
     async function cargarDatos(tok) {
         setCargando(true);
@@ -275,6 +285,81 @@ export default function Admin() {
         }
     }
 
+    // ── Apuestas ──────────────────────────────────────────────────────────────
+    async function cargarApuestas(partidoId, page, search) {
+        if (!partidoId) return;
+        setApCargando(true);
+        setApError('');
+        try {
+            const data = await adminApuestas(token, { partido_id: partidoId, page, limit: 100, search });
+            if (data?.success) {
+                setApData(data);
+                setApPage(page);
+            } else {
+                setApError(data?.error || 'Error cargando apuestas');
+            }
+        } catch {
+            setApError('Error de conexión');
+        } finally {
+            setApCargando(false);
+        }
+    }
+
+    async function exportarTransacciones(formato) {
+        setExportando(formato);
+        try {
+            const filas = listaFiltrada.map(t => ({
+                Nombre: t.nombre,
+                Correo: t.correo,
+                Celular: t.celular,
+                Valor: t.valorPagado,
+                Estado: t.estado,
+                Método: t.metodo,
+                Fecha: new Date(t.fecha).toLocaleString('es-CO'),
+            }));
+            const nombre = 'Transacciones_Polla';
+            if (formato === 'csv') exportarCSV(filas, nombre, Object.keys(filas[0]));
+            if (formato === 'excel') await exportarExcel(filas, nombre, 'Transacciones');
+            if (formato === 'pdf') await exportarPDF(
+                Object.keys(filas[0]),
+                filas.map(Object.values),
+                nombre,
+                'Transacciones — Polla Mundialista'
+            );
+        } finally {
+            setExportando('');
+        }
+    }
+
+    async function exportarApuestas(formato) {
+        if (!apPartidoId) return;
+        setExportando(formato);
+        try {
+            const data = await adminApuestasExport(token, apPartidoId);
+            if (!data?.success) { setApError(data?.error || 'Error exportando'); return; }
+            const p = data.partido;
+            const nombre = `Apuestas_${p.equipo_local}_vs_${p.equipo_visitante}`.replace(/\s+/g, '_');
+            const filas = data.apuestas.map(a => ({
+                Nombre:       a.nombre,
+                Celular:      a.celular,
+                Pronóstico:   `${a.predLocal} - ${a.predVisitante}`,
+                'Fecha UTC':  a.createdAt ? new Date(a.createdAt).toISOString().replace('T', ' ').slice(0, 19) : '-',
+                'Hora CO':    a.createdAt ? new Date(a.createdAt).toLocaleString('es-CO') : '-',
+                Puntos:       a.puntos ?? '-',
+            }));
+            if (formato === 'csv') exportarCSV(filas, nombre, Object.keys(filas[0]));
+            if (formato === 'excel') await exportarExcel(filas, nombre, 'Apuestas');
+            if (formato === 'pdf') await exportarPDF(
+                Object.keys(filas[0]),
+                filas.map(Object.values),
+                nombre,
+                `Apuestas: ${p.equipo_local} vs ${p.equipo_visitante}`
+            );
+        } finally {
+            setExportando('');
+        }
+    }
+
     if (!autenticado) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 px-6">
@@ -344,6 +429,185 @@ export default function Admin() {
                         </button>
                     ))}
                 </div>
+
+                {/* ── Apuestas ── */}
+                {seccionActiva === 'apuestas' && (
+                <div>
+                    {/* Controles */}
+                    <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                        <select
+                            value={apPartidoId}
+                            onChange={e => { setApPartidoId(e.target.value); setApData(null); }}
+                            className="flex-1 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                            <option value="">— Selecciona un partido —</option>
+                            {partidos.map(p => (
+                                <option key={p.id} value={p.id}>
+                                    {p.equipo_local} vs {p.equipo_visitante} ({p.estado})
+                                </option>
+                            ))}
+                        </select>
+                        <input
+                            type="text"
+                            value={apBusqueda}
+                            onChange={e => setApBusqueda(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && cargarApuestas(apPartidoId, 1, apBusqueda)}
+                            placeholder="Buscar por nombre o celular..."
+                            className="flex-1 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        <button
+                            onClick={() => cargarApuestas(apPartidoId, 1, apBusqueda)}
+                            disabled={!apPartidoId || apCargando}
+                            className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
+                        >
+                            {apCargando ? 'Cargando...' : 'Cargar'}
+                        </button>
+                    </div>
+
+                    {apError && <p className="text-red-400 text-sm mb-3">{apError}</p>}
+
+                    {apData && (
+                    <>
+                        {/* Métricas del partido */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                            <Metrica titulo="Total apuestas" valor={apData.total} />
+                            <Metrica titulo="Partido" valor={`${apData.partido.equipo_local} vs ${apData.partido.equipo_visitante}`} />
+                            <Metrica titulo="Estado" valor={apData.partido.estado} />
+                            <Metrica titulo="Resultado real" valor={
+                                apData.partido.estado === 'cerrado'
+                                    ? `${apData.partido.goles_local} - ${apData.partido.goles_visitante}`
+                                    : 'En juego'
+                            } />
+                        </div>
+
+                        {/* Resumen de marcadores apostados */}
+                        {apData.resumen.length > 0 && (
+                        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-4">
+                            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-3">Marcadores más apostados</p>
+                            <div className="flex flex-wrap gap-2">
+                                {apData.resumen.map((r, i) => (
+                                    <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                                        apData.partido.estado === 'cerrado' &&
+                                        r.predLocal === apData.partido.goles_local &&
+                                        r.predVisitante === apData.partido.goles_visitante
+                                            ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                            : 'bg-zinc-100 dark:bg-white/5 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-white/10'
+                                    }`}>
+                                        {r.predLocal}-{r.predVisitante}
+                                        <span className="opacity-60">×{r.cantidad}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        )}
+
+                        {/* Export buttons */}
+                        <div className="flex gap-2 mb-3 flex-wrap items-center">
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">Exportar {apData.total} apuestas:</span>
+                            <BtnExport label="CSV" activo={exportando === 'csv'} onClick={() => exportarApuestas('csv')} color="green" />
+                            <BtnExport label="Excel" activo={exportando === 'excel'} onClick={() => exportarApuestas('excel')} color="blue" />
+                            <BtnExport label="PDF" activo={exportando === 'pdf'} onClick={() => exportarApuestas('pdf')} color="red" />
+                        </div>
+
+                        {/* Tabla paginada */}
+                        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10 mb-3">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-zinc-50 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                    <tr>
+                                        <th className="px-4 py-3">#</th>
+                                        <th className="px-4 py-3">Nombre</th>
+                                        <th className="px-4 py-3">Celular</th>
+                                        <th className="px-4 py-3">Pronóstico</th>
+                                        <th className="px-4 py-3">Fecha/Hora (UTC)</th>
+                                        <th className="px-4 py-3">Puntos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {apData.apuestas.map((a, idx) => {
+                                        const rowNum = (apPage - 1) * 100 + idx + 1;
+                                        return (
+                                            <tr key={a.id} className="border-t border-zinc-100 dark:border-white/5 text-zinc-700 dark:text-zinc-200">
+                                                <td className="px-4 py-2 text-zinc-400 text-xs">{rowNum}</td>
+                                                <td className="px-4 py-2 font-medium">{a.nombre}</td>
+                                                <td className="px-4 py-2 text-zinc-500 dark:text-zinc-400">{a.celular}</td>
+                                                <td className="px-4 py-2">
+                                                    <span className={`font-bold ${
+                                                        a.puntos === 3 ? 'text-green-500' :
+                                                        a.puntos === 1 ? 'text-amber-400' :
+                                                        a.puntos === 0 ? 'text-red-400' :
+                                                        'text-zinc-700 dark:text-zinc-200'
+                                                    }`}>
+                                                        {a.predLocal} - {a.predVisitante}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-2 text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                                                    {a.createdAt
+                                                        ? new Date(a.createdAt).toISOString().replace('T', ' ').slice(0, 19) + ' UTC'
+                                                        : '—'}
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    {a.puntos === null ? (
+                                                        <span className="text-zinc-400">—</span>
+                                                    ) : (
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                                                            a.puntos === 3 ? 'bg-green-500/20 text-green-400' :
+                                                            a.puntos === 1 ? 'bg-amber-500/20 text-amber-400' :
+                                                            'bg-red-500/20 text-red-400'
+                                                        }`}>{a.puntos} pts</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {apData.apuestas.length === 0 && (
+                                        <tr><td colSpan={6} className="px-4 py-6 text-center text-zinc-400">Sin resultados.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Paginación */}
+                        {apData.total > 100 && (() => {
+                            const totalPags = Math.ceil(apData.total / 100);
+                            return (
+                                <div className="flex items-center gap-2 justify-center flex-wrap">
+                                    <button
+                                        onClick={() => cargarApuestas(apPartidoId, 1, apBusqueda)}
+                                        disabled={apPage === 1 || apCargando}
+                                        className="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 disabled:opacity-40"
+                                    >«</button>
+                                    <button
+                                        onClick={() => cargarApuestas(apPartidoId, apPage - 1, apBusqueda)}
+                                        disabled={apPage === 1 || apCargando}
+                                        className="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 disabled:opacity-40"
+                                    >‹</button>
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                        Página {apPage} de {totalPags} · {apData.total} apuestas
+                                    </span>
+                                    <button
+                                        onClick={() => cargarApuestas(apPartidoId, apPage + 1, apBusqueda)}
+                                        disabled={apPage === totalPags || apCargando}
+                                        className="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 disabled:opacity-40"
+                                    >›</button>
+                                    <button
+                                        onClick={() => cargarApuestas(apPartidoId, totalPags, apBusqueda)}
+                                        disabled={apPage === totalPags || apCargando}
+                                        className="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 disabled:opacity-40"
+                                    >»</button>
+                                </div>
+                            );
+                        })()}
+                    </>
+                    )}
+
+                    {!apData && !apCargando && apPartidoId && (
+                        <p className="text-zinc-400 text-sm text-center py-8">Haz clic en "Cargar" para ver las apuestas.</p>
+                    )}
+                    {!apPartidoId && (
+                        <p className="text-zinc-400 text-sm text-center py-8">Selecciona un partido para ver las apuestas.</p>
+                    )}
+                </div>
+                )}
 
                 {/* Simulador de ingresos (solo admin) */}
                 {seccionActiva === 'simulador' && (
@@ -639,6 +903,16 @@ export default function Admin() {
                     </button>
                 </div>
 
+                {/* Botones export transacciones */}
+                {listaFiltrada.length > 0 && (
+                    <div className="flex gap-2 mb-4 flex-wrap">
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400 self-center">Exportar {listaFiltrada.length} registros:</span>
+                        <BtnExport label="CSV" activo={exportando === 'csv'} onClick={() => exportarTransacciones('csv')} color="green" />
+                        <BtnExport label="Excel" activo={exportando === 'excel'} onClick={() => exportarTransacciones('excel')} color="blue" />
+                        <BtnExport label="PDF" activo={exportando === 'pdf'} onClick={() => exportarTransacciones('pdf')} color="red" />
+                    </div>
+                )}
+
                 {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
 
                 {/* Tabla */}
@@ -728,4 +1002,70 @@ function Metrica({ titulo, valor }) {
             <p className="text-xl font-bold text-zinc-900 dark:text-white">{valor}</p>
         </div>
     );
+}
+
+const BTN_COLORS = {
+    green: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+    blue:  'bg-blue-600 hover:bg-blue-500 text-white',
+    red:   'bg-rose-600 hover:bg-rose-500 text-white',
+};
+
+function BtnExport({ label, activo, onClick, color }) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={activo}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-60 ${BTN_COLORS[color]}`}
+        >
+            {activo ? '...' : `↓ ${label}`}
+        </button>
+    );
+}
+
+// ── Export helpers ────────────────────────────────────────────────────────────
+
+function exportarCSV(filas, nombreArchivo, columnas) {
+    const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const lines = [
+        columnas.map(escape).join(','),
+        ...filas.map(f => columnas.map(c => escape(f[c])).join(',')),
+    ];
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    descargar(blob, `${nombreArchivo}.csv`);
+}
+
+async function exportarExcel(filas, nombreArchivo, nombreHoja) {
+    const { utils, writeFile } = await import('xlsx');
+    const ws = utils.json_to_sheet(filas);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, nombreHoja);
+    writeFile(wb, `${nombreArchivo}.xlsx`);
+}
+
+async function exportarPDF(columnas, filas, nombreArchivo, titulo) {
+    const { jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    doc.setFontSize(13);
+    doc.text(titulo, 14, 15);
+    doc.setFontSize(9);
+    doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 14, 21);
+    autoTable(doc, {
+        head: [columnas],
+        body: filas,
+        startY: 26,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [251, 191, 36], textColor: [0, 0, 0] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+    doc.save(`${nombreArchivo}.pdf`);
+}
+
+function descargar(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    a.click();
+    URL.revokeObjectURL(url);
 }

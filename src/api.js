@@ -259,6 +259,19 @@ export function localEstadisticas(token) {
     });
 }
 
+export function adminApuestas(token, { partido_id, page = 1, limit = 100, search = '' }) {
+    const params = new URLSearchParams({ partido_id, page, limit, search });
+    return request(`/api/admin/apuestas?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminApuestasExport(token, partidoId) {
+    return request(`/api/admin/apuestas/export?partido_id=${partidoId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function localRedimirBono(token, tokenAcceso, monto) {
     return request('/api/local/bono/redimir', {
         method: 'POST',
