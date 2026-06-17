@@ -68,8 +68,6 @@ function SeccionHeader({ titulo, id }) {
 
 export default function Home() {
     useEffect(() => {
-        if (localStorage.getItem('confeti_bienvenida')) return;
-        localStorage.setItem('confeti_bienvenida', '1');
         const disparo = (o) => confetti({ colors: COLORES_CONFETI, ...o });
         disparo({ particleCount: 100, spread: 70, origin: { x: 0.2, y: 0.6 }, angle: 60 });
         disparo({ particleCount: 100, spread: 70, origin: { x: 0.8, y: 0.6 }, angle: 120 });
