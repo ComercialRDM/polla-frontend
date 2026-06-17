@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { obtenerPartidos } from '../api';
 import { partidosFuturos } from '../utils/partidos';
+import { obtenerSesion } from '../utils/sesion';
 import Bandera from './Bandera';
 
 export default function ProximosPartidos() {
     const [partidos, setPartidos] = useState([]);
+    const sesion = obtenerSesion();
+    const favoritos = (sesion?.equipos_favoritos || []).map((e) => e.toLowerCase());
 
     useEffect(() => {
         obtenerPartidos()
@@ -30,13 +33,25 @@ export default function ProximosPartidos() {
                 {partidos.map((p) => {
                     const fecha = new Date(p.fecha_hora_inicio);
                     const esHoy = fecha.toDateString() === new Date().toDateString();
+                    const esFavorito =
+                        favoritos.includes(p.equipo_local?.toLowerCase()) ||
+                        favoritos.includes(p.equipo_visitante?.toLowerCase());
                     return (
                     <Link
                         key={p.id}
                         to={`/comprar?partido=${p.id}`}
-                        className="flex flex-col gap-2 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 active:scale-95 hover:border-amber-400/40 transition-all"
+                        className={`relative flex flex-col gap-2 rounded-2xl border p-4 active:scale-95 transition-all shadow-sm backdrop-blur-lg ${
+                            esFavorito
+                                ? 'border-[#FCD116] bg-[#FCD116]/5 dark:bg-[#FCD116]/10 shadow-[0_0_12px_rgba(252,209,22,0.2)]'
+                                : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 dark:shadow-none hover:border-amber-400/40'
+                        }`}
                     >
-                        <div className="flex justify-center items-baseline gap-1.5">
+                        {esFavorito && (
+                            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-[#FCD116] text-zinc-950 text-[10px] font-black px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                                ⭐ FAVORITO
+                            </div>
+                        )}
+                        <div className="flex justify-center items-baseline gap-1.5 mt-1">
                             <span className="text-amber-500 dark:text-amber-400 text-xs font-bold">
                                 {fecha.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
                             </span>
