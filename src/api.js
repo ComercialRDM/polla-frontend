@@ -408,13 +408,6 @@ export function adminToggleLocalUsuario(token, id) {
     });
 }
 
-export function adminLimpiarPruebas(token) {
-    return request('/api/admin/limpiar-pruebas', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-    });
-}
-
 export function adminReportes(token, fecha_inicio, fecha_fin) {
     return request(`/api/admin/reportes?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}`, {
         headers: { Authorization: `Bearer ${token}` },
