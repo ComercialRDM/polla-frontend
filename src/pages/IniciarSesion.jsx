@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { iniciarSesion } from '../api';
 import { guardarSesion } from '../utils/sesion';
 import BiometriaLogin from '../components/BiometriaLogin';
+import logoCopaFifa from '../assets/Logo_Copa_Fifa.webp';
 
 export default function IniciarSesion() {
     const navigate = useNavigate();
@@ -41,14 +42,15 @@ export default function IniciarSesion() {
     }
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
+        <div className="relative min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center overflow-hidden">
+            <img src={logoCopaFifa} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-contain opacity-[0.07] pointer-events-none select-none scale-110" />
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className="w-full max-w-md mt-6">
+            <div className="relative z-10 w-full max-w-md mt-6">
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">Inicia sesión</h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     Ingresa con tu número de celular y tu contraseña.
