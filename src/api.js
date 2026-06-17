@@ -25,6 +25,10 @@ export function obtenerPartidos() {
     return request('/api/partidos');
 }
 
+export function obtenerResumenUsuario(usuario_id) {
+    return request(`/api/polla/resumen-usuario?usuario_id=${usuario_id}`);
+}
+
 export function obtenerPartidosFlash() {
     return request('/api/polla/flash');
 }
