@@ -121,6 +121,11 @@ export default function Registro() {
 
     async function handleFinalizar() {
         setError('');
+        if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) {
+            setPaso(1);
+            setError('Ingresa un correo electrónico válido.');
+            return;
+        }
         setEnviando(true);
         try {
             const data = await registrarCuenta({
