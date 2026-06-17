@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PLANES, CUPO_VALOR, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
@@ -11,6 +11,8 @@ import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComp
 import TrustBadges from '../components/TrustBadges';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
+const PLAN_DEFAULT = 100000;
+const VALOR_OTRO = 'otro';
 
 const CUENTA_TRANSFERENCIA = {
     banco: 'Bancolombia',
@@ -22,18 +24,20 @@ const CUENTA_TRANSFERENCIA = {
 
 export default function Comprar() {
     const [searchParams] = useSearchParams();
+
     const planDesdeUrl = Number(searchParams.get('plan'));
-    const planPreseleccionado = PLANES.find((p) => p.valor === planDesdeUrl) ?? null;
-    const flujoRapido = planPreseleccionado !== null;
+    const planUrlValido = PLANES.some((p) => p.valor === planDesdeUrl) ? planDesdeUrl : null;
+
+    const [selectValor, setSelectValor] = useState(() =>
+        String(planUrlValido ?? PLAN_DEFAULT)
+    );
+    const [montoCustom, setMontoCustom] = useState('');
+    const [mostrarTransferencia, setMostrarTransferencia] = useState(false);
+    const [comprobante, setComprobante] = useState(null);
 
     const [partidos, setPartidos] = useState([]);
     const [partidoId, setPartidoId] = useState(null);
-    const [planSeleccionado, setPlanSeleccionado] = useState(() => {
-        return planPreseleccionado ? planPreseleccionado.valor : PLANES[0].valor;
-    });
-    const [modoCustom, setModoCustom] = useState(false);
-    const [montoCustom, setMontoCustom] = useState('');
-    const [metodoPago, setMetodoPago] = useState('wompi'); // 'wompi' | 'transferencia'
+
     const [form, setForm] = useState(() => {
         const guardados = obtenerDatosComprador();
         const sesion = obtenerSesion();
@@ -43,40 +47,33 @@ export default function Comprar() {
             celular: sesion?.celular || guardados.celular || '',
         };
     });
-    const [comprobante, setComprobante] = useState(null);
+
     const [enviado, setEnviado] = useState(false);
     const [mensajeExito, setMensajeExito] = useState('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
-    const formRef = useRef(null);
 
-    useEffect(() => {
-        if (flujoRapido && formRef.current) {
-            setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
-        }
-    }, []);
+    const esOtroMonto = selectValor === VALOR_OTRO;
+    const montoCustomNumero = Number(montoCustom) || 0;
+    const valorAPagar = esOtroMonto ? montoCustomNumero : Number(selectValor);
+    const planInfo = PLANES.find((p) => p.valor === valorAPagar) ?? null;
+    const cuposCustom = calcularCupos(montoCustomNumero);
+    const saldoBonoCustom = calcularSaldoBono(montoCustomNumero);
+    const residuoCustom = montoCustomNumero % CUPO_VALOR;
 
     useEffect(() => {
         obtenerPartidos()
             .then((data) => {
                 if (data?.success && data.partidos.length > 0) {
-                    const partidoUrl = Number(searchParams.get('partido'));
-                    const limite = partidoUrl ? 20 : 5;
-                    const lista = partidosFuturos(data.partidos, limite);
+                    const lista = partidosFuturos(data.partidos, 5);
                     setPartidos(lista);
-                    const preseleccionado = lista.some((p) => p.id === partidoUrl) ? partidoUrl : lista[0]?.id ?? null;
-                    setPartidoId(preseleccionado);
+                    setPartidoId(lista[0]?.id ?? null);
                 }
             })
             .catch(() => setError('No se pudo cargar la información del partido.'));
     }, []);
 
     const partidoSeleccionado = partidos.find((p) => p.id === partidoId) ?? null;
-
-    const montoCustomNumero = Number(montoCustom) || 0;
-    const valorAPagar = modoCustom ? montoCustomNumero : planSeleccionado;
-    const cuposCustom = calcularCupos(montoCustomNumero);
-    const residuoCustom = montoCustomNumero % CUPO_VALOR;
 
     function handleChange(e) {
         const nuevoForm = { ...form, [e.target.name]: e.target.value };
@@ -93,16 +90,10 @@ export default function Comprar() {
             return;
         }
         if (!partidoId) {
-            setError('No hay partidos disponibles para la polla en este momento.');
+            setError('No hay partidos disponibles en este momento.');
             return;
         }
-
-        if (metodoPago === 'transferencia' && !comprobante) {
-            setError('Adjunta la foto o captura del comprobante de la transferencia.');
-            return;
-        }
-
-        if (modoCustom) {
+        if (esOtroMonto) {
             if (
                 !Number.isInteger(montoCustomNumero) ||
                 montoCustomNumero < MONTO_PERSONALIZADO_MIN ||
@@ -117,7 +108,12 @@ export default function Comprar() {
 
         setCargando(true);
         try {
-            if (metodoPago === 'transferencia') {
+            if (mostrarTransferencia) {
+                if (!comprobante) {
+                    setError('Adjunta la foto o captura del comprobante de la transferencia.');
+                    setCargando(false);
+                    return;
+                }
                 const data = await crearTransferencia({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
@@ -127,7 +123,6 @@ export default function Comprar() {
                     comprobante,
                     ref,
                 });
-
                 if (data?.success) {
                     setMensajeExito(data.mensaje || 'Tu comprobante fue recibido. Te avisaremos cuando se confirme el pago.');
                     setEnviado(true);
@@ -151,7 +146,7 @@ export default function Comprar() {
             } else {
                 setError(data?.error || 'No se pudo generar el link de pago.');
             }
-        } catch (err) {
+        } catch {
             setError('Error de conexión con el servidor. Intenta de nuevo.');
         } finally {
             setCargando(false);
@@ -166,7 +161,6 @@ export default function Comprar() {
                     <div className="flex-1 bg-colombia-blue" />
                     <div className="flex-1 bg-colombia-red" />
                 </div>
-
                 <div className="w-full max-w-md mt-20 text-center">
                     <span className="text-5xl block mb-4">✅</span>
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">¡Comprobante recibido!</h1>
@@ -193,217 +187,141 @@ export default function Comprar() {
             <div className="w-full max-w-md mt-6">
                 <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">
-                    {flujoRapido ? 'Completa tu compra' : 'Compra tu Bono Digital'}
-                </h1>
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Compra tu Bono Digital</h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-                    {flujoRapido ? 'Ingresa tus datos y paga con Wompi de forma segura.' : 'Elige tu bono y participa en la Polla Mundialista.'}
+                    Elige tu plan y paga de forma segura con Wompi.
                 </p>
 
-                {flujoRapido ? (
-                    /* ── Flujo rápido: resumen compacto del plan elegido ── */
-                    <div className="rounded-2xl border-2 border-amber-400 bg-amber-400/10 p-4 mb-6 flex items-center justify-between gap-4">
-                        <div>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase font-bold tracking-wide mb-0.5">Plan seleccionado</p>
-                            <p className="text-zinc-900 dark:text-white font-extrabold text-xl">{formatoPesos(planPreseleccionado.valor)}</p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                                Bono de <span className="font-bold text-zinc-700 dark:text-zinc-300">{formatoPesos(planPreseleccionado.saldoBono)}</span> en servicios · {planPreseleccionado.etiqueta}
-                            </p>
-                        </div>
-                        <Link to="/comprar" className="text-xs text-amber-500 underline whitespace-nowrap">Cambiar</Link>
-                    </div>
-                ) : (
-                    /* ── Flujo normal: selector completo de planes ── */
-                    <>
-                        <div className="grid grid-cols-1 gap-3 mb-3">
+                {/* ── Selector de plan ── */}
+                <div className="mb-3">
+                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                        Selecciona tu plan
+                    </label>
+                    <div className="relative">
+                        <select
+                            value={selectValor}
+                            onChange={(e) => {
+                                setSelectValor(e.target.value);
+                                setMontoCustom('');
+                            }}
+                            className="w-full appearance-none rounded-xl border-2 border-amber-400 bg-white dark:bg-slate-900 px-4 py-3.5 pr-10 text-zinc-900 dark:text-white font-bold text-base focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
+                        >
                             {PLANES.map((plan) => (
-                                <button
-                                    key={plan.valor}
-                                    type="button"
-                                    onClick={() => {
-                                        setModoCustom(false);
-                                        setPlanSeleccionado(plan.valor);
-                                    }}
-                                    className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
-                                        plan.destacado === 'premium'
-                                            ? !modoCustom && planSeleccionado === plan.valor
-                                                ? 'border-amber-400 bg-amber-400/15 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] scale-[1.02]'
-                                                : 'border-amber-400/60 bg-amber-400/5 scale-[1.02]'
-                                            : !modoCustom && planSeleccionado === plan.valor
-                                                ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
-                                                : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
-                                    }`}
-                                >
-                                    {plan.destacado === 'popular' && (
-                                        <span className="absolute -top-2.5 left-4 bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
-                                            ⭐ Más popular
-                                        </span>
-                                    )}
-                                    {plan.destacado === 'premium' && (
-                                        <span className="absolute -top-2.5 left-4 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
-                                            🏆 Mejor valor — recomendado
-                                        </span>
-                                    )}
-                                    <div className="flex justify-between items-center mt-1">
-                                        <div>
-                                            <p className="text-zinc-900 dark:text-white font-bold">{formatoPesos(plan.valor)}</p>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Bono de {formatoPesos(plan.saldoBono)}</p>
-                                        </div>
-                                        <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">{plan.etiqueta}</span>
-                                    </div>
-                                </button>
+                                <option key={plan.valor} value={String(plan.valor)}>
+                                    {formatoPesos(plan.valor)} — Bono {formatoPesos(plan.saldoBono)} en servicios · {plan.etiqueta}
+                                    {plan.destacado === 'popular' ? ' ⭐' : plan.destacado === 'premium' ? ' 🏆' : ''}
+                                </option>
                             ))}
-
-                            <button
-                                type="button"
-                                onClick={() => setModoCustom(true)}
-                                className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
-                                    modoCustom
-                                        ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
-                                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
-                                }`}
-                            >
-                                <div className="flex justify-between items-center mt-1">
-                                    <div>
-                                        <p className="text-zinc-900 dark:text-white font-bold">Ingresa tu propio monto</p>
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                                            Cada {formatoPesos(CUPO_VALOR)} = 1 cupo para predecir un partido distinto
-                                        </p>
-                                    </div>
-                                    <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">Otro monto</span>
-                                </div>
-
-                                {modoCustom && (
-                                    <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                                        <input
-                                            type="number"
-                                            inputMode="numeric"
-                                            min={MONTO_PERSONALIZADO_MIN}
-                                            max={MONTO_PERSONALIZADO_MAX}
-                                            step={CUPO_VALOR}
-                                            value={montoCustom}
-                                            onChange={(e) => setMontoCustom(e.target.value)}
-                                            placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
-                                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-950/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                        />
-                                        {montoCustomNumero > 0 && (
-                                            <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
-                                                <p>
-                                                    Tu recarga equivale a{' '}
-                                                    <span className="text-amber-500 dark:text-amber-400 font-bold">
-                                                        {cuposCustom} {cuposCustom === 1 ? 'resultado' : 'resultados'}
-                                                    </span>{' '}
-                                                    de partidos distintos.
-                                                </p>
-                                                <p className="text-zinc-500 dark:text-zinc-400">
-                                                    Bono de servicio: {formatoPesos(calcularSaldoBono(montoCustomNumero))}
-                                                </p>
-                                                {residuoCustom > 0 && (
-                                                    <p className="text-zinc-500 dark:text-zinc-400">
-                                                        Saldo sin usar para un próximo cupo: {formatoPesos(residuoCustom)}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </button>
-                        </div>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-6">
-                            Tus cupos se acumulan en tu cuenta y puedes usarlos cualquier día, en cualquier partido activo.
-                        </p>
-                    </>
-                )}
-
-                {/* Selección del partido */}
-                <div className="mb-6">
-                    <p className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Elige el partido en el que quieres participar</p>
-                    <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">
-                        Tus cupos se pueden usar en cualquier partido activo, no solo en este.
-                    </p>
-                    <div className="flex flex-col gap-2">
-                        {partidos.map((p) => {
-                            const fecha = new Date(p.fecha_hora_inicio);
-                            const fechaTexto = fecha.toLocaleString('es-CO', {
-                                day: 'numeric',
-                                month: 'short',
-                                hour: 'numeric',
-                                minute: '2-digit',
-                            });
-                            return (
-                                <button
-                                    key={p.id}
-                                    type="button"
-                                    onClick={() => setPartidoId(p.id)}
-                                    className={`rounded-xl border p-3 text-left transition-all backdrop-blur-lg flex items-center justify-between gap-2 ${
-                                        partidoId === p.id
-                                            ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
-                                            : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
-                                    }`}
-                                >
-                                    <span className="font-bold text-sm inline-flex items-center gap-1.5">
-                                        <Bandera equipo={p.equipo_local} className="w-5 h-5" /> {p.equipo_local} vs <Bandera equipo={p.equipo_visitante} className="w-5 h-5" /> {p.equipo_visitante}
-                                    </span>
-                                    <span className="text-xs text-zinc-400 dark:text-zinc-400 whitespace-nowrap">{fechaTexto}</span>
-                                </button>
-                            );
-                        })}
-                        {partidos.length === 0 && (
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">No hay partidos disponibles por el momento.</p>
-                        )}
+                            <option value={VALOR_OTRO}>Otro monto personalizado...</option>
+                        </select>
+                        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-amber-500 text-lg">▾</span>
                     </div>
                 </div>
 
-                <CountdownPartido partido={partidoSeleccionado} />
-
-                {/* Selección del método de pago — oculto en flujo rápido (Wompi por defecto) */}
-                {!flujoRapido && (
-                    <div className="mb-6">
-                        <p className="block text-sm text-zinc-600 dark:text-zinc-300 mb-2">Método de pago</p>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setMetodoPago('wompi')}
-                                className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
-                                    metodoPago === 'wompi'
-                                        ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
-                                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
-                                }`}
-                            >
-                                💳 Tarjeta / PSE (Wompi)
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setMetodoPago('transferencia')}
-                                className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
-                                    metodoPago === 'transferencia'
-                                        ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
-                                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
-                                }`}
-                            >
-                                🏦 Transferencia
-                            </button>
+                {/* Info del plan seleccionado */}
+                {!esOtroMonto && planInfo && (
+                    <div className="mb-6 rounded-xl bg-amber-400/10 border border-amber-400/30 px-4 py-3 flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-zinc-900 dark:text-white font-black text-lg">{formatoPesos(planInfo.valor)}</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                                Bono de <span className="font-bold text-zinc-700 dark:text-zinc-300">{formatoPesos(planInfo.saldoBono)}</span> en servicios
+                            </p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-amber-500 font-black text-2xl leading-none">{planInfo.intentos}</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold">
+                                {planInfo.intentos === 1 ? 'cupo' : 'cupos'}
+                            </p>
                         </div>
                     </div>
                 )}
 
-                {metodoPago === 'transferencia' && (
-                    <div className="mb-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4">
-                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-2">Datos para tu transferencia</p>
-                        <ul className="text-zinc-600 dark:text-zinc-300 text-sm space-y-1">
-                            <li><span className="text-zinc-400 dark:text-zinc-400">Banco:</span> {CUENTA_TRANSFERENCIA.banco}</li>
-                            <li><span className="text-zinc-400 dark:text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
-                            <li><span className="text-zinc-400 dark:text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
-                            <li><span className="text-zinc-400 dark:text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
-                            <li className="pt-1 text-amber-500 dark:text-amber-400 font-bold">Valor a transferir: {formatoPesos(valorAPagar)}</li>
-                        </ul>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-3">
-                            Realiza la transferencia y sube la foto o captura del comprobante. Nuestro equipo la revisará y aprobará tu bono.
+                {/* Input monto personalizado */}
+                {esOtroMonto && (
+                    <div className="mb-6">
+                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">
+                            Ingresa el monto (múltiplos de {formatoPesos(CUPO_VALOR)})
+                        </label>
+                        <input
+                            type="number"
+                            inputMode="numeric"
+                            min={MONTO_PERSONALIZADO_MIN}
+                            max={MONTO_PERSONALIZADO_MAX}
+                            step={CUPO_VALOR}
+                            value={montoCustom}
+                            onChange={(e) => setMontoCustom(e.target.value)}
+                            placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
+                            className="w-full rounded-xl border-2 border-amber-400 bg-white dark:bg-slate-900 px-4 py-3.5 text-zinc-900 dark:text-white font-bold text-base focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        {montoCustomNumero >= MONTO_PERSONALIZADO_MIN && (
+                            <div className="mt-2 rounded-xl bg-amber-400/10 border border-amber-400/30 px-4 py-3 flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-zinc-900 dark:text-white font-black text-lg">{formatoPesos(montoCustomNumero)}</p>
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                                        Bono de <span className="font-bold text-zinc-700 dark:text-zinc-300">{formatoPesos(saldoBonoCustom)}</span> en servicios
+                                        {residuoCustom > 0 && <span> · Saldo sin cupo: {formatoPesos(residuoCustom)}</span>}
+                                    </p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-amber-500 font-black text-2xl leading-none">{cuposCustom}</p>
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold">
+                                        {cuposCustom === 1 ? 'cupo' : 'cupos'}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Partido */}
+                {partidos.length > 0 && (
+                    <div className="mb-6">
+                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Partido en el que quieres participar</label>
+                        <select
+                            value={partidoId ?? ''}
+                            onChange={(e) => setPartidoId(Number(e.target.value))}
+                            className="w-full appearance-none rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 px-4 py-3 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                            {partidos.map((p) => {
+                                const fecha = new Date(p.fecha_hora_inicio).toLocaleString('es-CO', {
+                                    day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+                                });
+                                return (
+                                    <option key={p.id} value={p.id}>
+                                        {p.equipo_local} vs {p.equipo_visitante} — {fecha}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                        <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1">
+                            Tus cupos se pueden usar en cualquier partido activo, no solo en este.
                         </p>
                     </div>
                 )}
 
-                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <CountdownPartido partido={partidoSeleccionado} />
+
+                {/* Información de transferencia (solo cuando está activo) */}
+                {mostrarTransferencia && (
+                    <div className="mb-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm backdrop-blur-lg p-4">
+                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-2">🏦 Datos para tu transferencia</p>
+                        <ul className="text-zinc-600 dark:text-zinc-300 text-sm space-y-1">
+                            <li><span className="text-zinc-400">Banco:</span> {CUENTA_TRANSFERENCIA.banco}</li>
+                            <li><span className="text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
+                            <li><span className="text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
+                            <li><span className="text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
+                            <li className="pt-1 text-amber-500 dark:text-amber-400 font-bold">
+                                Valor a transferir: {valorAPagar > 0 ? formatoPesos(valorAPagar) : '—'}
+                            </li>
+                        </ul>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-3">
+                            Sube la foto o captura del comprobante. Lo revisamos y activamos tu bono en minutos.
+                        </p>
+                    </div>
+                )}
+
+                {/* Formulario */}
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
                         <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                         <input
@@ -438,7 +356,7 @@ export default function Comprar() {
                         />
                     </div>
 
-                    {metodoPago === 'transferencia' && (
+                    {mostrarTransferencia && (
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Comprobante de pago (foto o captura)</label>
                             <input
@@ -454,21 +372,34 @@ export default function Comprar() {
 
                     <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
                         <TrustBadges />
-                        {metodoPago === 'transferencia' && (
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1 text-center">
-                                Tu bono se activa en minutos tras revisar el comprobante.
-                            </p>
-                        )}
                     </div>
 
+                    {!mostrarTransferencia ? (
+                        <button
+                            type="submit"
+                            disabled={cargando || (esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
+                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                        >
+                            {cargando
+                                ? 'Generando link de pago...'
+                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''} con Wompi`}
+                        </button>
+                    ) : (
+                        <button
+                            type="submit"
+                            disabled={cargando}
+                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                        >
+                            {cargando ? 'Enviando comprobante...' : 'Enviar comprobante de transferencia'}
+                        </button>
+                    )}
+
                     <button
-                        type="submit"
-                        disabled={cargando}
-                        className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                        type="button"
+                        onClick={() => setMostrarTransferencia((v) => !v)}
+                        className="text-center text-xs text-zinc-400 dark:text-zinc-500 underline"
                     >
-                        {cargando
-                            ? (metodoPago === 'transferencia' ? 'Enviando comprobante...' : 'Generando link de pago...')
-                            : (metodoPago === 'transferencia' ? 'Enviar comprobante' : 'Pagar con Wompi')}
+                        {mostrarTransferencia ? '← Volver a pagar con Wompi' : '¿Prefieres pagar por transferencia bancaria?'}
                     </button>
                 </form>
             </div>
