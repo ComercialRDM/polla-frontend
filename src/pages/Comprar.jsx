@@ -273,55 +273,30 @@ export default function Comprar() {
                     </div>
                 )}
 
-                {/* Partido */}
-                {partidos.length > 0 && (
-                    <div className="mb-6">
-                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Partido en el que quieres participar</label>
-                        <select
-                            value={partidoId ?? ''}
-                            onChange={(e) => setPartidoId(Number(e.target.value))}
-                            className="w-full appearance-none rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 px-4 py-3 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        >
-                            {partidos.map((p) => {
-                                const fecha = new Date(p.fecha_hora_inicio).toLocaleString('es-CO', {
-                                    day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
-                                });
-                                return (
-                                    <option key={p.id} value={p.id}>
-                                        {p.equipo_local} vs {p.equipo_visitante} — {fecha}
-                                    </option>
-                                );
-                            })}
-                        </select>
-                        <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1">
-                            Tus cupos se pueden usar en cualquier partido activo, no solo en este.
-                        </p>
-                    </div>
-                )}
-
-                <CountdownPartido partido={partidoSeleccionado} />
-
-                {/* Información de transferencia (solo cuando está activo) */}
-                {mostrarTransferencia && (
-                    <div className="mb-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm backdrop-blur-lg p-4">
-                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-2">🏦 Datos para tu transferencia</p>
-                        <ul className="text-zinc-600 dark:text-zinc-300 text-sm space-y-1">
-                            <li><span className="text-zinc-400">Banco:</span> {CUENTA_TRANSFERENCIA.banco}</li>
-                            <li><span className="text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
-                            <li><span className="text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
-                            <li><span className="text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
-                            <li className="pt-1 text-amber-500 dark:text-amber-400 font-bold">
-                                Valor a transferir: {valorAPagar > 0 ? formatoPesos(valorAPagar) : '—'}
-                            </li>
-                        </ul>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-3">
-                            Sube la foto o captura del comprobante. Lo revisamos y activamos tu bono en minutos.
-                        </p>
-                    </div>
-                )}
-
                 {/* Formulario */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+                    {/* 1. Botón Wompi — primero y prominente */}
+                    {!mostrarTransferencia && (
+                        <>
+                            <button
+                                type="submit"
+                                disabled={cargando || (esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
+                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60 text-lg"
+                            >
+                                {cargando
+                                    ? 'Generando link de pago...'
+                                    : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''} con Wompi`}
+                            </button>
+                            <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                <TrustBadges />
+                            </div>
+                        </>
+                    )}
+
+                    {/* 2. Datos del cliente */}
+                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mt-2">Ingresa tus datos</p>
+
                     <div>
                         <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                         <input
@@ -356,6 +331,54 @@ export default function Comprar() {
                         />
                     </div>
 
+                    {/* 3. Partido */}
+                    {partidos.length > 0 && (
+                        <div>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Partido en el que quieres participar</label>
+                            <select
+                                value={partidoId ?? ''}
+                                onChange={(e) => setPartidoId(Number(e.target.value))}
+                                className="w-full appearance-none rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 px-4 py-3 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            >
+                                {partidos.map((p) => {
+                                    const fecha = new Date(p.fecha_hora_inicio).toLocaleString('es-CO', {
+                                        day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+                                    });
+                                    return (
+                                        <option key={p.id} value={p.id}>
+                                            {p.equipo_local} vs {p.equipo_visitante} — {fecha}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                            <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1">
+                                Tus cupos se pueden usar en cualquier partido activo, no solo en este.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* 4. Countdown del partido */}
+                    <CountdownPartido partido={partidoSeleccionado} />
+
+                    {/* Información de transferencia */}
+                    {mostrarTransferencia && (
+                        <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm backdrop-blur-lg p-4">
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm mb-2">🏦 Datos para tu transferencia</p>
+                            <ul className="text-zinc-600 dark:text-zinc-300 text-sm space-y-1">
+                                <li><span className="text-zinc-400">Banco:</span> {CUENTA_TRANSFERENCIA.banco}</li>
+                                <li><span className="text-zinc-400">Cuenta {CUENTA_TRANSFERENCIA.tipo}:</span> {CUENTA_TRANSFERENCIA.numero}</li>
+                                <li><span className="text-zinc-400">Titular:</span> {CUENTA_TRANSFERENCIA.titular}</li>
+                                <li><span className="text-zinc-400">NIT:</span> {CUENTA_TRANSFERENCIA.nit}</li>
+                                <li className="pt-1 text-amber-500 dark:text-amber-400 font-bold">
+                                    Valor a transferir: {valorAPagar > 0 ? formatoPesos(valorAPagar) : '—'}
+                                </li>
+                            </ul>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-3">
+                                Sube la foto o captura del comprobante. Lo revisamos y activamos tu bono en minutos.
+                            </p>
+                        </div>
+                    )}
+
                     {mostrarTransferencia && (
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Comprobante de pago (foto o captura)</label>
@@ -370,28 +393,19 @@ export default function Comprar() {
 
                     {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
-                        <TrustBadges />
-                    </div>
-
-                    {!mostrarTransferencia ? (
-                        <button
-                            type="submit"
-                            disabled={cargando || (esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
-                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {cargando
-                                ? 'Generando link de pago...'
-                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''} con Wompi`}
-                        </button>
-                    ) : (
-                        <button
-                            type="submit"
-                            disabled={cargando}
-                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {cargando ? 'Enviando comprobante...' : 'Enviar comprobante de transferencia'}
-                        </button>
+                    {mostrarTransferencia && (
+                        <>
+                            <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                                <TrustBadges />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={cargando}
+                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                            >
+                                {cargando ? 'Enviando comprobante...' : 'Enviar comprobante de transferencia'}
+                            </button>
+                        </>
                     )}
 
                     <button
