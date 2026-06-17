@@ -29,7 +29,7 @@ export default function RecuperarPassword() {
             const data = await solicitarResetPassword({ celular: celular.trim(), metodo: metodoElegido });
             if (data?.success) {
                 const destino = metodoElegido === 'correo'
-                    ? 'tu correo electrónico'
+                    ? (data.destino ? `tu correo ${data.destino}` : 'tu correo electrónico')
                     : 'tu WhatsApp';
                 setMensaje(`Te enviamos un código a ${destino}. Revísalo e ingrésalo abajo.`);
                 setPaso(2);
