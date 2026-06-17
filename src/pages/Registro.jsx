@@ -91,6 +91,7 @@ export default function Registro() {
     const [confirmarPassword, setConfirmarPassword] = useState('');
     const [equipos, setEquipos] = useState([]);
     const [calendarioToken, setCalendarioToken] = useState(null);
+    const [mayorDeEdad, setMayorDeEdad] = useState(false);
     const [aceptaTerminos, setAceptaTerminos] = useState(false);
     const [recordarDispositivo, setRecordarDispositivo] = useState(true);
     const [error, setError] = useState('');
@@ -114,6 +115,7 @@ export default function Registro() {
         const errPw = validarPassword(password);
         if (errPw) { setError(errPw); return; }
         if (password !== confirmarPassword) { setError('Las contraseñas no coinciden.'); return; }
+        if (!mayorDeEdad) { setError('Debes confirmar que eres mayor de 18 años de edad.'); return; }
         if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
 
         setPaso(2);
@@ -232,6 +234,12 @@ export default function Registro() {
                             <input type="checkbox" checked={recordarDispositivo} onChange={(e) => setRecordarDispositivo(e.target.checked)}
                                 className="accent-amber-400 w-4 h-4" />
                             Recordar este dispositivo
+                        </label>
+
+                        <label className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 text-sm cursor-pointer">
+                            <input type="checkbox" checked={mayorDeEdad} onChange={(e) => setMayorDeEdad(e.target.checked)}
+                                className="accent-amber-400 w-4 h-4" />
+                            Confirmo que soy mayor de 18 años de edad
                         </label>
 
                         <label className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400 text-xs">

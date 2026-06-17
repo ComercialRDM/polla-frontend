@@ -38,6 +38,7 @@ export default function Admin() {
     const [editandoPartido, setEditandoPartido] = useState(null);
     const [edicionPartido, setEdicionPartido] = useState(null);
     const [guardandoPartido, setGuardandoPartido] = useState(false);
+    const [bonoColResult, setBonoColResult] = useState(null);
 
     const [recompra, setRecompra] = useState({ origen: '', destino: '' });
     const [enviandoRecompra, setEnviandoRecompra] = useState(false);
@@ -215,6 +216,7 @@ export default function Admin() {
                 setEditandoPartido(null);
                 setEdicionPartido(null);
                 cargarPartidos();
+                if (data.bonoColombia) setBonoColResult(data.bonoColombia);
             } else {
                 setErrorPartido(data?.error || 'No se pudo actualizar el partido.');
             }
@@ -681,6 +683,33 @@ export default function Admin() {
                 {/* Partidos: crear, editar y notificar recompra */}
                 {seccionActiva === 'partidos' && (
                 <>
+                {/* Banner Bono Colombia */}
+                {bonoColResult && (
+                    <div className={`rounded-xl border p-4 mb-4 ${bonoColResult.desierto ? 'border-zinc-300 dark:border-white/10 bg-zinc-50 dark:bg-white/5' : 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'}`}>
+                        <div className="flex items-start justify-between gap-2">
+                            <div>
+                                <p className="font-bold text-zinc-900 dark:text-white mb-1">
+                                    🇨🇴 Bono Colombia {bonoColResult.desierto ? '— Desierto' : '— ¡Ganadores!'}
+                                </p>
+                                {bonoColResult.desierto ? (
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">Nadie acertó el marcador exacto. El Bono Colombia queda desierto para este partido.</p>
+                                ) : (
+                                    <>
+                                        <p className="text-sm text-zinc-600 dark:text-zinc-300 mb-1">
+                                            ${bonoColResult.montoPorGanador.toLocaleString('es-CO')} COP c/u · Total distribuido: ${bonoColResult.totalDistribuido.toLocaleString('es-CO')} COP
+                                        </p>
+                                        <ul className="text-sm text-zinc-700 dark:text-zinc-200 space-y-0.5">
+                                            {bonoColResult.ganadores.map((g) => (
+                                                <li key={g.celular}>✅ {g.nombre} — {g.celular}</li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )}
+                            </div>
+                            <button onClick={() => setBonoColResult(null)} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg leading-none">×</button>
+                        </div>
+                    </div>
+                )}
                 <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">Crear partido</h2>
                     <form onSubmit={handleCrearPartido} className="grid grid-cols-1 sm:grid-cols-5 gap-3">

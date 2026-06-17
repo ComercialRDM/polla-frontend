@@ -173,6 +173,9 @@ export default function Polla() {
                     <p className="text-zinc-600 dark:text-zinc-300 text-sm">
                         Bono Retoucherie disponible: <span className="font-bold text-zinc-900 dark:text-white">{formatoPesos(info.dinero_disponible)}</span>
                     </p>
+                    <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1">
+                        Bono de Servicios vigente hasta el <strong>1 mar 2027</strong>
+                    </p>
                     {info.cupos_disponibles === 0 && (
                         <Link
                             to="/comprar"
@@ -198,7 +201,7 @@ export default function Polla() {
                 <div className="flex flex-col gap-5 mb-4">
                     {info.partidos.slice(0, partidosVisibles).map((p) => {
                         const msRestantes = new Date(p.fecha_hora_inicio).getTime() - ahora;
-                        const cerrado = msRestantes < 1000 || p.estado_partido !== 'activo';
+                        const cerrado = msRestantes < 5 * 60 * 1000 || p.estado_partido !== 'activo';
                         const enUltimaHora = msRestantes > 0 && msRestantes <= UNA_HORA_MS;
                         const m = marcadores[p.partido_id] || { local: '', visitante: '' };
 
@@ -207,6 +210,13 @@ export default function Polla() {
                                 key={p.partido_id}
                                 className="relative rounded-2xl border border-white/10 bg-slate-900 shadow-[0_0_20px_rgba(234,179,8,0.1)] p-5 pt-6"
                             >
+                                {/* Costo en cupos */}
+                                <div className="absolute top-2 right-2">
+                                    <span className="text-xs bg-amber-400/15 text-amber-500 dark:text-amber-400 rounded-full px-2 py-0.5 font-semibold">
+                                        {p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'}
+                                    </span>
+                                </div>
+
                                 {/* Equipos */}
                                 <div className="flex items-center justify-center gap-3 mb-3">
                                     <div className="flex flex-col items-center gap-1 flex-1">
@@ -247,11 +257,13 @@ export default function Polla() {
                                     </div>
                                 ) : cerrado ? (
                                     <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
-                                ) : info.cupos_disponibles === 0 ? (
+                                ) : info.cupos_disponibles < (p.cupos_costo || 1) ? (
                                     <div className="text-center">
-                                        <p className="text-zinc-400 text-sm mb-2">No tienes cupos disponibles para predecir este partido.</p>
+                                        <p className="text-zinc-400 text-sm mb-2">
+                                            Este partido requiere {p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'} — tienes {info.cupos_disponibles}.
+                                        </p>
                                         <Link to="/comprar" className="text-amber-400 underline text-sm font-bold">
-                                            Recarga para predecir este partido
+                                            Recargar cupos
                                         </Link>
                                     </div>
                                 ) : (
@@ -289,7 +301,7 @@ export default function Polla() {
                                             disabled={enviandoId === p.partido_id}
                                             className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
                                         >
-                                            {enviandoId === p.partido_id ? 'Guardando...' : 'Guardar pronóstico (1 cupo)'}
+                                            {enviandoId === p.partido_id ? 'Guardando...' : `Guardar pronóstico (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`}
                                         </button>
 
                                         {mensajeExitoId === p.partido_id && (
