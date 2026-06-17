@@ -9,7 +9,7 @@ import UltimosResultados from '../components/UltimosResultados';
 import ListaPronosticos from '../components/ListaPronosticos';
 import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
-import campanaImg from '../assets/Polla Mundialista Retoucherie.png';
+import campanaImg from '../assets/Polla Mundialista Retoucherie_Comprimida.webp';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
 import balonImg from '../assets/premios/balon.webp';
