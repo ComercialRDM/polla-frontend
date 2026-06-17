@@ -161,16 +161,49 @@ export default function Comprar() {
                     <div className="flex-1 bg-colombia-blue" />
                     <div className="flex-1 bg-colombia-red" />
                 </div>
-                <div className="w-full max-w-md mt-20 text-center">
-                    <span className="text-5xl block mb-4">✅</span>
+                <div className="w-full max-w-md mt-12 flex flex-col items-center text-center">
+                    <span className="text-6xl block mb-4">🎉</span>
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">¡Comprobante recibido!</h1>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">{mensajeExito}</p>
+
+                    {/* CTA registro */}
+                    <div className="w-full rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/10 p-6 mb-4 text-left">
+                        <p className="text-2xl mb-2">🏆</p>
+                        <p className="text-zinc-900 dark:text-white font-extrabold text-lg mb-2">¡Un paso más para ganar!</p>
+                        <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4">Regístrate para poder:</p>
+                        <ul className="flex flex-col gap-2 mb-5">
+                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                                Ver resultados de partidos de Colombia en tiempo real
+                            </li>
+                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                                Ingresar tu pronóstico antes de cada partido
+                            </li>
+                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                                Saber si ganaste un premio y cómo reclamarlo
+                            </li>
+                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                                Recibir notificaciones por WhatsApp de tus partidos
+                            </li>
+                        </ul>
+                        <Link
+                            to="/registro"
+                            className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
+                        >
+                            Registrarme ahora — ¡es gratis!
+                        </Link>
+                    </div>
+
                     <Link
-                        to="/"
-                        className="inline-block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform"
+                        to="/iniciar-sesion"
+                        className="block w-full py-3 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 mb-3"
                     >
-                        Volver al inicio
+                        Ya tengo cuenta — Iniciar sesión
                     </Link>
+                    <Link to="/" className="text-xs text-zinc-400 underline">Volver al inicio</Link>
                 </div>
             </div>
         );

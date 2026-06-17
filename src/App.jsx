@@ -6,6 +6,7 @@ import Premios from './pages/Premios';
 import ComoParticipo from './pages/ComoParticipo';
 import Nosotros from './pages/Nosotros';
 import Comprar from './pages/Comprar';
+import Gracias from './pages/Gracias';
 import Ingresar from './pages/Ingresar';
 import Registro from './pages/Registro';
 import IniciarSesion from './pages/IniciarSesion';
@@ -61,6 +62,7 @@ function AppRoutes() {
                 <Route path="/como-participo" element={<ComoParticipo />} />
                 <Route path="/nosotros" element={<Nosotros />} />
                 <Route path="/comprar" element={<Comprar />} />
+                <Route path="/gracias" element={<Gracias />} />
                 <Route path="/registro" element={<Registro />} />
                 <Route path="/iniciar-sesion" element={<IniciarSesion />} />
                 <Route path="/recuperar-password" element={<RecuperarPassword />} />
