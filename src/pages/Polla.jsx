@@ -6,6 +6,7 @@ import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
 import EquiposFavoritos from '../components/EquiposFavoritos';
 import PartidosFavoritos from '../components/PartidosFavoritos';
+import CompartirPronostico from '../components/CompartirPronostico';
 import { cerrarSesion } from '../utils/sesion';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
@@ -275,6 +276,12 @@ export default function Polla() {
                                         <p className="text-2xl font-black text-lime-400 font-scoreboard">
                                             {p.pronostico.local} - {p.pronostico.visitante}
                                         </p>
+                                        <CompartirPronostico
+                                            equipoLocal={p.equipo_local}
+                                            equipoVisitante={p.equipo_visitante}
+                                            localPred={p.pronostico.local}
+                                            visitantePred={p.pronostico.visitante}
+                                        />
                                     </div>
                                 ) : cerrado ? (
                                     <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
@@ -314,9 +321,6 @@ export default function Polla() {
                                         {errorPorPartido[p.partido_id] && (
                                             <p className="text-red-400 text-sm text-center mt-3">{errorPorPartido[p.partido_id]}</p>
                                         )}
-                                        {mensajeExitoId === p.partido_id && (
-                                            <p className="text-green-400 text-sm text-center mt-3">¡Pronóstico guardado con éxito! 🇨🇴</p>
-                                        )}
 
                                         <button
                                             onClick={() => handleSubmit(p)}
@@ -325,6 +329,15 @@ export default function Polla() {
                                         >
                                             {enviandoId === p.partido_id ? 'Guardando...' : 'Guardar pronóstico (1 cupo)'}
                                         </button>
+
+                                        {mensajeExitoId === p.partido_id && (
+                                            <CompartirPronostico
+                                                equipoLocal={p.equipo_local}
+                                                equipoVisitante={p.equipo_visitante}
+                                                localPred={m.local}
+                                                visitantePred={m.visitante}
+                                            />
+                                        )}
                                     </>
                                 )}
                             </div>

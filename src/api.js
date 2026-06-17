@@ -29,6 +29,10 @@ export function obtenerResumenUsuario(usuario_id) {
     return request(`/api/polla/resumen-usuario?usuario_id=${usuario_id}`);
 }
 
+export function obtenerMisPronosticos(usuario_id) {
+    return request(`/api/polla/mis-pronosticos?usuario_id=${usuario_id}`);
+}
+
 export function obtenerPartidosFlash() {
     return request('/api/polla/flash');
 }

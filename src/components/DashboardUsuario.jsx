@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { obtenerResumenUsuario } from '../api';
 import BiometriaRegistro from './BiometriaRegistro';
+import MisPronosticos from './MisPronosticos';
 
 export default function DashboardUsuario({ sesion, onSalir }) {
     const [datos, setDatos] = useState(null);
@@ -87,6 +88,12 @@ export default function DashboardUsuario({ sesion, onSalir }) {
                     <BiometriaRegistro usuarioId={sesion.id} />
                 </div>
             </div>
+
+            {/* Reta a un amigo */}
+            {datos && <RetaAmigo token={datos.token_polla} />}
+
+            {/* Historial de pronósticos */}
+            <MisPronosticos usuarioId={sesion.id} />
         </div>
     );
 }
@@ -148,6 +155,52 @@ function Stat({ icono, valor, etiqueta, color }) {
             <span className="text-sm mb-0.5">{icono}</span>
             <span className={`font-black text-xl leading-none ${color}`}>{valor}</span>
             <span className="text-zinc-500 text-[10px] mt-0.5 text-center leading-tight">{etiqueta}</span>
+        </div>
+    );
+}
+
+function RetaAmigo({ token }) {
+    const [copiado, setCopiado] = useState(false);
+    const url = `${window.location.origin}${token ? `/?ref=${token}` : ''}`;
+    const texto = `🇨🇴⚽ ¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela!\n\nPredice el marcador de los partidos y gana premios increíbles.\n\n👉 ${url}`;
+
+    async function handleCompartir() {
+        if (navigator.share) {
+            try { await navigator.share({ text: texto, url }); } catch {}
+        } else {
+            window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+        }
+    }
+
+    function handleCopiar() {
+        navigator.clipboard.writeText(url).then(() => {
+            setCopiado(true);
+            setTimeout(() => setCopiado(false), 2200);
+        });
+    }
+
+    return (
+        <div className="w-full max-w-md px-4 mt-3">
+            <div className="rounded-2xl bg-zinc-900 border border-white/8 px-4 py-3">
+                <p className="text-white font-bold text-sm mb-0.5">🏆 Reta a un amigo</p>
+                <p className="text-zinc-500 text-xs mb-3">
+                    Comparte con tu grupo de fútbol y compitan juntos por los premios.
+                </p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleCompartir}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform"
+                    >
+                        📲 Compartir
+                    </button>
+                    <button
+                        onClick={handleCopiar}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-zinc-300 border border-white/10 bg-white/5 active:scale-95 transition-transform"
+                    >
+                        {copiado ? '✅ ¡Copiado!' : '🔗 Copiar link'}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
