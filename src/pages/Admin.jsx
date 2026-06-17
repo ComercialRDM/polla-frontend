@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -44,6 +44,10 @@ export default function Admin() {
     const [bonosCol, setBonosCol]             = useState([]);
     const [cargandoBonosCol, setCargandoBonosCol] = useState(false);
     const [reclamandoId, setReclamandoId]     = useState(null);
+
+    const [testWaCelular, setTestWaCelular]   = useState('');
+    const [testWaResult, setTestWaResult]     = useState(null);
+    const [testWaEnviando, setTestWaEnviando] = useState(false);
 
     const [recompra, setRecompra] = useState({ origen: '', destino: '' });
     const [enviandoRecompra, setEnviandoRecompra] = useState(false);
@@ -118,6 +122,21 @@ export default function Admin() {
             // silencioso
         } finally {
             setReclamandoId(null);
+        }
+    }
+
+    async function handleTestWhatsapp(e) {
+        e.preventDefault();
+        if (!testWaCelular.trim()) return;
+        setTestWaEnviando(true);
+        setTestWaResult(null);
+        try {
+            const data = await adminTestWhatsapp(token, testWaCelular.trim());
+            setTestWaResult(data);
+        } catch (err) {
+            setTestWaResult({ success: false, error: err.message });
+        } finally {
+            setTestWaEnviando(false);
         }
     }
 
@@ -1021,6 +1040,33 @@ export default function Admin() {
                             </table>
                         </div>
                     )}
+
+                    {/* Diagnóstico WhatsApp */}
+                    <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-white/10">
+                        <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">📲 Prueba de conexión WhatsApp</h3>
+                        <form onSubmit={handleTestWhatsapp} className="flex gap-2">
+                            <input
+                                type="tel"
+                                value={testWaCelular}
+                                onChange={(e) => setTestWaCelular(e.target.value)}
+                                placeholder="Ej: 3001234567"
+                                className="flex-1 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                            />
+                            <button type="submit" disabled={testWaEnviando}
+                                className="px-4 py-2 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 whitespace-nowrap">
+                                {testWaEnviando ? 'Enviando...' : 'Enviar prueba'}
+                            </button>
+                        </form>
+                        {testWaResult && (
+                            <div className={`mt-2 rounded-lg p-3 text-xs ${testWaResult.success ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'}`}>
+                                <p className="font-bold mb-1">{testWaResult.success ? '✅ Enviado correctamente' : '❌ Error'}</p>
+                                {testWaResult.celularFormateado && <p>Número formateado: <strong>{testWaResult.celularFormateado}</strong></p>}
+                                {testWaResult.subscriberId && <p>Subscriber ID ManyChat: <strong>{testWaResult.subscriberId}</strong></p>}
+                                {testWaResult.error && <p>Error: {testWaResult.error}</p>}
+                                {testWaResult.detalles && <pre className="mt-1 overflow-x-auto text-xs opacity-70">{JSON.stringify(testWaResult.detalles, null, 2)}</pre>}
+                            </div>
+                        )}
+                    </div>
                 </div>
                 )}
 

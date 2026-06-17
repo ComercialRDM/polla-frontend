@@ -304,6 +304,14 @@ export function obtenerResultadosFinales() {
     return request('/api/polla/resultados-finales');
 }
 
+export function adminTestWhatsapp(token, celular) {
+    return request('/api/admin/test-whatsapp', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ celular }),
+    });
+}
+
 export function adminBonosColombia(token) {
     return request('/api/admin/bonos-colombia', {
         headers: { Authorization: `Bearer ${token}` },

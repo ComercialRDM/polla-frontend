@@ -266,47 +266,30 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         try {
             const canvas = await generarImagenStory();
             const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+            const file = new File([blob], 'pronostico-retoucherie.png', { type: 'image/png' });
             let compartido = false;
 
-            // Path 1: clipboard + deep link directo a cámara de Stories
-            // (evita el submenú Post/Reel/Historia/DM de Instagram)
-            if (window.ClipboardItem && navigator.clipboard?.write) {
-                try {
-                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                    // Abrir Instagram Stories camera después de que el clipboard se escriba
-                    setTimeout(() => { window.location.href = 'instagram://story-camera'; }, 250);
-                    setMensaje('📋 Imagen copiada — en Instagram toca el ícono de galería para pegarla en tu historia');
-                    compartido = true;
-                } catch {
-                    // Sin permisos de clipboard, continuar con Web Share
-                }
+            // Path 1: Web Share API con archivo — abre el share sheet nativo del sistema
+            // En iOS/Android muestra "Instagram" → va directo a crear Story con la imagen
+            if (navigator.canShare?.({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Mi pronóstico — Polla Mundialista La Retoucherie',
+                });
+                compartido = true;
+            } else {
+                // Path 2: descarga directa (desktop o browsers sin Web Share)
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'pronostico-retoucherie.png';
+                a.click();
+                URL.revokeObjectURL(url);
+                setMensaje('📲 Imagen descargada — súbela desde tu galería a Instagram Stories');
+                compartido = true;
             }
 
-            // Path 2: Web Share API con archivo (muestra hoja de apps del sistema)
-            if (!compartido) {
-                const file = new File([blob], 'pronostico-retoucherie.png', { type: 'image/png' });
-                if (navigator.canShare?.({ files: [file] })) {
-                    await navigator.share({ files: [file] });
-                    compartido = true;
-                } else if (navigator.share) {
-                    await navigator.share({
-                        text: `⚽ Mi pronóstico: ${equipoLocal} ${localPred} – ${visitantePred} ${equipoVisitante}\n¡Participa en la Polla Mundialista La Retoucherie! 🇨🇴`,
-                        url: 'https://www.ganaconretoucherie.com',
-                    });
-                    compartido = true;
-                } else {
-                    // Desktop: descarga directa
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'pronostico-retoucherie.png';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    compartido = true;
-                }
-            }
-
-            // Registrar compartida y otorgar 1 punto (máx 1/partido)
+            // Registrar compartida y otorgar puntos (máx 1/partido)
             if (compartido && tokenAcceso && partidoId) {
                 try {
                     const resp = await registrarCompartida(tokenAcceso, partidoId);
@@ -319,7 +302,9 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
                 }
             }
         } catch (err) {
-            // AbortError = usuario canceló, ignorar silenciosamente
+            if (err?.name !== 'AbortError') {
+                setMensaje('No se pudo compartir. Intenta de nuevo o descarga la imagen manualmente.');
+            }
         } finally {
             setGenerando(false);
         }
