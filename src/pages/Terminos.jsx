@@ -294,13 +294,17 @@ export default function Terminos() {
                     </ol>
 
                     {/* 9 */}
-                    <S>9. Reclamación de Premios</S>
+                    <S>9. Reclamación y Entrega de Premios</S>
                     <P>
                         El Operador contactará al beneficiario dentro de los <strong>10 días hábiles</strong> siguientes a la
                         confirmación del resultado, vía WhatsApp y/o correo electrónico registrado. El Participante
                         tendrá <strong>20 días calendario</strong> a partir del primer intento de contacto para reclamar su
                         premio en cualquiera de las sedes habilitadas, acreditando su identidad. Vencido este plazo sin
                         reclamación, el Operador podrá disponer libremente del incentivo.
+                    </P>
+                    <P>
+                        Una vez reclamado el premio, el Operador dispondrá de <strong>20 días hábiles contados desde
+                        la fecha del evento</strong> para gestionar y hacer entrega de la Gift Card al ganador.
                     </P>
                     <P>
                         Los premios son <strong>intransferibles</strong> y solo pueden ser reclamados por el titular registrado

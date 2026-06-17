@@ -152,7 +152,7 @@ export default function Anexo() {
                         <li>Si el empate persiste: el premio de los puestos empatados se <strong>divide en partes iguales</strong>.</li>
                     </ol>
 
-                    <S>6. Procedimiento de reclamación</S>
+                    <S>6. Procedimiento de reclamación y entrega</S>
                     <P>
                         Dentro de los <strong>10 días hábiles</strong> siguientes a la confirmación del resultado, el Operador
                         contactará al beneficiario por WhatsApp y/o correo electrónico registrado. El Participante contará con
@@ -160,9 +160,13 @@ export default function Anexo() {
                         sedes habilitadas (Barranquilla o Cartagena), exhibir su documento de identidad y reclamar su premio.
                     </P>
                     <P>
-                        Vencido el plazo sin reclamación, el Operador queda liberado de la obligación sin derecho a
-                        compensación posterior. Los premios son <strong>intransferibles</strong> y solo pueden ser reclamados
-                        por el titular registrado de la cuenta ganadora.
+                        Una vez reclamado el premio, el Operador dispondrá de <strong>20 días hábiles contados desde
+                        la fecha del evento</strong> para gestionar y hacer entrega de la Gift Card al ganador.
+                    </P>
+                    <P>
+                        Vencido el plazo de reclamación sin presentación del ganador, el Operador queda liberado de la
+                        obligación sin derecho a compensación posterior. Los premios son <strong>intransferibles</strong> y
+                        solo pueden ser reclamados por el titular registrado de la cuenta ganadora.
                     </P>
 
                     <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-white/10">
