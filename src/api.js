@@ -325,6 +325,41 @@ export function adminMarcarReclamado(token, id) {
     });
 }
 
+export function localResetPassword(correo) {
+    return request('/api/local/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ correo }),
+    });
+}
+
+export function adminLocalUsuarios(token) {
+    return request('/api/admin/local-usuarios', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminCrearLocalUsuario(token, { usuario, password, nombre_local, correo }) {
+    return request('/api/admin/local-usuarios', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ usuario, password, nombre_local, correo }),
+    });
+}
+
+export function adminResetLocalPassword(token, id) {
+    return request(`/api/admin/local-usuarios/${id}/reset-password`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminToggleLocalUsuario(token, id) {
+    return request(`/api/admin/local-usuarios/${id}/toggle`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function registrarCompartida(token_acceso, partido_id) {
     return request('/api/polla/registrar-compartida', {
         method: 'POST',

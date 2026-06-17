@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -9,6 +9,7 @@ const SECCIONES = [
     { id: 'simulador',       label: 'Simulador' },
     { id: 'partidos',        label: 'Partidos' },
     { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
+    { id: 'localesqr',       label: 'Locales QR' },
 ];
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -52,6 +53,13 @@ export default function Admin() {
     const [recompra, setRecompra] = useState({ origen: '', destino: '' });
     const [enviandoRecompra, setEnviandoRecompra] = useState(false);
     const [resultadoRecompra, setResultadoRecompra] = useState('');
+
+    const [localesQR, setLocalesQR] = useState([]);
+    const [cargandoLocales, setCargandoLocales] = useState(false);
+    const [nuevoLocal, setNuevoLocal] = useState({ usuario: '', password: '', nombre_local: '', correo: '' });
+    const [creandoLocal, setCreandoLocal] = useState(false);
+    const [errorLocal, setErrorLocal] = useState('');
+    const [tempPassVisible, setTempPassVisible] = useState({});
 
     const [seccionActiva, setSeccionActiva] = useState('transacciones');
 
@@ -140,6 +148,60 @@ export default function Admin() {
         }
     }
 
+    async function cargarLocalesQR() {
+        setCargandoLocales(true);
+        try {
+            const data = await adminLocalUsuarios(token);
+            if (data?.success) setLocalesQR(data.usuarios);
+        } catch {
+            // silencioso
+        } finally {
+            setCargandoLocales(false);
+        }
+    }
+
+    async function handleCrearLocal(e) {
+        e.preventDefault();
+        if (!nuevoLocal.usuario.trim() || !nuevoLocal.password.trim()) return;
+        setCreandoLocal(true);
+        setErrorLocal('');
+        try {
+            const data = await adminCrearLocalUsuario(token, nuevoLocal);
+            if (data?.success) {
+                setLocalesQR(prev => [data.usuario, ...prev]);
+                setNuevoLocal({ usuario: '', password: '', nombre_local: '', correo: '' });
+            } else {
+                setErrorLocal(data?.error || 'Error al crear usuario');
+            }
+        } catch {
+            setErrorLocal('Error de conexión');
+        } finally {
+            setCreandoLocal(false);
+        }
+    }
+
+    async function handleResetLocalPass(id) {
+        try {
+            const data = await adminResetLocalPassword(token, id);
+            if (data?.success) {
+                setTempPassVisible(prev => ({ ...prev, [id]: data.tempPass }));
+            }
+        } catch {
+            // silencioso
+        }
+    }
+
+    async function handleToggleLocal(id) {
+        try {
+            const data = await adminToggleLocalUsuario(token, id);
+            if (data?.success) {
+                setLocalesQR(prev => prev.map(u => u.id === id ? { ...u, activo: data.activo } : u));
+            }
+        } catch {
+            // silencioso
+        }
+    }
+
     async function cargarSimulador(tok) {
         setErrorSimulador('');
         try {
@@ -164,6 +226,7 @@ export default function Admin() {
 
     useEffect(() => {
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
+        if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
     }, [seccionActiva]);
 
     async function handleLogin(e) {
@@ -1064,6 +1127,111 @@ export default function Admin() {
                                 {testWaResult.subscriberId && <p>Subscriber ID ManyChat: <strong>{testWaResult.subscriberId}</strong></p>}
                                 {testWaResult.error && <p>Error: {testWaResult.error}</p>}
                                 {testWaResult.detalles && <pre className="mt-1 overflow-x-auto text-xs opacity-70">{JSON.stringify(testWaResult.detalles, null, 2)}</pre>}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                )}
+
+                {/* Locales QR */}
+                {seccionActiva === 'localesqr' && (
+                <div className="flex flex-col gap-5">
+                    {/* Crear nueva cuenta */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <h2 className="text-base font-bold text-zinc-900 dark:text-white mb-3">Nueva cuenta Admin QR</h2>
+                        <form onSubmit={handleCrearLocal} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input
+                                required
+                                placeholder="Usuario (sin espacios)"
+                                value={nuevoLocal.usuario}
+                                onChange={e => setNuevoLocal(p => ({ ...p, usuario: e.target.value.replace(/\s/g, '') }))}
+                                className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                            />
+                            <input
+                                required
+                                type="password"
+                                placeholder="Contraseña inicial"
+                                value={nuevoLocal.password}
+                                onChange={e => setNuevoLocal(p => ({ ...p, password: e.target.value }))}
+                                className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                            />
+                            <input
+                                placeholder="Nombre del local (ej. Sede Norte)"
+                                value={nuevoLocal.nombre_local}
+                                onChange={e => setNuevoLocal(p => ({ ...p, nombre_local: e.target.value }))}
+                                className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                            />
+                            <input
+                                type="email"
+                                placeholder="Correo (para recuperar contraseña)"
+                                value={nuevoLocal.correo}
+                                onChange={e => setNuevoLocal(p => ({ ...p, correo: e.target.value }))}
+                                className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                            />
+                            {errorLocal && <p className="sm:col-span-2 text-red-500 text-sm">{errorLocal}</p>}
+                            <button
+                                type="submit"
+                                disabled={creandoLocal}
+                                className="sm:col-span-2 py-2.5 rounded-lg font-bold text-sm text-zinc-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-60"
+                            >
+                                {creandoLocal ? 'Creando...' : '+ Crear cuenta'}
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Tabla de usuarios existentes */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-base font-bold text-zinc-900 dark:text-white">Cuentas registradas</h2>
+                            <button onClick={cargarLocalesQR} disabled={cargandoLocales}
+                                className="text-xs text-zinc-500 border border-zinc-300 dark:border-white/10 rounded px-2 py-1 hover:text-zinc-900 dark:hover:text-white">
+                                {cargandoLocales ? 'Cargando...' : 'Actualizar'}
+                            </button>
+                        </div>
+                        {localesQR.length === 0 ? (
+                            <p className="text-zinc-400 text-sm">{cargandoLocales ? 'Cargando...' : 'No hay cuentas creadas aún.'}</p>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                {localesQR.map(u => (
+                                    <div key={u.id} className={`rounded-lg border p-3 ${u.activo ? 'border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5' : 'border-zinc-200 dark:border-white/5 bg-zinc-100 dark:bg-white/2 opacity-60'}`}>
+                                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                                            <div>
+                                                <p className="font-bold text-zinc-900 dark:text-white text-sm">{u.usuario}
+                                                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-semibold ${u.activo ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-zinc-200 dark:bg-white/10 text-zinc-500'}`}>
+                                                        {u.activo ? 'Activo' : 'Inactivo'}
+                                                    </span>
+                                                </p>
+                                                {u.nombre_local && <p className="text-zinc-500 text-xs mt-0.5">{u.nombre_local}</p>}
+                                                {u.correo && <p className="text-zinc-400 text-xs">{u.correo}</p>}
+                                                <p className="text-zinc-400 text-xs mt-0.5">Creado: {new Date(u.fecha_creacion).toLocaleDateString('es-CO')}</p>
+                                            </div>
+                                            <div className="flex gap-2 flex-wrap">
+                                                <button
+                                                    onClick={() => handleResetLocalPass(u.id)}
+                                                    className="text-xs px-3 py-1.5 rounded-lg font-semibold bg-amber-100 dark:bg-amber-400/10 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-400/20"
+                                                >
+                                                    Resetear contraseña
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleLocal(u.id)}
+                                                    className={`text-xs px-3 py-1.5 rounded-lg font-semibold ${u.activo ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200' : 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-200'}`}
+                                                >
+                                                    {u.activo ? 'Desactivar' : 'Activar'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {tempPassVisible[u.id] && (
+                                            <div className="mt-2 rounded-lg bg-amber-50 dark:bg-amber-400/10 border border-amber-200 dark:border-amber-400/20 px-3 py-2 flex items-center justify-between gap-2">
+                                                <div>
+                                                    <p className="text-xs text-amber-700 dark:text-amber-400 font-semibold">Contraseña temporal (cópiala ya, no se mostrará de nuevo):</p>
+                                                    <p className="font-mono font-black text-amber-900 dark:text-amber-300 text-lg tracking-widest">{tempPassVisible[u.id]}</p>
+                                                </div>
+                                                <button onClick={() => setTempPassVisible(p => ({ ...p, [u.id]: undefined }))}
+                                                    className="text-zinc-400 text-xs underline">Cerrar</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>

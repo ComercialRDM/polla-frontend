@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { localLogin, localBuscarBono, localEstadisticas, localRedimirBono } from '../api';
+import { localLogin, localBuscarBono, localEstadisticas, localRedimirBono, localResetPassword } from '../api';
 import EscanerQR from '../components/EscanerQR';
 
 const STORAGE_KEY = 'polla_adminqr_token';
@@ -32,6 +32,12 @@ function PantallaLogin({ onLogin }) {
     const [error, setError] = useState('');
     const [cargando, setCargando] = useState(false);
 
+    const [modoReset, setModoReset] = useState(false);
+    const [correoReset, setCorreoReset] = useState('');
+    const [resetOk, setResetOk] = useState(false);
+    const [resetCargando, setResetCargando] = useState(false);
+    const [resetError, setResetError] = useState('');
+
     async function handleSubmit(e) {
         e.preventDefault();
         if (!usuario.trim() || !password.trim()) return;
@@ -52,13 +58,86 @@ function PantallaLogin({ onLogin }) {
         }
     }
 
+    async function handleReset(e) {
+        e.preventDefault();
+        if (!correoReset.trim()) return;
+        setResetCargando(true);
+        setResetError('');
+        try {
+            const data = await localResetPassword(correoReset.trim());
+            if (data?.success) {
+                setResetOk(true);
+            } else {
+                setResetError(data?.error || 'No se pudo procesar la solicitud.');
+            }
+        } catch {
+            setResetError('Error de conexión.');
+        } finally {
+            setResetCargando(false);
+        }
+    }
+
+    const headerQR = (
+        <div className="text-center mb-8">
+            <p className="text-[#FCD116] font-black text-2xl tracking-widest uppercase">Admin QR</p>
+            <p className="text-zinc-500 text-xs mt-1">La Retoucherie de Manuela</p>
+        </div>
+    );
+
+    if (modoReset) {
+        return (
+            <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6">
+                <div className="w-full max-w-sm">
+                    {headerQR}
+                    {resetOk ? (
+                        <div className="flex flex-col gap-4 text-center">
+                            <p className="text-5xl">✅</p>
+                            <p className="text-white font-bold">Si el correo está registrado, recibirás una contraseña temporal en tu bandeja de entrada.</p>
+                            <button
+                                onClick={() => { setModoReset(false); setResetOk(false); setCorreoReset(''); }}
+                                className="w-full py-3.5 rounded-xl font-black text-zinc-950 bg-[#FCD116]"
+                            >
+                                Volver al login
+                            </button>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleReset} className="flex flex-col gap-3">
+                            <p className="text-zinc-400 text-sm text-center mb-2">
+                                Ingresa el correo registrado en tu cuenta. Recibirás una contraseña temporal por correo.
+                            </p>
+                            <input
+                                type="email"
+                                value={correoReset}
+                                onChange={e => setCorreoReset(e.target.value)}
+                                placeholder="Correo electrónico"
+                                className="w-full rounded-xl bg-zinc-900 border border-white/10 px-4 py-3.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                            />
+                            {resetError && <p className="text-red-400 text-sm text-center">{resetError}</p>}
+                            <button
+                                type="submit"
+                                disabled={resetCargando}
+                                className="w-full py-3.5 rounded-xl font-black text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform disabled:opacity-60"
+                            >
+                                {resetCargando ? 'Enviando...' : 'Enviar contraseña temporal'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setModoReset(false); setResetError(''); }}
+                                className="text-sm text-zinc-500 underline text-center mt-1"
+                            >
+                                Volver al login
+                            </button>
+                        </form>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6">
             <div className="w-full max-w-sm">
-                <div className="text-center mb-8">
-                    <p className="text-[#FCD116] font-black text-2xl tracking-widest uppercase">Admin QR</p>
-                    <p className="text-zinc-500 text-xs mt-1">La Retoucherie de Manuela</p>
-                </div>
+                {headerQR}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                     <input
                         type="text"
@@ -83,6 +162,13 @@ function PantallaLogin({ onLogin }) {
                         className="w-full py-3.5 rounded-xl font-black text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform disabled:opacity-60 mt-1"
                     >
                         {cargando ? 'Verificando...' : 'Entrar'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { setModoReset(true); setError(''); }}
+                        className="text-sm text-zinc-500 underline text-center mt-1"
+                    >
+                        ¿Olvidaste tu contraseña?
                     </button>
                 </form>
             </div>
