@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
 import balonImg from '../assets/premios/balon.webp';
@@ -36,6 +37,14 @@ export default function Premios() {
 
             <div className="w-full max-w-md px-6 mt-8 relative z-10">
                 <PozoPremios />
+                <div className="text-center mt-3">
+                    <Link
+                        to="/resultados"
+                        className="inline-block text-sm font-bold text-amber-500 dark:text-amber-400 underline underline-offset-2"
+                    >
+                        Ver tabla de posiciones →
+                    </Link>
+                </div>
             </div>
 
             <div className="w-full max-w-md px-6 mt-2 relative z-10">

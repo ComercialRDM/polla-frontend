@@ -17,6 +17,7 @@ import AdminQR from './pages/AdminQR';
 import Terminos from './pages/Terminos';
 import Privacidad from './pages/Privacidad';
 import Anexo from './pages/Anexo';
+import ResultadosFinales from './pages/ResultadosFinales';
 import BotonWhatsApp from './components/BotonWhatsApp';
 import InstalarApp from './components/InstalarApp';
 import ThemeToggle from './components/ThemeToggle';
@@ -68,6 +69,7 @@ function AppRoutes() {
                 <Route path="/terminos" element={<Terminos />} />
                 <Route path="/privacidad" element={<Privacidad />} />
                 <Route path="/anexo" element={<Anexo />} />
+                <Route path="/resultados" element={<ResultadosFinales />} />
                 <Route path="/dashboardpollardm" element={<Admin />} />
                 <Route path="/redimircodigordm" element={<RedimirCodigo />} />
                 <Route path="/adminqr" element={<AdminQR />} />

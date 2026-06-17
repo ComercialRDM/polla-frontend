@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
 const SECCIONES = [
-    { id: 'transacciones', label: 'Transacciones' },
-    { id: 'apuestas',      label: 'Apuestas' },
-    { id: 'simulador',     label: 'Simulador' },
-    { id: 'partidos',      label: 'Partidos' },
+    { id: 'transacciones',   label: 'Transacciones' },
+    { id: 'apuestas',        label: 'Apuestas' },
+    { id: 'simulador',       label: 'Simulador' },
+    { id: 'partidos',        label: 'Partidos' },
+    { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
 ];
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -39,6 +40,10 @@ export default function Admin() {
     const [edicionPartido, setEdicionPartido] = useState(null);
     const [guardandoPartido, setGuardandoPartido] = useState(false);
     const [bonoColResult, setBonoColResult] = useState(null);
+
+    const [bonosCol, setBonosCol]             = useState([]);
+    const [cargandoBonosCol, setCargandoBonosCol] = useState(false);
+    const [reclamandoId, setReclamandoId]     = useState(null);
 
     const [recompra, setRecompra] = useState({ origen: '', destino: '' });
     const [enviandoRecompra, setEnviandoRecompra] = useState(false);
@@ -88,7 +93,31 @@ export default function Admin() {
                 setPartidos(data.partidos);
             }
         } catch (err) {
-            // silencioso: la lista de partidos no es crítica para el panel
+            // silencioso
+        }
+    }
+
+    async function cargarBonosColombia() {
+        setCargandoBonosCol(true);
+        try {
+            const data = await adminBonosColombia(token);
+            if (data?.success) setBonosCol(data.bonos);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoBonosCol(false);
+        }
+    }
+
+    async function handleReclamarBono(id) {
+        setReclamandoId(id);
+        try {
+            const data = await adminMarcarReclamado(token, id);
+            if (data?.success) setBonosCol((prev) => prev.map((b) => b.id === id ? { ...b, reclamado: true } : b));
+        } catch (err) {
+            // silencioso
+        } finally {
+            setReclamandoId(null);
         }
     }
 
@@ -113,6 +142,10 @@ export default function Admin() {
             cargarSimulador(token);
         }
     }, []);
+
+    useEffect(() => {
+        if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
+    }, [seccionActiva]);
 
     async function handleLogin(e) {
         e.preventDefault();
@@ -923,6 +956,72 @@ export default function Admin() {
                     {resultadoRecompra && <p className="text-zinc-600 dark:text-zinc-300 text-sm mt-2">{resultadoRecompra}</p>}
                 </div>
                 </>
+                )}
+
+                {/* Bono Colombia */}
+                {seccionActiva === 'bonoscolombia' && (
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">🇨🇴 Ganadores Bono Colombia</h2>
+                        <button onClick={cargarBonosColombia} disabled={cargandoBonosCol}
+                            className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                            {cargandoBonosCol ? 'Cargando...' : 'Actualizar'}
+                        </button>
+                    </div>
+
+                    {bonosCol.length === 0 && !cargandoBonosCol && (
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">No hay ganadores del Bono Colombia registrados aún.</p>
+                    )}
+
+                    {bonosCol.length > 0 && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                    <tr>
+                                        <th className="px-3 py-2">Partido</th>
+                                        <th className="px-3 py-2">Ganador</th>
+                                        <th className="px-3 py-2">Celular</th>
+                                        <th className="px-3 py-2">Correo</th>
+                                        <th className="px-3 py-2">Monto</th>
+                                        <th className="px-3 py-2">Fecha</th>
+                                        <th className="px-3 py-2">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                    {bonosCol.map((b) => (
+                                        <tr key={b.id} className={b.reclamado ? 'opacity-50' : ''}>
+                                            <td className="px-3 py-2 text-zinc-700 dark:text-zinc-200 whitespace-nowrap">
+                                                {b.equipo_local} {b.goles_local}-{b.goles_visitante} {b.equipo_visitante}
+                                            </td>
+                                            <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{b.nombre}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{b.celular}</td>
+                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{b.correo}</td>
+                                            <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">
+                                                ${Number(b.monto_cop).toLocaleString('es-CO')}
+                                            </td>
+                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                                                {new Date(b.created_at).toLocaleDateString('es-CO')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                {b.reclamado ? (
+                                                    <span className="text-green-600 dark:text-green-400 font-semibold">✓ Reclamado</span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleReclamarBono(b.id)}
+                                                        disabled={reclamandoId === b.id}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
+                                                    >
+                                                        {reclamandoId === b.id ? '...' : 'Marcar reclamado'}
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
                 )}
 
                 {/* Transacciones */}

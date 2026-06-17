@@ -300,6 +300,23 @@ export function obtenerPozo() {
     return request('/api/polla/pozo');
 }
 
+export function obtenerResultadosFinales() {
+    return request('/api/polla/resultados-finales');
+}
+
+export function adminBonosColombia(token) {
+    return request('/api/admin/bonos-colombia', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminMarcarReclamado(token, id) {
+    return request(`/api/admin/bonos-colombia/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function registrarCompartida(token_acceso, partido_id) {
     return request('/api/polla/registrar-compartida', {
         method: 'POST',
