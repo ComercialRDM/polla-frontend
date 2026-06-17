@@ -116,10 +116,10 @@ export function votar({ token_acceso, partido_id, local, visitante }) {
     });
 }
 
-export function registrarCuenta({ celular, password, nombre, equipos_favoritos }) {
+export function registrarCuenta({ celular, password, nombre, correo, equipos_favoritos }) {
     return request('/api/auth/registro', {
         method: 'POST',
-        body: JSON.stringify({ celular, password, nombre, equipos_favoritos }),
+        body: JSON.stringify({ celular, password, nombre, correo, equipos_favoritos }),
     });
 }
 
