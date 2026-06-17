@@ -193,26 +193,26 @@ export default function Comprar() {
                 </p>
 
                 {/* Mecánica explicada */}
-                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 p-4 mb-6 flex flex-col gap-2.5">
+                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 p-4 mb-6 flex flex-col gap-3">
                     <div className="flex items-start gap-3">
-                        <span className="text-lg leading-none mt-0.5">💳</span>
+                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">1</span>
                         <div>
-                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Compra tu Bono Digital</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">Elige el plan que más te convenga. Cada $25.000 equivale a 1 cupo para pronosticar.</p>
+                            <p className="text-zinc-900 dark:text-white font-bold text-base">Compra tu Bono Digital</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Elige el plan que más te convenga. Cada $25.000 equivale a 1 cupo para pronosticar.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">
-                        <span className="text-lg leading-none mt-0.5">⚽</span>
+                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">2</span>
                         <div>
-                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Predice el marcador exacto</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">Antes de cada partido de Colombia, ingresa tu pronóstico del resultado final.</p>
+                            <p className="text-zinc-900 dark:text-white font-bold text-base">Predice el marcador</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Antes de cada partido de Colombia, ingresa tu pronóstico del resultado final.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">
-                        <span className="text-lg leading-none mt-0.5">🏆</span>
+                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">3</span>
                         <div>
-                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Gana premios si aciertas</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">Los mejores pronósticos ganan premios exclusivos. Además, tu bono tiene hasta <span className="font-bold text-amber-500">$5.000.000 en beneficios</span> acumulados para usar en La Retoucherie.</p>
+                            <p className="text-zinc-900 dark:text-white font-bold text-base">Gana premios si aciertas</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Los mejores pronósticos ganan premios exclusivos. Además, tu bono tiene hasta <span className="font-bold text-amber-500">$5.000.000 en beneficios</span> acumulados para usar en La Retoucherie.</p>
                         </div>
                     </div>
                 </div>
