@@ -124,11 +124,13 @@ export default function Home() {
 
             {!sesion && (
                 <div className="w-full max-w-md px-4 mt-4">
-                    <img
-                        src={campanaImg}
-                        alt="Polla Mundialista La Retoucherie"
-                        className="w-full rounded-xl shadow-lg object-cover"
-                    />
+                    <Link to="/ingresar">
+                        <img
+                            src={campanaImg}
+                            alt="Polla Mundialista La Retoucherie"
+                            className="w-full rounded-xl shadow-lg object-cover active:scale-95 transition-transform cursor-pointer"
+                        />
+                    </Link>
                 </div>
             )}
 
