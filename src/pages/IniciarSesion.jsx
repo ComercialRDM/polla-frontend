@@ -111,6 +111,24 @@ export default function IniciarSesion() {
                     </p>
                 </form>
 
+                <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-50/80 dark:bg-amber-900/10 backdrop-blur-lg p-5 text-center">
+                    <p className="text-2xl mb-1">🏆</p>
+                    <p className="text-zinc-900 dark:text-white font-extrabold text-base mb-1">
+                        ¿Aún no estás en la Polla Mundialista?
+                    </p>
+                    <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-3">
+                        Acumula puntos con cada partido, gana premios exclusivos y participa por hasta{' '}
+                        <span className="font-black text-amber-500">$5.000.000 en bonos</span>{' '}
+                        para servicios de La Retoucherie. ¡El Mundial 2026 empieza ahora! 🇨🇴⚽
+                    </p>
+                    <Link
+                        to="/registro"
+                        className="inline-block w-full py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_16px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
+                    >
+                        ¡Quiero inscribirme ahora!
+                    </Link>
+                </div>
+
                 {sinCuenta && (
                     <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.12)] backdrop-blur-lg p-5 text-center">
                         <p className="text-zinc-900 dark:text-white font-semibold mb-2">No encontramos una cuenta con este celular 😕</p>
