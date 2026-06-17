@@ -414,13 +414,6 @@ export function adminUsuarios(token) {
     });
 }
 
-export function adminLimpiarUsuariosPrueba(token) {
-    return request('/api/admin/limpiar-usuarios-prueba', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-    });
-}
-
 export function adminReportes(token, fecha_inicio, fecha_fin) {
     return request(`/api/admin/reportes?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}`, {
         headers: { Authorization: `Bearer ${token}` },

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminLimpiarUsuariosPrueba } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -128,21 +128,6 @@ export default function Admin() {
             }
         } catch (err) {
             // silencioso
-        }
-    }
-
-    async function limpiarUsuariosPrueba() {
-        if (!window.confirm('¿Borrar todos los usuarios de prueba? Solo quedarán los 3 reales.')) return;
-        try {
-            const r = await adminLimpiarUsuariosPrueba(token);
-            if (r.success) {
-                alert('✅ ' + r.eliminados + ' usuarios eliminados.');
-                cargarUsuarios();
-            } else {
-                alert('Error: ' + r.error);
-            }
-        } catch (err) {
-            alert('Error de conexión.');
         }
     }
 
@@ -1192,9 +1177,6 @@ export default function Admin() {
                             <span className="text-xs text-zinc-500 dark:text-zinc-400">{usuarios.length} en total</span>
                             <button onClick={cargarUsuarios} disabled={usuariosCargando} className="text-xs px-3 py-1.5 rounded-lg bg-amber-400 text-zinc-950 font-bold disabled:opacity-50">
                                 {usuariosCargando ? 'Cargando...' : '↻ Actualizar'}
-                            </button>
-                            <button onClick={limpiarUsuariosPrueba} className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white font-bold">
-                                🗑 Limpiar pruebas
                             </button>
                         </div>
                     </div>
