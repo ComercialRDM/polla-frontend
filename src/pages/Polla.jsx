@@ -237,6 +237,8 @@ export default function Polla() {
                                             equipoVisitante={p.equipo_visitante}
                                             localPred={p.pronostico.local}
                                             visitantePred={p.pronostico.visitante}
+                                            tokenAcceso={token}
+                                            partidoId={p.partido_id}
                                         />
                                     </div>
                                 ) : cerrado ? (
@@ -292,6 +294,8 @@ export default function Polla() {
                                                 equipoVisitante={p.equipo_visitante}
                                                 localPred={m.local}
                                                 visitantePred={m.visitante}
+                                                tokenAcceso={token}
+                                                partidoId={p.partido_id}
                                             />
                                         )}
                                     </>
