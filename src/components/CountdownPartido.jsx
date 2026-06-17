@@ -50,7 +50,7 @@ export default function CountdownPartido({ partido: partidoProp } = {}) {
 
     return (
         <div className={`rounded-2xl border p-4 mb-6 text-center backdrop-blur-lg ${
-            enUltimaHora ? 'border-red-500/40 bg-red-500/10' : 'border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
+            enUltimaHora ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
         }`}>
             <p className="text-xs text-zinc-600 dark:text-zinc-300 mb-1 flex items-center justify-center gap-2 flex-wrap">
                 {enUltimaHora ? '⏰ ¡Últimos minutos para comprar y participar!' : 'Faltan para'}{' '}
@@ -59,7 +59,7 @@ export default function CountdownPartido({ partido: partidoProp } = {}) {
                 </span>
             </p>
             <div className={`font-scoreboard text-2xl sm:text-3xl font-black tracking-widest bg-black rounded-xl py-2 ${
-                enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'
+                enUltimaHora ? 'text-emerald-400 parpadeo-verde' : 'text-amber-400 neon-gold'
             }`}>
                 {formatearTiempo(msRestantes)}
             </div>

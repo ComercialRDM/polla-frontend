@@ -74,3 +74,7 @@ body {
 .parpadeo-rojo {
   animation: parpadeo 1s infinite;
 }
+
+.parpadeo-verde {
+  animation: parpadeo 1s infinite;
+}
