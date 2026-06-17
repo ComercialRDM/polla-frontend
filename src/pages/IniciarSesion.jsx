@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { iniciarSesion } from '../api';
 import { guardarSesion } from '../utils/sesion';
+import BiometriaLogin from '../components/BiometriaLogin';
 
 export default function IniciarSesion() {
     const navigate = useNavigate();
@@ -52,6 +53,14 @@ export default function IniciarSesion() {
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     Ingresa con tu número de celular y tu contraseña.
                 </p>
+
+                <BiometriaLogin onExito={() => navigate('/')} />
+
+                <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
+                    <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>

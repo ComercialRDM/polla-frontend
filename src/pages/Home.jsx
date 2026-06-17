@@ -12,6 +12,7 @@ import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
 import PartidosFlash from '../components/PartidosFlash';
 import ResumenUsuario from '../components/ResumenUsuario';
+import BiometriaRegistro from '../components/BiometriaRegistro';
 import campanaImg from '../assets/Polla Mundialista Retoucherie_Comprimida.webp';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
@@ -126,6 +127,9 @@ export default function Home() {
                             </button>
                         </div>
                         <ResumenUsuario usuarioId={sesion.id} />
+                        <div className="mt-3">
+                            <BiometriaRegistro usuarioId={sesion.id} />
+                        </div>
                     </div>
                 </div>
             ) : (
