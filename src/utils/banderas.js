@@ -76,6 +76,9 @@ const BANDERAS = {
     'haití': '🇭🇹',
     'turquia': '🇹🇷',
     'turquía': '🇹🇷',
+    'países bajos': '🇳🇱',
+    'república checa': '🇨🇿',
+    'sudáfrica': '🇿🇦',
 };
 
 export function bandera(equipo) {
@@ -162,6 +165,9 @@ const CODIGOS_PAISES = {
     'haití': 'ht',
     'turquia': 'tr',
     'turquía': 'tr',
+    'países bajos': 'nl',
+    'república checa': 'cz',
+    'sudáfrica': 'za',
 };
 
 export function codigoPais(equipo) {

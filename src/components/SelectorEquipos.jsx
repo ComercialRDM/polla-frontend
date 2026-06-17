@@ -3,7 +3,7 @@ import Bandera from './Bandera';
 
 export default function SelectorEquipos({ seleccionados, onToggle, max }) {
     return (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto pr-1">
+        <div className="grid grid-cols-4 gap-2 max-h-[65vh] overflow-y-auto pr-1">
             {EQUIPOS_MUNDIAL.map((equipo) => {
                 const activo = seleccionados.includes(equipo);
                 const deshabilitado = !activo && seleccionados.length >= max;
