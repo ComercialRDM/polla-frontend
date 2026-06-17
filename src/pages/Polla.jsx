@@ -170,7 +170,7 @@ export default function Polla() {
                         {info.cupos_disponibles} {info.cupos_disponibles === 1 ? 'cupo' : 'cupos'}
                     </p>
                     <p className="text-zinc-600 dark:text-zinc-300 text-sm">
-                        Dinero disponible: <span className="font-bold text-zinc-900 dark:text-white">{formatoPesos(info.dinero_disponible)}</span>
+                        Bono Retoucherie disponible: <span className="font-bold text-zinc-900 dark:text-white">{formatoPesos(info.dinero_disponible)}</span>
                     </p>
                     {info.cupos_disponibles === 0 && (
                         <Link
@@ -181,50 +181,6 @@ export default function Polla() {
                         </Link>
                     )}
                 </div>
-
-                {/* Equipos favoritos */}
-                <EquiposFavoritos
-                    token={token}
-                    equiposIniciales={info.equipos_favoritos || []}
-                    calendarioToken={info.calendario_token}
-                    onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))}
-                />
-
-                {/* Próximos partidos de los equipos favoritos */}
-                <PartidosFavoritos equipos={info.equipos_favoritos} />
-
-                {/* Reta a un amigo */}
-                <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 mb-6 text-center">
-                    <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
-                        Comparte tu link y reta a tus amigos a participar.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <a
-                            href={`https://wa.me/?text=${encodeURIComponent(
-                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de los partidos de Colombia y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí: ${window.location.origin}/?ref=${token}`
-                            )}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 inline-block py-2.5 rounded-xl font-bold text-sm text-white text-center bg-green-600 hover:bg-green-700 transition-colors"
-                        >
-                            📲 Retar por WhatsApp
-                        </a>
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/?ref=${token}`);
-                                setMensajeCopiado(true);
-                                setTimeout(() => setMensajeCopiado(false), 2000);
-                            }}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
-                        >
-                            {mensajeCopiado ? '¡Copiado! ✅' : '🔗 Copiar link'}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Ranking en vivo del próximo partido */}
-                {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
 
                 {/* Tarjetas de pronóstico por partido */}
                 <p className="text-zinc-900 dark:text-white font-bold text-base mb-3">Partidos disponibles para predecir</p>
@@ -347,25 +303,69 @@ export default function Polla() {
 
                 {/* Ver más / ver menos */}
                 {info.partidos.length > 3 && (
-                    <div className="flex flex-col items-center gap-2 mb-4">
+                    <div className="flex flex-col items-center gap-3 mb-6">
                         {partidosVisibles < info.partidos.length && (
                             <button
-                                onClick={() => setPartidosVisibles((v) => v + 3)}
-                                className="px-6 py-2.5 rounded-xl font-bold text-sm text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                                onClick={() => setPartidosVisibles((v) => v + 10)}
+                                className="w-full py-4 rounded-2xl font-black text-base text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
                             >
-                                Ver más partidos ({info.partidos.length - partidosVisibles} restantes)
+                                ⚽ Ver más partidos — {info.partidos.length - partidosVisibles} restantes
                             </button>
                         )}
                         {partidosVisibles > 3 && (
                             <button
                                 onClick={() => setPartidosVisibles(3)}
-                                className="text-zinc-500 text-xs underline hover:text-zinc-300 transition-colors"
+                                className="text-zinc-500 text-sm underline hover:text-zinc-300 transition-colors"
                             >
                                 Mostrar menos
                             </button>
                         )}
                     </div>
                 )}
+
+                {/* Equipos favoritos */}
+                <EquiposFavoritos
+                    token={token}
+                    equiposIniciales={info.equipos_favoritos || []}
+                    calendarioToken={info.calendario_token}
+                    onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))}
+                />
+
+                {/* Próximos partidos de los equipos favoritos */}
+                <PartidosFavoritos equipos={info.equipos_favoritos} />
+
+                {/* Reta a un amigo */}
+                <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 mb-6 text-center">
+                    <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                        Comparte tu link y reta a tus amigos a participar.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <a
+                            href={`https://wa.me/?text=${encodeURIComponent(
+                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de los partidos de Colombia y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí: ${window.location.origin}/?ref=${token}`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 inline-block py-2.5 rounded-xl font-bold text-sm text-white text-center bg-green-600 hover:bg-green-700 transition-colors"
+                        >
+                            📲 Retar por WhatsApp
+                        </a>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/?ref=${token}`);
+                                setMensajeCopiado(true);
+                                setTimeout(() => setMensajeCopiado(false), 2000);
+                            }}
+                            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
+                        >
+                            {mensajeCopiado ? '¡Copiado! ✅' : '🔗 Copiar link'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Ranking en vivo del próximo partido */}
+                {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
             </div>
         </div>
     );
