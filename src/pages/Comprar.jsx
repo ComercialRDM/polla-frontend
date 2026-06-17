@@ -188,9 +188,34 @@ export default function Comprar() {
                 <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Compra tu Bono Digital</h1>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-                    Elige tu plan y paga de forma segura con Wompi.
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
+                    Tu bono tiene <span className="font-bold text-zinc-700 dark:text-zinc-300">doble beneficio</span>: crédito real en servicios de La Retoucherie <span className="font-bold text-amber-500">+</span> cupos para participar en la Polla Mundialista y ganar premios.
                 </p>
+
+                {/* Mecánica explicada */}
+                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 p-4 mb-6 flex flex-col gap-2.5">
+                    <div className="flex items-start gap-3">
+                        <span className="text-lg leading-none mt-0.5">💳</span>
+                        <div>
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Compra tu Bono Digital</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">Elige el plan que más te convenga. Cada $25.000 equivale a 1 cupo para pronosticar.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                        <span className="text-lg leading-none mt-0.5">⚽</span>
+                        <div>
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Predice el marcador exacto</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">Antes de cada partido de Colombia, ingresa tu pronóstico del resultado final.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                        <span className="text-lg leading-none mt-0.5">🏆</span>
+                        <div>
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Gana premios si aciertas</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">Los mejores pronósticos ganan premios exclusivos. Además, tu bono tiene hasta <span className="font-bold text-amber-500">$5.000.000 en beneficios</span> acumulados para usar en La Retoucherie.</p>
+                        </div>
+                    </div>
+                </div>
 
                 {/* ── Selector de plan ── */}
                 <div className="mb-3">
