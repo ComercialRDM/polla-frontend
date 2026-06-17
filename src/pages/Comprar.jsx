@@ -22,11 +22,14 @@ const CUENTA_TRANSFERENCIA = {
 
 export default function Comprar() {
     const [searchParams] = useSearchParams();
+    const planDesdeUrl = Number(searchParams.get('plan'));
+    const planPreseleccionado = PLANES.find((p) => p.valor === planDesdeUrl) ?? null;
+    const flujoRapido = planPreseleccionado !== null;
+
     const [partidos, setPartidos] = useState([]);
     const [partidoId, setPartidoId] = useState(null);
     const [planSeleccionado, setPlanSeleccionado] = useState(() => {
-        const planUrl = Number(searchParams.get('plan'));
-        return PLANES.some((p) => p.valor === planUrl) ? planUrl : PLANES[0].valor;
+        return planPreseleccionado ? planPreseleccionado.valor : PLANES[0].valor;
     });
     const [modoCustom, setModoCustom] = useState(false);
     const [montoCustom, setMontoCustom] = useState('');
@@ -48,8 +51,8 @@ export default function Comprar() {
     const formRef = useRef(null);
 
     useEffect(() => {
-        if (searchParams.get('plan') && formRef.current) {
-            setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+        if (flujoRapido && formRef.current) {
+            setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
         }
     }, []);
 
@@ -190,108 +193,127 @@ export default function Comprar() {
             <div className="w-full max-w-md mt-6">
                 <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Compra tu Bono Digital</h1>
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">
+                    {flujoRapido ? 'Completa tu compra' : 'Compra tu Bono Digital'}
+                </h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-                    Elige tu bono y participa en la Polla Mundialista.
+                    {flujoRapido ? 'Ingresa tus datos y paga con Wompi de forma segura.' : 'Elige tu bono y participa en la Polla Mundialista.'}
                 </p>
 
-                <div className="grid grid-cols-1 gap-3 mb-3">
-                    {PLANES.map((plan) => (
-                        <button
-                            key={plan.valor}
-                            type="button"
-                            onClick={() => {
-                                setModoCustom(false);
-                                setPlanSeleccionado(plan.valor);
-                            }}
-                            className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
-                                plan.destacado === 'premium'
-                                    ? !modoCustom && planSeleccionado === plan.valor
-                                        ? 'border-amber-400 bg-amber-400/15 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] scale-[1.02]'
-                                        : 'border-amber-400/60 bg-amber-400/5 scale-[1.02]'
-                                    : !modoCustom && planSeleccionado === plan.valor
+                {flujoRapido ? (
+                    /* ── Flujo rápido: resumen compacto del plan elegido ── */
+                    <div className="rounded-2xl border-2 border-amber-400 bg-amber-400/10 p-4 mb-6 flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase font-bold tracking-wide mb-0.5">Plan seleccionado</p>
+                            <p className="text-zinc-900 dark:text-white font-extrabold text-xl">{formatoPesos(planPreseleccionado.valor)}</p>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                Bono de <span className="font-bold text-zinc-700 dark:text-zinc-300">{formatoPesos(planPreseleccionado.saldoBono)}</span> en servicios · {planPreseleccionado.etiqueta}
+                            </p>
+                        </div>
+                        <Link to="/comprar" className="text-xs text-amber-500 underline whitespace-nowrap">Cambiar</Link>
+                    </div>
+                ) : (
+                    /* ── Flujo normal: selector completo de planes ── */
+                    <>
+                        <div className="grid grid-cols-1 gap-3 mb-3">
+                            {PLANES.map((plan) => (
+                                <button
+                                    key={plan.valor}
+                                    type="button"
+                                    onClick={() => {
+                                        setModoCustom(false);
+                                        setPlanSeleccionado(plan.valor);
+                                    }}
+                                    className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
+                                        plan.destacado === 'premium'
+                                            ? !modoCustom && planSeleccionado === plan.valor
+                                                ? 'border-amber-400 bg-amber-400/15 ring-2 ring-amber-400 shadow-[0_0_20px_rgba(234,179,8,0.35)] scale-[1.02]'
+                                                : 'border-amber-400/60 bg-amber-400/5 scale-[1.02]'
+                                            : !modoCustom && planSeleccionado === plan.valor
+                                                ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
+                                                : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
+                                    }`}
+                                >
+                                    {plan.destacado === 'popular' && (
+                                        <span className="absolute -top-2.5 left-4 bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
+                                            ⭐ Más popular
+                                        </span>
+                                    )}
+                                    {plan.destacado === 'premium' && (
+                                        <span className="absolute -top-2.5 left-4 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
+                                            🏆 Mejor valor — recomendado
+                                        </span>
+                                    )}
+                                    <div className="flex justify-between items-center mt-1">
+                                        <div>
+                                            <p className="text-zinc-900 dark:text-white font-bold">{formatoPesos(plan.valor)}</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Bono de {formatoPesos(plan.saldoBono)}</p>
+                                        </div>
+                                        <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">{plan.etiqueta}</span>
+                                    </div>
+                                </button>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={() => setModoCustom(true)}
+                                className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
+                                    modoCustom
                                         ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
                                         : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
-                            }`}
-                        >
-                            {plan.destacado === 'popular' && (
-                                <span className="absolute -top-2.5 left-4 bg-amber-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
-                                    ⭐ Más popular
-                                </span>
-                            )}
-                            {plan.destacado === 'premium' && (
-                                <span className="absolute -top-2.5 left-4 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap">
-                                    🏆 Mejor valor — recomendado
-                                </span>
-                            )}
-                            <div className="flex justify-between items-center mt-1">
-                                <div>
-                                    <p className="text-zinc-900 dark:text-white font-bold">{formatoPesos(plan.valor)}</p>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Bono de {formatoPesos(plan.saldoBono)}</p>
+                                }`}
+                            >
+                                <div className="flex justify-between items-center mt-1">
+                                    <div>
+                                        <p className="text-zinc-900 dark:text-white font-bold">Ingresa tu propio monto</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                            Cada {formatoPesos(CUPO_VALOR)} = 1 cupo para predecir un partido distinto
+                                        </p>
+                                    </div>
+                                    <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">Otro monto</span>
                                 </div>
-                                <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">{plan.etiqueta}</span>
-                            </div>
-                        </button>
-                    ))}
 
-                    <button
-                        type="button"
-                        onClick={() => setModoCustom(true)}
-                        className={`relative rounded-xl border p-4 text-left transition-all backdrop-blur-lg ${
-                            modoCustom
-                                ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 shadow-[0_0_15px_rgba(234,179,8,0.25)]'
-                                : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none'
-                        }`}
-                    >
-                        <div className="flex justify-between items-center mt-1">
-                            <div>
-                                <p className="text-zinc-900 dark:text-white font-bold">Ingresa tu propio monto</p>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                                    Cada {formatoPesos(CUPO_VALOR)} = 1 cupo para predecir un partido distinto
-                                </p>
-                            </div>
-                            <span className="text-amber-500 dark:text-amber-400 font-bold text-sm">Otro monto</span>
-                        </div>
-
-                        {modoCustom && (
-                            <div className="mt-3" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                    type="number"
-                                    inputMode="numeric"
-                                    min={MONTO_PERSONALIZADO_MIN}
-                                    max={MONTO_PERSONALIZADO_MAX}
-                                    step={CUPO_VALOR}
-                                    value={montoCustom}
-                                    onChange={(e) => setMontoCustom(e.target.value)}
-                                    placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
-                                    className="w-full rounded-lg bg-zinc-50 dark:bg-slate-950/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                                />
-                                {montoCustomNumero > 0 && (
-                                    <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
-                                        <p>
-                                            Tu recarga equivale a{' '}
-                                            <span className="text-amber-500 dark:text-amber-400 font-bold">
-                                                {cuposCustom} {cuposCustom === 1 ? 'resultado' : 'resultados'}
-                                            </span>{' '}
-                                            de partidos distintos.
-                                        </p>
-                                        <p className="text-zinc-500 dark:text-zinc-400">
-                                            Bono de servicio: {formatoPesos(calcularSaldoBono(montoCustomNumero))}
-                                        </p>
-                                        {residuoCustom > 0 && (
-                                            <p className="text-zinc-500 dark:text-zinc-400">
-                                                Saldo sin usar para un próximo cupo: {formatoPesos(residuoCustom)}
-                                            </p>
+                                {modoCustom && (
+                                    <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                                        <input
+                                            type="number"
+                                            inputMode="numeric"
+                                            min={MONTO_PERSONALIZADO_MIN}
+                                            max={MONTO_PERSONALIZADO_MAX}
+                                            step={CUPO_VALOR}
+                                            value={montoCustom}
+                                            onChange={(e) => setMontoCustom(e.target.value)}
+                                            placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
+                                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-950/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                        />
+                                        {montoCustomNumero > 0 && (
+                                            <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
+                                                <p>
+                                                    Tu recarga equivale a{' '}
+                                                    <span className="text-amber-500 dark:text-amber-400 font-bold">
+                                                        {cuposCustom} {cuposCustom === 1 ? 'resultado' : 'resultados'}
+                                                    </span>{' '}
+                                                    de partidos distintos.
+                                                </p>
+                                                <p className="text-zinc-500 dark:text-zinc-400">
+                                                    Bono de servicio: {formatoPesos(calcularSaldoBono(montoCustomNumero))}
+                                                </p>
+                                                {residuoCustom > 0 && (
+                                                    <p className="text-zinc-500 dark:text-zinc-400">
+                                                        Saldo sin usar para un próximo cupo: {formatoPesos(residuoCustom)}
+                                                    </p>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 )}
-                            </div>
-                        )}
-                    </button>
-                </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-6">
-                    Tus cupos se acumulan en tu cuenta y puedes usarlos cualquier día, en cualquier partido activo.
-                </p>
+                            </button>
+                        </div>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-6">
+                            Tus cupos se acumulan en tu cuenta y puedes usarlos cualquier día, en cualquier partido activo.
+                        </p>
+                    </>
+                )}
 
                 {/* Selección del partido */}
                 <div className="mb-6">
@@ -334,34 +356,36 @@ export default function Comprar() {
 
                 <CountdownPartido partido={partidoSeleccionado} />
 
-                {/* Selección del método de pago */}
-                <div className="mb-6">
-                    <p className="block text-sm text-zinc-600 dark:text-zinc-300 mb-2">Método de pago</p>
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setMetodoPago('wompi')}
-                            className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
-                                metodoPago === 'wompi'
-                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
-                                    : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
-                            }`}
-                        >
-                            💳 Tarjeta / PSE (Wompi)
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setMetodoPago('transferencia')}
-                            className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
-                                metodoPago === 'transferencia'
-                                    ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
-                                    : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
-                            }`}
-                        >
-                            🏦 Transferencia
-                        </button>
+                {/* Selección del método de pago — oculto en flujo rápido (Wompi por defecto) */}
+                {!flujoRapido && (
+                    <div className="mb-6">
+                        <p className="block text-sm text-zinc-600 dark:text-zinc-300 mb-2">Método de pago</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setMetodoPago('wompi')}
+                                className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
+                                    metodoPago === 'wompi'
+                                        ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
+                                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
+                                }`}
+                            >
+                                💳 Tarjeta / PSE (Wompi)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMetodoPago('transferencia')}
+                                className={`rounded-xl border p-3 text-center font-bold text-sm transition-all backdrop-blur-lg ${
+                                    metodoPago === 'transferencia'
+                                        ? 'border-amber-400 bg-amber-400/10 ring-1 ring-amber-400 text-zinc-900 dark:text-white'
+                                        : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none text-zinc-600 dark:text-zinc-300'
+                                }`}
+                            >
+                                🏦 Transferencia
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {metodoPago === 'transferencia' && (
                     <div className="mb-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4">
