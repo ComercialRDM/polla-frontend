@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { solicitarResetPassword, restablecerPassword } from '../api';
 
+const INPUT_CLASS = 'w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400';
+
 export default function RecuperarPassword() {
     const navigate = useNavigate();
     const [paso, setPaso] = useState(1);
     const [celular, setCelular] = useState('');
+    const [metodo, setMetodo] = useState(null); // 'whatsapp' | 'correo'
     const [codigo, setCodigo] = useState('');
     const [nuevaPassword, setNuevaPassword] = useState('');
     const [confirmarPassword, setConfirmarPassword] = useState('');
@@ -13,20 +16,22 @@ export default function RecuperarPassword() {
     const [mensaje, setMensaje] = useState('');
     const [cargando, setCargando] = useState(false);
 
-    async function handleSolicitarCodigo(e) {
-        e.preventDefault();
+    async function handleSolicitarCodigo(metodoElegido) {
         setError('');
-
         if (!celular.trim() || celular.trim().length < 7) {
             setError('Ingresa un número de celular válido.');
             return;
         }
 
-        setCargando(true);
+        setMetodo(metodoElegido);
+        setCargando(metodoElegido);
         try {
-            const data = await solicitarResetPassword({ celular: celular.trim() });
+            const data = await solicitarResetPassword({ celular: celular.trim(), metodo: metodoElegido });
             if (data?.success) {
-                setMensaje('Te enviamos un código por WhatsApp. Revísalo e ingrésalo abajo.');
+                const destino = metodoElegido === 'correo'
+                    ? 'tu correo electrónico'
+                    : 'tu WhatsApp';
+                setMensaje(`Te enviamos un código a ${destino}. Revísalo e ingrésalo abajo.`);
                 setPaso(2);
             } else {
                 setError(data?.error || 'No se pudo enviar el código.');
@@ -43,7 +48,7 @@ export default function RecuperarPassword() {
         setError('');
 
         if (!codigo.trim()) {
-            setError('Ingresa el código que te enviamos por WhatsApp.');
+            setError('Ingresa el código que te enviamos.');
             return;
         }
         if (nuevaPassword.length < 6) {
@@ -86,91 +91,112 @@ export default function RecuperarPassword() {
                 <Link to="/iniciar-sesion" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Recuperar contraseña</h1>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-                    {paso === 1
-                        ? 'Ingresa el celular con el que te registraste y te enviaremos un código por WhatsApp.'
-                        : 'Ingresa el código que recibiste por WhatsApp y tu nueva contraseña.'}
-                </p>
 
                 {paso === 1 ? (
-                    <form onSubmit={handleSolicitarCodigo} className="flex flex-col gap-4">
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
-                            <input
-                                type="tel"
-                                value={celular}
-                                onChange={(e) => setCelular(e.target.value)}
-                                placeholder="Ej: 3001234567"
-                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                            />
+                    <>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+                            Ingresa tu celular y elige cómo recibir el código de verificación.
+                        </p>
+
+                        <div className="flex flex-col gap-4">
+                            <div>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
+                                <input
+                                    type="tel"
+                                    value={celular}
+                                    onChange={(e) => setCelular(e.target.value)}
+                                    placeholder="Ej: 3001234567"
+                                    className={INPUT_CLASS}
+                                />
+                            </div>
+
+                            {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                            <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 -mb-1">
+                                ¿Cómo quieres recibir el código?
+                            </p>
+
+                            <button
+                                type="button"
+                                disabled={!!cargando}
+                                onClick={() => handleSolicitarCodigo('whatsapp')}
+                                className="w-full py-4 rounded-xl font-black text-white text-center bg-green-600 hover:bg-green-700 active:scale-95 transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+                            >
+                                {cargando === 'whatsapp' ? 'Enviando...' : '💬 Enviar por WhatsApp'}
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={!!cargando}
+                                onClick={() => handleSolicitarCodigo('correo')}
+                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60 flex items-center justify-center gap-2"
+                            >
+                                {cargando === 'correo' ? 'Enviando...' : '📧 Enviar por correo electrónico'}
+                            </button>
                         </div>
-
-                        {error && <p className="text-red-400 text-sm">{error}</p>}
-
-                        <button
-                            type="submit"
-                            disabled={cargando}
-                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {cargando ? 'Enviando...' : 'Enviar código por WhatsApp'}
-                        </button>
-                    </form>
+                    </>
                 ) : (
-                    <form onSubmit={handleRestablecer} className="flex flex-col gap-4">
-                        {mensaje && <p className="text-green-400 text-sm">{mensaje}</p>}
+                    <>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+                            Ingresa el código que recibiste y tu nueva contraseña.
+                        </p>
 
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código recibido por WhatsApp</label>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={codigo}
-                                onChange={(e) => setCodigo(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                                placeholder="123456"
-                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400 text-center text-2xl font-scoreboard tracking-widest"
-                            />
-                        </div>
+                        <form onSubmit={handleRestablecer} className="flex flex-col gap-4">
+                            {mensaje && <p className="text-green-500 dark:text-green-400 text-sm">{mensaje}</p>}
 
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nueva contraseña</label>
-                            <input
-                                type="password"
-                                value={nuevaPassword}
-                                onChange={(e) => setNuevaPassword(e.target.value)}
-                                placeholder="Mínimo 6 caracteres"
-                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                            />
-                        </div>
+                            <div>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código de verificación</label>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={codigo}
+                                    onChange={(e) => setCodigo(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                                    placeholder="123456"
+                                    className={INPUT_CLASS + ' text-center text-2xl font-scoreboard tracking-widest'}
+                                />
+                            </div>
 
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Confirmar nueva contraseña</label>
-                            <input
-                                type="password"
-                                value={confirmarPassword}
-                                onChange={(e) => setConfirmarPassword(e.target.value)}
-                                placeholder="Repite tu contraseña"
-                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                            />
-                        </div>
+                            <div>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nueva contraseña</label>
+                                <input
+                                    type="password"
+                                    value={nuevaPassword}
+                                    onChange={(e) => setNuevaPassword(e.target.value)}
+                                    placeholder="Mínimo 6 caracteres"
+                                    className={INPUT_CLASS}
+                                />
+                            </div>
 
-                        {error && <p className="text-red-400 text-sm">{error}</p>}
+                            <div>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Confirmar nueva contraseña</label>
+                                <input
+                                    type="password"
+                                    value={confirmarPassword}
+                                    onChange={(e) => setConfirmarPassword(e.target.value)}
+                                    placeholder="Repite tu contraseña"
+                                    className={INPUT_CLASS}
+                                />
+                            </div>
 
-                        <button
-                            type="submit"
-                            disabled={cargando}
-                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {cargando ? 'Guardando...' : 'Guardar nueva contraseña'}
-                        </button>
+                            {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                        <button
-                            type="button"
-                            onClick={() => { setPaso(1); setMensaje(''); setError(''); }}
-                            className="text-center text-zinc-500 dark:text-zinc-400 text-sm underline"
-                        >
-                            ¿No te llegó? Solicitar otro código
-                        </button>
-                    </form>
+                            <button
+                                type="submit"
+                                disabled={!!cargando}
+                                className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                            >
+                                {cargando ? 'Guardando...' : 'Guardar nueva contraseña'}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => { setPaso(1); setMensaje(''); setError(''); setCodigo(''); }}
+                                className="text-center text-zinc-500 dark:text-zinc-400 text-sm underline"
+                            >
+                                ¿No te llegó? Volver a enviar
+                            </button>
+                        </form>
+                    </>
                 )}
             </div>
         </div>

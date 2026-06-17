@@ -119,10 +119,10 @@ export function iniciarSesion({ celular, password }) {
     });
 }
 
-export function solicitarResetPassword({ celular }) {
+export function solicitarResetPassword({ celular, metodo = 'whatsapp' }) {
     return request('/api/auth/solicitar-reset', {
         method: 'POST',
-        body: JSON.stringify({ celular }),
+        body: JSON.stringify({ celular, metodo }),
     });
 }
 
