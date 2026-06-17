@@ -8,6 +8,7 @@ import Bandera from '../components/Bandera';
 import { partidosFuturos } from '../utils/partidos';
 import { obtenerSesion } from '../utils/sesion';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
+import TrustBadges from '../components/TrustBadges';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 
@@ -420,12 +421,10 @@ export default function Comprar() {
 
                     {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3 text-center">
-                        <p className="text-zinc-600 dark:text-zinc-300 text-xs flex items-center justify-center gap-1.5 flex-wrap">
-                            🔒 Pago seguro con Wompi · La Retoucherie de Manuela · NIT 901765354
-                        </p>
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-3">
+                        <TrustBadges />
                         {metodoPago === 'transferencia' && (
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1 text-center">
                                 Tu bono se activa en minutos tras revisar el comprobante.
                             </p>
                         )}
