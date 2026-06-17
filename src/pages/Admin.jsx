@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
 const SECCIONES = [
     { id: 'transacciones',   label: 'Transacciones' },
+    { id: 'usuarios',        label: '👥 Usuarios' },
     { id: 'apuestas',        label: 'Apuestas' },
     { id: 'simulador',       label: 'Simulador' },
     { id: 'partidos',        label: 'Partidos' },
@@ -70,6 +71,11 @@ export default function Admin() {
     const [totp2faCode, setTotp2faCode] = useState('');
     const [totp2faMsg, setTotp2faMsg] = useState('');
 
+    // ── Usuarios ──────────────────────────────────────────────────────────────
+    const [usuarios, setUsuarios]               = useState([]);
+    const [usuariosCargando, setUsuariosCargando] = useState(false);
+    const [usuariosBusqueda, setUsuariosBusqueda] = useState('');
+
     // ── Reportes ──────────────────────────────────────────────────────────────
     const [reporteFechaInicio, setReporteFechaInicio] = useState('');
     const [reporteFechaFin,    setReporteFechaFin]    = useState('');
@@ -122,6 +128,18 @@ export default function Admin() {
             }
         } catch (err) {
             // silencioso
+        }
+    }
+
+    async function cargarUsuarios() {
+        setUsuariosCargando(true);
+        try {
+            const data = await adminUsuarios(token);
+            if (data?.success) setUsuarios(data.usuarios);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setUsuariosCargando(false);
         }
     }
 
@@ -274,6 +292,7 @@ export default function Admin() {
     }, []);
 
     useEffect(() => {
+        if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'seguridad' && token) {
@@ -1147,6 +1166,77 @@ export default function Admin() {
                     {resultadoRecompra && <p className="text-zinc-600 dark:text-zinc-300 text-sm mt-2">{resultadoRecompra}</p>}
                 </div>
                 </>
+                )}
+
+                {/* Usuarios registrados */}
+                {seccionActiva === 'usuarios' && (
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white">👥 Usuarios Registrados</h2>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">{usuarios.length} en total</span>
+                            <button onClick={cargarUsuarios} disabled={usuariosCargando} className="text-xs px-3 py-1.5 rounded-lg bg-amber-400 text-zinc-950 font-bold disabled:opacity-50">
+                                {usuariosCargando ? 'Cargando...' : '↻ Actualizar'}
+                            </button>
+                        </div>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, correo o celular..."
+                        value={usuariosBusqueda}
+                        onChange={(e) => setUsuariosBusqueda(e.target.value)}
+                        className="w-full mb-3 rounded-lg bg-white dark:bg-slate-900/60 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    {usuariosCargando ? (
+                        <p className="text-zinc-400 text-sm text-center py-4">Cargando usuarios...</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left">
+                                <thead>
+                                    <tr className="text-zinc-400 dark:text-zinc-500 border-b border-zinc-200 dark:border-white/10">
+                                        <th className="pb-2 pr-3 font-semibold">Nombre</th>
+                                        <th className="pb-2 pr-3 font-semibold">Celular</th>
+                                        <th className="pb-2 pr-3 font-semibold">Correo</th>
+                                        <th className="pb-2 pr-3 font-semibold text-center">Compras</th>
+                                        <th className="pb-2 pr-3 font-semibold text-right">Total pagado</th>
+                                        <th className="pb-2 font-semibold">Registro</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {usuarios
+                                        .filter((u) => {
+                                            const q = usuariosBusqueda.toLowerCase();
+                                            return !q || u.nombre?.toLowerCase().includes(q) || u.correo?.toLowerCase().includes(q) || u.celular?.includes(q);
+                                        })
+                                        .map((u) => (
+                                        <tr key={u.id} className="border-b border-zinc-100 dark:border-white/5 hover:bg-zinc-100 dark:hover:bg-white/5">
+                                            <td className="py-2 pr-3 font-medium text-zinc-900 dark:text-white">{u.nombre}</td>
+                                            <td className="py-2 pr-3 text-zinc-600 dark:text-zinc-300">{u.celular}</td>
+                                            <td className="py-2 pr-3 text-zinc-500 dark:text-zinc-400 max-w-[140px] truncate">{u.correo}</td>
+                                            <td className="py-2 pr-3 text-center">
+                                                <span className={`px-2 py-0.5 rounded-full font-bold ${Number(u.compras_aprobadas) > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-400'}`}>
+                                                    {u.compras_aprobadas}
+                                                </span>
+                                            </td>
+                                            <td className="py-2 pr-3 text-right text-zinc-900 dark:text-white font-medium">
+                                                {Number(u.total_pagado) > 0 ? `$${Number(u.total_pagado).toLocaleString('es-CO')}` : '—'}
+                                            </td>
+                                            <td className="py-2 text-zinc-400 whitespace-nowrap">
+                                                {new Date(u.fecha_creacion).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: '2-digit' })}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {usuarios.filter((u) => {
+                                const q = usuariosBusqueda.toLowerCase();
+                                return !q || u.nombre?.toLowerCase().includes(q) || u.correo?.toLowerCase().includes(q) || u.celular?.includes(q);
+                            }).length === 0 && (
+                                <p className="text-zinc-400 text-sm text-center py-4">No hay usuarios que coincidan.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
                 )}
 
                 {/* Bono Colombia */}

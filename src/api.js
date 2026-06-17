@@ -408,6 +408,12 @@ export function adminToggleLocalUsuario(token, id) {
     });
 }
 
+export function adminUsuarios(token) {
+    return request('/api/admin/usuarios', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminReportes(token, fecha_inicio, fecha_fin) {
     return request(`/api/admin/reportes?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}`, {
         headers: { Authorization: `Bearer ${token}` },
