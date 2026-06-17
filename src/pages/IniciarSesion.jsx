@@ -43,7 +43,7 @@ export default function IniciarSesion() {
 
     return (
         <div className="relative min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center overflow-hidden">
-            <img src={logoCopaFifa} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-contain opacity-[0.07] pointer-events-none select-none scale-110" />
+            <img src={logoCopaFifa} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-contain opacity-[0.13] pointer-events-none select-none scale-110" />
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
