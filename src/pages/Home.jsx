@@ -122,13 +122,15 @@ export default function Home() {
                 </div>
             )}
 
-            <div className="w-full max-w-md px-4 mt-4">
-                <img
-                    src={campanaImg}
-                    alt="Polla Mundialista La Retoucherie"
-                    className="w-full rounded-xl shadow-lg object-cover"
-                />
-            </div>
+            {!sesion && (
+                <div className="w-full max-w-md px-4 mt-4">
+                    <img
+                        src={campanaImg}
+                        alt="Polla Mundialista La Retoucherie"
+                        className="w-full rounded-xl shadow-lg object-cover"
+                    />
+                </div>
+            )}
 
             <PartidosFlash />
 
