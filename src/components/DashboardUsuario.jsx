@@ -67,7 +67,7 @@ export default function DashboardUsuario({ sesion, onSalir }) {
                         <div className="px-3 pb-3 flex gap-2 border-t border-white/5 pt-3">
                             {datos.intentos_disponibles > 0 && datos.token_polla ? (
                                 <Link
-                                    to={`/polla?token_acceso=${datos.token_polla}`}
+                                    to={`/polla?token=${datos.token_polla}`}
                                     className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform"
                                 >
                                     ⚽ Pronosticar ahora
