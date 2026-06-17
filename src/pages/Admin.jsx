@@ -608,7 +608,15 @@ export default function Admin() {
     return (
         <div className="min-h-screen bg-white dark:bg-zinc-950 px-4 sm:px-6 py-8">
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-6">Panel Admin - Polla Mundialista</h1>
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">Panel Admin - Polla Mundialista</h1>
+                    <button
+                        onClick={() => { localStorage.removeItem(TOKEN_STORAGE_KEY); setToken(''); setAutenticado(false); }}
+                        className="text-sm text-zinc-500 border border-zinc-200 dark:border-white/10 rounded-lg px-3 py-1.5 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-white/30 transition-colors"
+                    >
+                        Cerrar sesión
+                    </button>
+                </div>
 
                 {/* Menú de secciones */}
                 <div className="flex gap-2 mb-6 flex-wrap">
