@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PLANES, CUPO_VALOR, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
@@ -45,6 +45,13 @@ export default function Comprar() {
     const [mensajeExito, setMensajeExito] = useState('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
+    const formRef = useRef(null);
+
+    useEffect(() => {
+        if (searchParams.get('plan') && formRef.current) {
+            setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+        }
+    }, []);
 
     useEffect(() => {
         obtenerPartidos()
@@ -372,7 +379,7 @@ export default function Comprar() {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <div>
                         <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                         <input
