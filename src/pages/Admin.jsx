@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminLimpiarUsuariosPrueba } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -1173,10 +1173,13 @@ export default function Admin() {
                 <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
                     <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                         <h2 className="text-lg font-bold text-zinc-900 dark:text-white">👥 Usuarios Registrados</h2>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs text-zinc-500 dark:text-zinc-400">{usuarios.length} en total</span>
                             <button onClick={cargarUsuarios} disabled={usuariosCargando} className="text-xs px-3 py-1.5 rounded-lg bg-amber-400 text-zinc-950 font-bold disabled:opacity-50">
                                 {usuariosCargando ? 'Cargando...' : '↻ Actualizar'}
+                            </button>
+                            <button onClick={async () => { if (!window.confirm('¿Borrar todos los usuarios de prueba? Solo quedarán los 3 reales.')) return; const r = await adminLimpiarUsuariosPrueba(token); alert(r.success ? `✅ ${r.eliminados} usuarios eliminados.` : r.error); if (r.success) cargarUsuarios(); }} className="text-xs px-3 py-1.5 rounded-lg bg-red-500 text-white font-bold">
+                                🗑 Limpiar pruebas
                             </button>
                         </div>
                     </div>
