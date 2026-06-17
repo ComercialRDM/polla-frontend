@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -10,6 +10,7 @@ const SECCIONES = [
     { id: 'partidos',        label: 'Partidos' },
     { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
     { id: 'localesqr',       label: 'Locales QR' },
+    { id: 'seguridad',       label: '🔐 Seguridad' },
 ];
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
@@ -60,6 +61,14 @@ export default function Admin() {
     const [creandoLocal, setCreandoLocal] = useState(false);
     const [errorLocal, setErrorLocal] = useState('');
     const [tempPassVisible, setTempPassVisible] = useState({});
+
+    // ── 2FA ───────────────────────────────────────────────────────────────────
+    const [loginPaso2fa, setLoginPaso2fa] = useState(false);
+    const [loginTotpCode, setLoginTotpCode] = useState('');
+    const [totp2faEnabled, setTotp2faEnabled] = useState(false);
+    const [totp2faQr, setTotp2faQr] = useState(null);
+    const [totp2faCode, setTotp2faCode] = useState('');
+    const [totp2faMsg, setTotp2faMsg] = useState('');
 
     const [seccionActiva, setSeccionActiva] = useState('transacciones');
 
@@ -202,6 +211,39 @@ export default function Admin() {
         }
     }
 
+    async function handle2faSetup() {
+        setTotp2faMsg('');
+        try {
+            const data = await admin2faSetup(token);
+            if (data?.success) { setTotp2faQr(data.qrDataUrl); setTotp2faMsg(''); }
+            else setTotp2faMsg(data?.error || 'Error al generar QR');
+        } catch { setTotp2faMsg('Error de conexión'); }
+    }
+
+    async function handle2faConfirmar(e) {
+        e.preventDefault();
+        setTotp2faMsg('');
+        try {
+            const data = await admin2faConfirmar(token, totp2faCode);
+            if (data?.success) {
+                setTotp2faEnabled(true); setTotp2faQr(null); setTotp2faCode('');
+                setTotp2faMsg('✅ 2FA activado correctamente.');
+            } else { setTotp2faMsg(data?.error || 'Código incorrecto'); }
+        } catch { setTotp2faMsg('Error de conexión'); }
+    }
+
+    async function handle2faDesactivar(e) {
+        e.preventDefault();
+        setTotp2faMsg('');
+        try {
+            const data = await admin2faDesactivar(token, totp2faCode);
+            if (data?.success) {
+                setTotp2faEnabled(false); setTotp2faCode('');
+                setTotp2faMsg('2FA desactivado.');
+            } else { setTotp2faMsg(data?.error || 'Código incorrecto'); }
+        } catch { setTotp2faMsg('Error de conexión'); }
+    }
+
     async function cargarSimulador(tok) {
         setErrorSimulador('');
         try {
@@ -227,6 +269,9 @@ export default function Admin() {
     useEffect(() => {
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
+        if (seccionActiva === 'seguridad' && token) {
+            admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
+        }
     }, [seccionActiva]);
 
     async function handleLogin(e) {
@@ -236,13 +281,17 @@ export default function Admin() {
         setCargando(true);
         setError('');
         try {
-            const data = await adminLogin(usuarioInput.trim(), passwordInput);
+            const data = await adminLogin(usuarioInput.trim(), passwordInput, loginPaso2fa ? loginTotpCode : undefined);
             if (data?.success) {
                 setToken(data.token);
                 setPasswordInput('');
+                setLoginPaso2fa(false);
+                setLoginTotpCode('');
                 cargarDatos(data.token);
                 cargarPartidos();
                 cargarSimulador(data.token);
+            } else if (data?.requires_2fa) {
+                setLoginPaso2fa(true);
             } else {
                 setError(data?.error || 'Usuario o contraseña incorrectos.');
             }
@@ -485,29 +534,55 @@ export default function Admin() {
             <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 px-6">
                 <form onSubmit={handleLogin} className="w-full max-w-sm flex flex-col gap-4">
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white text-center mb-2">Panel Admin</h1>
-                    <input
-                        type="text"
-                        value={usuarioInput}
-                        onChange={(e) => setUsuarioInput(e.target.value)}
-                        placeholder="Usuario"
-                        autoComplete="username"
-                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    />
-                    <input
-                        type="password"
-                        value={passwordInput}
-                        onChange={(e) => setPasswordInput(e.target.value)}
-                        placeholder="Contraseña"
-                        autoComplete="current-password"
-                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    />
+                    {!loginPaso2fa ? (
+                        <>
+                            <input
+                                type="text"
+                                value={usuarioInput}
+                                onChange={(e) => setUsuarioInput(e.target.value)}
+                                placeholder="Usuario"
+                                autoComplete="username"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            />
+                            <input
+                                type="password"
+                                value={passwordInput}
+                                onChange={(e) => setPasswordInput(e.target.value)}
+                                placeholder="Contraseña"
+                                autoComplete="current-password"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            />
+                        </>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            <div className="rounded-xl bg-amber-50 dark:bg-amber-400/10 border border-amber-200 dark:border-amber-400/20 px-4 py-3 text-center">
+                                <p className="text-2xl mb-1">🔐</p>
+                                <p className="font-bold text-zinc-900 dark:text-white text-sm">Verificación en dos pasos</p>
+                                <p className="text-zinc-500 text-xs mt-1">Abre Google Authenticator e ingresa el código de 6 dígitos</p>
+                            </div>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                value={loginTotpCode}
+                                onChange={(e) => setLoginTotpCode(e.target.value.replace(/\D/g, ''))}
+                                placeholder="000000"
+                                autoFocus
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            />
+                            <button type="button" onClick={() => { setLoginPaso2fa(false); setLoginTotpCode(''); setError(''); }}
+                                className="text-xs text-zinc-400 underline text-center">
+                                ← Volver
+                            </button>
+                        </div>
+                    )}
                     {error && <p className="text-red-400 text-sm">{error}</p>}
                     <button
                         type="submit"
                         disabled={cargando}
                         className="w-full py-3 rounded-xl font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
                     >
-                        {cargando ? 'Verificando...' : 'Entrar'}
+                        {cargando ? 'Verificando...' : loginPaso2fa ? 'Verificar código' : 'Entrar'}
                     </button>
                 </form>
             </div>
@@ -1235,6 +1310,71 @@ export default function Admin() {
                             </div>
                         )}
                     </div>
+                </div>
+                )}
+
+                {/* Seguridad — 2FA */}
+                {seccionActiva === 'seguridad' && (
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-5 max-w-md">
+                    <h2 className="text-base font-bold text-zinc-900 dark:text-white mb-1">🔐 Verificación en dos pasos (2FA)</h2>
+                    <p className="text-zinc-500 text-sm mb-4">Protege tu cuenta con Google Authenticator. Cada inicio de sesión requerirá un código de 6 dígitos generado por la app.</p>
+
+                    <div className={`rounded-lg px-3 py-2 mb-4 text-sm font-semibold ${totp2faEnabled ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-zinc-100 dark:bg-white/5 text-zinc-500'}`}>
+                        {totp2faEnabled ? '✅ 2FA activo en tu cuenta' : '⚪ 2FA desactivado'}
+                    </div>
+
+                    {!totp2faEnabled ? (
+                        <div className="flex flex-col gap-3">
+                            {!totp2faQr ? (
+                                <button onClick={handle2faSetup}
+                                    className="py-2.5 rounded-lg font-bold text-sm text-zinc-950 bg-amber-400 hover:bg-amber-300">
+                                    Generar QR para activar 2FA
+                                </button>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    <p className="text-zinc-600 dark:text-zinc-400 text-sm">1. Escanea el QR con <strong>Google Authenticator</strong></p>
+                                    <img src={totp2faQr} alt="QR 2FA" className="w-48 h-48 self-center rounded-xl border border-zinc-200 dark:border-white/10" />
+                                    <p className="text-zinc-600 dark:text-zinc-400 text-sm">2. Ingresa el código que muestra la app para confirmar:</p>
+                                    <form onSubmit={handle2faConfirmar} className="flex gap-2">
+                                        <input
+                                            type="text" inputMode="numeric" maxLength={6}
+                                            value={totp2faCode}
+                                            onChange={e => setTotp2faCode(e.target.value.replace(/\D/g, ''))}
+                                            placeholder="000000"
+                                            className="flex-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                        />
+                                        <button type="submit"
+                                            className="px-4 py-2 rounded-lg font-bold text-sm text-zinc-950 bg-amber-400 hover:bg-amber-300">
+                                            Activar
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <form onSubmit={handle2faDesactivar} className="flex flex-col gap-3">
+                            <p className="text-zinc-600 dark:text-zinc-400 text-sm">Para desactivar 2FA, ingresa un código válido de Google Authenticator:</p>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text" inputMode="numeric" maxLength={6}
+                                    value={totp2faCode}
+                                    onChange={e => setTotp2faCode(e.target.value.replace(/\D/g, ''))}
+                                    placeholder="000000"
+                                    className="flex-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-center font-mono text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                />
+                                <button type="submit"
+                                    className="px-4 py-2 rounded-lg font-bold text-sm text-white bg-red-600 hover:bg-red-500">
+                                    Desactivar
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {totp2faMsg && (
+                        <p className={`mt-3 text-sm font-medium ${totp2faMsg.startsWith('✅') ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
+                            {totp2faMsg}
+                        </p>
+                    )}
                 </div>
                 )}
 

@@ -166,10 +166,34 @@ export function completarRegistroGoogle({ credential, celular, equipos_favoritos
     });
 }
 
-export function adminLogin(usuario, password) {
+export function adminLogin(usuario, password, totp_code) {
     return request('/api/admin/login', {
         method: 'POST',
-        body: JSON.stringify({ usuario, password }),
+        body: JSON.stringify({ usuario, password, ...(totp_code ? { totp_code } : {}) }),
+    });
+}
+
+export function admin2faEstado(token) {
+    return request('/api/admin/2fa/estado', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function admin2faSetup(token) {
+    return request('/api/admin/2fa/setup', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function admin2faConfirmar(token, code) {
+    return request('/api/admin/2fa/confirmar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code }),
+    });
+}
+
+export function admin2faDesactivar(token, code) {
+    return request('/api/admin/2fa/desactivar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code }),
     });
 }
 
