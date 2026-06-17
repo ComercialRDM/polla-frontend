@@ -71,6 +71,7 @@ export default function Registro() {
 
         if (!nombre.trim()) { setError('Ingresa tu nombre completo.'); return; }
         if (!celular.trim() || celular.trim().length < 7) { setError('Ingresa un número de celular válido.'); return; }
+        if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) { setError('Ingresa un correo electrónico válido.'); return; }
         const errPw = validarPassword(password);
         if (errPw) { setError(errPw); return; }
         if (password !== confirmarPassword) { setError('Las contraseñas no coinciden.'); return; }
@@ -86,7 +87,7 @@ export default function Registro() {
             const data = await registrarCuenta({
                 nombre: nombre.trim(),
                 celular: celular.trim(),
-                correo: correo.trim() || undefined,
+                correo: correo.trim(),
                 password,
                 equipos_favoritos: equipos,
             });
@@ -161,7 +162,7 @@ export default function Registro() {
                         </div>
 
                         <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico <span className="text-zinc-400">(opcional)</span></label>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
                             <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
                                 placeholder="tucorreo@email.com" className={INPUT_CLASS} />
                         </div>
