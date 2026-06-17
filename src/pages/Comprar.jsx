@@ -436,7 +436,7 @@ export default function Comprar() {
                     <button
                         type="button"
                         onClick={() => setMostrarTransferencia((v) => !v)}
-                        className="text-center text-xs text-zinc-400 dark:text-zinc-500 underline"
+                        className="text-center text-sm font-bold text-zinc-500 dark:text-zinc-400 underline"
                     >
                         {mostrarTransferencia ? '← Volver a pagar con Wompi' : '¿Prefieres pagar por transferencia bancaria?'}
                     </button>
