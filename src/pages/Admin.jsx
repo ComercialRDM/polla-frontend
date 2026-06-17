@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminLimpiarPruebas } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -1537,6 +1537,25 @@ export default function Admin() {
                         className="px-4 py-2 rounded-lg text-sm font-semibold bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10"
                     >
                         Refrescar
+                    </button>
+                    <button
+                        onClick={async () => {
+                            if (!window.confirm('¿Eliminar TODOS los datos de prueba? Solo quedará la transacción de Ricardo Angulo Dams. Esta acción no se puede deshacer.')) return;
+                            try {
+                                const data = await adminLimpiarPruebas(token);
+                                if (data?.success) {
+                                    alert(`✅ Listo: ${data.transaccionesEliminadas} transacciones eliminadas. Se conservaron ${data.transaccionesConservadas}.`);
+                                    cargarDatos(token);
+                                } else {
+                                    alert('Error: ' + (data?.error || 'Desconocido'));
+                                }
+                            } catch (err) {
+                                alert('Error de conexión: ' + err.message);
+                            }
+                        }}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
+                    >
+                        🗑 Limpiar pruebas
                     </button>
                 </div>
 
