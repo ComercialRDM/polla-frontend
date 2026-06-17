@@ -1222,7 +1222,7 @@ export default function Admin() {
                                                 {Number(u.total_pagado) > 0 ? `$${Number(u.total_pagado).toLocaleString('es-CO')}` : '—'}
                                             </td>
                                             <td className="py-2 text-zinc-400 whitespace-nowrap">
-                                                {new Date(u.fecha_creacion).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: '2-digit' })}
+                                                {new Date(u.fecha_registro).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: '2-digit' })}
                                             </td>
                                         </tr>
                                     ))}
