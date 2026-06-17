@@ -116,10 +116,6 @@ export default function Home() {
             </div>
 
             <div className="w-full max-w-md px-4 mt-4">
-                <CountdownPartido />
-            </div>
-
-            <div className="w-full max-w-md px-4 mt-4">
                 <Link
                     to="/comprar"
                     className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-display text-2xl tracking-wide text-zinc-950 bg-[#FCD116] shadow-lg active:scale-95 transition-transform"
@@ -131,6 +127,9 @@ export default function Home() {
             <PlanesBono />
 
             <SeccionHeader titulo="Partidos del día" id="partidos" />
+            <div className="w-full max-w-md px-4 mt-4">
+                <CountdownPartido />
+            </div>
             <ProximosPartidos />
             <ResumenPublico />
 

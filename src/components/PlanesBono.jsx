@@ -48,8 +48,19 @@ export default function PlanesBono() {
                 ))}
             </div>
 
-            <Link to="/comprar" className="block text-center text-zinc-500 dark:text-zinc-400 text-xs mt-3 hover:text-[#FCD116] transition-colors">
-                ¿Otro monto? Personalízalo aquí →
+            <Link
+                to="/comprar"
+                className="relative flex items-center justify-between gap-4 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 mt-1 active:scale-[0.98] transition-all"
+            >
+                <div className="flex-1">
+                    <p className="font-display text-3xl leading-none tracking-wide text-zinc-900 dark:text-white">
+                        ¿Otro monto?
+                    </p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
+                        Personaliza el valor de tu bono
+                    </p>
+                </div>
+                <span className="text-xl font-black text-zinc-400">›</span>
             </Link>
         </div>
     );
