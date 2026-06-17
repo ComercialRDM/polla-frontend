@@ -11,8 +11,7 @@ import ListaPronosticos from '../components/ListaPronosticos';
 import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
 import PartidosFlash from '../components/PartidosFlash';
-import ResumenUsuario from '../components/ResumenUsuario';
-import BiometriaRegistro from '../components/BiometriaRegistro';
+import DashboardUsuario from '../components/DashboardUsuario';
 import campanaImg from '../assets/Polla Mundialista Retoucherie_Comprimida.webp';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
@@ -105,33 +104,7 @@ export default function Home() {
 
             {/* Bienvenida / Auth */}
             {sesion ? (
-                <div className="w-full max-w-md px-4 mt-3">
-                    <div className="rounded-2xl bg-zinc-900 border border-[#FCD116]/30 px-4 py-3">
-                        <div className="flex items-center justify-between gap-3">
-                            <div className="min-w-0">
-                                <p className="text-[#FCD116] font-black text-sm truncate">
-                                    👋 Hola, {sesion.nombre?.split(' ')[0]}
-                                </p>
-                                {sesion.equipos_favoritos?.length > 0 && (
-                                    <p className="text-zinc-400 text-xs mt-0.5 truncate">
-                                        ❤️ {sesion.equipos_favoritos.slice(0, 3).join(' · ')}
-                                        {sesion.equipos_favoritos.length > 3 && ` +${sesion.equipos_favoritos.length - 3}`}
-                                    </p>
-                                )}
-                            </div>
-                            <button
-                                onClick={handleCerrarSesion}
-                                className="flex-shrink-0 text-xs text-zinc-500 hover:text-zinc-300 underline transition-colors"
-                            >
-                                Salir
-                            </button>
-                        </div>
-                        <ResumenUsuario usuarioId={sesion.id} />
-                        <div className="mt-3">
-                            <BiometriaRegistro usuarioId={sesion.id} />
-                        </div>
-                    </div>
-                </div>
+                <DashboardUsuario sesion={sesion} onSalir={handleCerrarSesion} />
             ) : (
                 <div className="w-full max-w-md px-4 mt-3 flex gap-3">
                     <Link
