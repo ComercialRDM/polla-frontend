@@ -124,6 +124,10 @@ export function votar({ token_acceso, partido_id, local, visitante }) {
     });
 }
 
+export function obtenerDatosRegistroPorToken(token) {
+    return request(`/api/polla/datos-registro/${token}`);
+}
+
 export function registrarCuenta({ celular, password, nombre, correo, equipos_favoritos }) {
     return request('/api/auth/registro', {
         method: 'POST',

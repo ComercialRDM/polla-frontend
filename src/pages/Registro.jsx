@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { registrarCuenta } from '../api';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { registrarCuenta, obtenerDatosRegistroPorToken } from '../api';
 import { guardarSesion } from '../utils/sesion';
 import { obtenerDatosComprador, guardarDatosComprador } from '../utils/datosComprador';
 import { MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
@@ -83,10 +83,14 @@ function IndicadorPassword({ password }) {
 
 export default function Registro() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const tokenCompra = searchParams.get('token');
     const [paso, setPaso] = useState(1);
     const [nombre, setNombre] = useState(() => obtenerDatosComprador().nombre || '');
     const [celular, setCelular] = useState(() => obtenerDatosComprador().celular || '');
     const [correo, setCorreo] = useState('');
+    const [datosBloqueados, setDatosBloqueados] = useState(false);
+    const [yaRegistrado, setYaRegistrado] = useState(false);
     const [password, setPassword] = useState('');
     const [confirmarPassword, setConfirmarPassword] = useState('');
     const [equipos, setEquipos] = useState([]);
@@ -96,6 +100,20 @@ export default function Registro() {
     const [recordarDispositivo, setRecordarDispositivo] = useState(true);
     const [error, setError] = useState('');
     const [enviando, setEnviando] = useState(false);
+
+    useEffect(() => {
+        if (!tokenCompra) return;
+        obtenerDatosRegistroPorToken(tokenCompra)
+            .then((data) => {
+                if (!data?.encontrado) return;
+                setNombre((prev) => prev || data.nombre || '');
+                setCelular(data.celular || '');
+                setCorreo(data.correo || '');
+                setDatosBloqueados(true);
+                setYaRegistrado(!!data.ya_registrado);
+            })
+            .catch(() => {});
+    }, [tokenCompra]);
 
     function toggleEquipo(equipo) {
         setEquipos((prev) => {
@@ -195,6 +213,13 @@ export default function Registro() {
                 {paso === 1 ? (
                     <form onSubmit={handleContinuarPaso1} className="flex flex-col gap-4">
 
+                        {yaRegistrado && (
+                            <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg px-3 py-2">
+                                Ya tienes una cuenta con estos datos.{' '}
+                                <Link to="/iniciar-sesion" className="underline font-semibold">Inicia sesión</Link>
+                            </p>
+                        )}
+
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                             <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
@@ -204,13 +229,21 @@ export default function Registro() {
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
                             <input type="tel" value={celular} onChange={(e) => setCelular(e.target.value)}
-                                placeholder="Ej: 3001234567" className={INPUT_CLASS} />
+                                disabled={datosBloqueados}
+                                placeholder="Ej: 3001234567" className={INPUT_CLASS + (datosBloqueados ? ' opacity-60 cursor-not-allowed' : '')} />
+                            {datosBloqueados && (
+                                <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
+                            )}
                         </div>
 
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
                             <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
-                                placeholder="tucorreo@email.com" className={INPUT_CLASS} />
+                                disabled={datosBloqueados && !!correo}
+                                placeholder="tucorreo@email.com" className={INPUT_CLASS + (datosBloqueados && correo ? ' opacity-60 cursor-not-allowed' : '')} />
+                            {datosBloqueados && correo && (
+                                <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
+                            )}
                         </div>
 
                         <div>
