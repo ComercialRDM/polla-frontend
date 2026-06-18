@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { registrarCuenta, obtenerDatosRegistroPorToken } from '../api';
+import { registrarCuenta, obtenerDatosRegistroPorToken, loginConGoogle, completarRegistroGoogle } from '../api';
 import { guardarSesion } from '../utils/sesion';
 import { obtenerDatosComprador, guardarDatosComprador } from '../utils/datosComprador';
 import { MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
 import SelectorEquipos from '../components/SelectorEquipos';
 import AgendarCalendario from '../components/AgendarCalendario';
+import GoogleButton from '../components/GoogleButton';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
 import balonImg from '../assets/premios/balon.webp';
@@ -86,6 +87,9 @@ export default function Registro() {
     const [searchParams] = useSearchParams();
     const tokenCompra = searchParams.get('token');
     const [paso, setPaso] = useState(1);
+    const [metodo, setMetodo] = useState(null);
+    const [mostrarFormPassword, setMostrarFormPassword] = useState(false);
+    const [googleCredential, setGoogleCredential] = useState(null);
     const [nombre, setNombre] = useState(() => obtenerDatosComprador().nombre || '');
     const [celular, setCelular] = useState(() => obtenerDatosComprador().celular || '');
     const [correo, setCorreo] = useState('');
@@ -123,45 +127,77 @@ export default function Registro() {
         });
     }
 
-    function handleContinuarPaso1(e) {
+    async function handleGoogleCredential(credential) {
+        setError('');
+        setEnviando(true);
+        try {
+            const data = await loginConGoogle(credential);
+            if (data?.success && !data.nuevo) {
+                guardarSesion(data.usuario, recordarDispositivo);
+                navigate('/');
+                return;
+            }
+            if (data?.success && data.nuevo) {
+                setGoogleCredential(credential);
+                setNombre((prev) => prev || data.datos?.nombre || '');
+                setCorreo((prev) => prev || data.datos?.correo || '');
+                setMetodo('google');
+                setPaso(2);
+                return;
+            }
+            setError(data?.error || 'No se pudo continuar con Google.');
+        } catch {
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    function handleContinuarPassword(e) {
         e.preventDefault();
         setError('');
 
         if (!nombre.trim()) { setError('Ingresa tu nombre completo.'); return; }
-        if (!celular.trim() || celular.trim().length < 7) { setError('Ingresa un número de celular válido.'); return; }
         if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) { setError('Ingresa un correo electrónico válido.'); return; }
         const errPw = validarPassword(password);
         if (errPw) { setError(errPw); return; }
         if (password !== confirmarPassword) { setError('Las contraseñas no coinciden.'); return; }
+
+        setMetodo('password');
+        setPaso(2);
+    }
+
+    function handleContinuarCelular(e) {
+        e.preventDefault();
+        setError('');
+
+        if (!celular.trim() || celular.trim().length < 7) { setError('Ingresa un número de celular válido.'); return; }
         if (!mayorDeEdad) { setError('Debes confirmar que eres mayor de 18 años de edad.'); return; }
         if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
 
-        setPaso(2);
+        setPaso(3);
     }
 
     async function handleFinalizar() {
         setError('');
-        if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) {
-            setPaso(1);
-            setError('Ingresa un correo electrónico válido.');
-            return;
-        }
         setEnviando(true);
         try {
-            const data = await registrarCuenta({
-                nombre: nombre.trim(),
-                celular: celular.trim(),
-                correo: correo.trim(),
-                password,
-                equipos_favoritos: equipos,
-            });
+            const data = metodo === 'google'
+                ? await completarRegistroGoogle({ credential: googleCredential, celular: celular.trim(), equipos_favoritos: equipos })
+                : await registrarCuenta({
+                    nombre: nombre.trim(),
+                    celular: celular.trim(),
+                    correo: correo.trim(),
+                    password,
+                    equipos_favoritos: equipos,
+                });
 
             if (data?.success) {
                 guardarSesion(data.usuario, recordarDispositivo);
                 guardarDatosComprador({ nombre: nombre.trim(), celular: celular.trim() });
                 if (equipos.length > 0 && data.usuario?.calendario_token) {
                     setCalendarioToken(data.usuario.calendario_token);
-                    setPaso(3);
+                    setPaso(4);
                 } else {
                     navigate('/');
                 }
@@ -200,32 +236,93 @@ export default function Registro() {
                 )}
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
-                    {paso === 1 ? '¡Bienvenido! 🇨🇴' : paso === 2 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
+                    {paso === 1 ? '¡Bienvenido! 🇨🇴' : paso === 2 ? 'Un dato más' : paso === 3 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
                 </h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     {paso === 1
                         ? 'Crea tu cuenta para participar en la Polla Mundialista de La Retoucherie.'
                         : paso === 2
+                        ? 'Ingresa tu número de celular para terminar tu registro.'
+                        : paso === 3
                         ? `Selecciona hasta ${MAX_EQUIPOS_FAVORITOS} equipos para personalizar tu experiencia (opcional).`
                         : '¿Quieres agendar en tu calendario los partidos de tus equipos favoritos?'}
                 </p>
 
                 {paso === 1 ? (
-                    <form onSubmit={handleContinuarPaso1} className="flex flex-col gap-4">
+                    yaRegistrado ? (
+                        <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg px-3 py-2">
+                            Ya tienes una cuenta con estos datos.{' '}
+                            <Link to="/iniciar-sesion" className="underline font-semibold">Inicia sesión</Link>
+                        </p>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            <GoogleButton onCredential={handleGoogleCredential} />
 
-                        {yaRegistrado && (
-                            <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg px-3 py-2">
-                                Ya tienes una cuenta con estos datos.{' '}
-                                <Link to="/iniciar-sesion" className="underline font-semibold">Inicia sesión</Link>
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                                <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                            </div>
+
+                            {!mostrarFormPassword ? (
+                                <button type="button" onClick={() => setMostrarFormPassword(true)}
+                                    className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
+                                    Registrarme con correo y contraseña
+                                </button>
+                            ) : (
+                                <form onSubmit={handleContinuarPassword} className="flex flex-col gap-4">
+                                    <div>
+                                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
+                                        <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
+                                            placeholder="Tu nombre completo" className={INPUT_CLASS} />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
+                                        <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
+                                            disabled={datosBloqueados && !!correo}
+                                            placeholder="tucorreo@email.com" className={INPUT_CLASS + (datosBloqueados && correo ? ' opacity-60 cursor-not-allowed' : '')} />
+                                        {datosBloqueados && correo && (
+                                            <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <CampoPassword
+                                            label="Contraseña"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Mínimo 8 caracteres"
+                                        />
+                                        <IndicadorPassword password={password} />
+                                    </div>
+
+                                    <CampoPassword
+                                        label="Confirmar contraseña"
+                                        value={confirmarPassword}
+                                        onChange={(e) => setConfirmarPassword(e.target.value)}
+                                        placeholder="Repite tu contraseña"
+                                    />
+
+                                    {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                                    <button type="submit"
+                                        className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
+                                        Continuar
+                                    </button>
+                                </form>
+                            )}
+
+                            {error && !mostrarFormPassword && <p className="text-red-400 text-sm text-center">{error}</p>}
+
+                            <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
+                                ¿Ya tienes cuenta?{' '}
+                                <Link to="/iniciar-sesion" className="text-amber-500 dark:text-amber-400 font-semibold underline">Inicia sesión</Link>
                             </p>
-                        )}
-
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
-                            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
-                                placeholder="Tu nombre completo" className={INPUT_CLASS} />
                         </div>
-
+                    )
+                ) : paso === 2 ? (
+                    <form onSubmit={handleContinuarCelular} className="flex flex-col gap-4">
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
                             <input type="tel" value={celular} onChange={(e) => setCelular(e.target.value)}
@@ -235,33 +332,6 @@ export default function Registro() {
                                 <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
                             )}
                         </div>
-
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
-                            <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
-                                disabled={datosBloqueados && !!correo}
-                                placeholder="tucorreo@email.com" className={INPUT_CLASS + (datosBloqueados && correo ? ' opacity-60 cursor-not-allowed' : '')} />
-                            {datosBloqueados && correo && (
-                                <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <CampoPassword
-                                label="Contraseña"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Mínimo 8 caracteres"
-                            />
-                            <IndicadorPassword password={password} />
-                        </div>
-
-                        <CampoPassword
-                            label="Confirmar contraseña"
-                            value={confirmarPassword}
-                            onChange={(e) => setConfirmarPassword(e.target.value)}
-                            placeholder="Repite tu contraseña"
-                        />
 
                         <label className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 text-sm cursor-pointer">
                             <input type="checkbox" checked={recordarDispositivo} onChange={(e) => setRecordarDispositivo(e.target.checked)}
@@ -288,22 +358,23 @@ export default function Registro() {
 
                         {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                        <button type="submit"
-                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
-                            Continuar
-                        </button>
-
-                        <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
-                            ¿Ya tienes cuenta?{' '}
-                            <Link to="/iniciar-sesion" className="text-amber-500 dark:text-amber-400 font-semibold underline">Inicia sesión</Link>
-                        </p>
+                        <div className="flex gap-2">
+                            <button type="button" onClick={() => setPaso(1)}
+                                className="flex-1 py-3 rounded-xl font-bold text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
+                                Atrás
+                            </button>
+                            <button type="submit"
+                                className="flex-1 py-3 rounded-xl font-black text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
+                                Continuar
+                            </button>
+                        </div>
                     </form>
-                ) : paso === 2 ? (
+                ) : paso === 3 ? (
                     <div className="flex flex-col gap-4">
                         <SelectorEquipos seleccionados={equipos} onToggle={toggleEquipo} max={MAX_EQUIPOS_FAVORITOS} />
                         {error && <p className="text-red-400 text-sm">{error}</p>}
                         <div className="flex gap-2">
-                            <button type="button" onClick={() => setPaso(1)}
+                            <button type="button" onClick={() => setPaso(2)}
                                 className="flex-1 py-3 rounded-xl font-bold text-zinc-900 dark:text-white border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">
                                 Atrás
                             </button>
