@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { registrarCompartida } from '../api';
 import { bandera, codigoPais } from '../utils/banderas';
+import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
 
 export default function CompartirPronostico({ equipoLocal, equipoVisitante, localPred, visitantePred, tokenAcceso, partidoId }) {
     const [copiado, setCopiado] = useState(false);
@@ -66,9 +67,10 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         // Carga de banderas en paralelo
         const codeL = codigoPais(equipoLocal);
         const codeV = codigoPais(equipoVisitante);
-        const [imgL, imgV] = await Promise.all([
+        const [imgL, imgV, imgLogo] = await Promise.all([
             codeL ? loadImg(`https://flagcdn.com/w320/${codeL}.png`) : Promise.resolve(null),
             codeV ? loadImg(`https://flagcdn.com/w320/${codeV}.png`) : Promise.resolve(null),
+            loadImg(logoRetoucherie),
         ]);
 
         // ── FONDO ──
@@ -107,14 +109,12 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         // ── CABECERA ──
         ctx.textAlign = 'center';
 
-        // Logo Retoucherie
-        ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 54px Arial';
-        ctx.fillText('LA RETOUCHERIE DE MANUELA', W / 2, 98);
-
-        ctx.fillStyle = 'rgba(252,209,22,0.5)';
-        ctx.font = '28px Arial';
-        ctx.fillText('· · · · · · · · · · · · · · · · · · · · · · ·', W / 2, 140);
+        // Logo oficial Retoucherie
+        if (imgLogo) {
+            const logoH = 150;
+            const logoW = logoH * ((imgLogo.naturalWidth || imgLogo.width) / (imgLogo.naturalHeight || imgLogo.height));
+            ctx.drawImage(imgLogo, (W - logoW) / 2, 20, logoW, logoH);
+        }
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 42px Arial';
