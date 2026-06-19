@@ -13,6 +13,7 @@ import Footer from '../components/Footer';
 import PartidosFlash from '../components/PartidosFlash';
 import DashboardUsuario from '../components/DashboardUsuario';
 import campanaImg from '../assets/Polla Mundialista Retoucherie_Comprimida.webp';
+import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
 import camisetaImg from '../assets/premios/camiseta.webp';
 import gorraImg from '../assets/premios/gorra.webp';
 import balonImg from '../assets/premios/balon.webp';
@@ -91,8 +92,8 @@ export default function Home() {
             {/* ── INICIO ── */}
             <header id="inicio" className="w-full bg-zinc-950 border-b-4 border-[#FCD116]">
                 <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-                    <div>
-                        <p className="font-display text-[#FCD116] text-xl tracking-widest uppercase leading-none">La Retoucherie</p>
+                    <div className="flex items-center gap-2">
+                        <img src={logoRetoucherie} alt="La Retoucherie de Manuela" className="h-9 w-auto rounded-sm" />
                         <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold">de Manuela · Polla Mundialista</p>
                     </div>
                     <div className="flex items-center gap-1">
