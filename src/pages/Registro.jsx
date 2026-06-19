@@ -69,6 +69,24 @@ function CampoPassword({ label, value, onChange, placeholder }) {
     );
 }
 
+function CampoCelular({ value, onChange, disabled }) {
+    return (
+        <div className="flex">
+            <span className="flex items-center gap-1 rounded-l-lg border border-r-0 border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 px-3 text-zinc-600 dark:text-zinc-300 text-sm font-semibold select-none">
+                🇨🇴 +57
+            </span>
+            <input
+                type="tel"
+                value={value}
+                onChange={onChange}
+                disabled={disabled}
+                placeholder="Ej: 3001234567"
+                className={INPUT_CLASS + ' rounded-l-none' + (disabled ? ' opacity-60 cursor-not-allowed' : '')}
+            />
+        </div>
+    );
+}
+
 function IndicadorPassword({ password }) {
     const requisitos = [
         { ok: password.length >= 8, texto: 'Mínimo 8 caracteres' },
@@ -357,9 +375,7 @@ export default function Registro() {
                                 <form onSubmit={codigoEnviado ? handleVerificarCodigoTelefono : handleEnviarCodigoTelefono} className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 p-4">
                                     <div>
                                         <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
-                                        <input type="tel" value={celularTelefono} onChange={(e) => setCelularTelefono(e.target.value)}
-                                            disabled={codigoEnviado}
-                                            placeholder="Ej: 3001234567" className={INPUT_CLASS + (codigoEnviado ? ' opacity-60 cursor-not-allowed' : '')} />
+                                        <CampoCelular value={celularTelefono} onChange={(e) => setCelularTelefono(e.target.value)} disabled={codigoEnviado} />
                                     </div>
 
                                     {codigoEnviado && (
@@ -451,9 +467,7 @@ export default function Registro() {
                     <form onSubmit={handleContinuarCelular} className="flex flex-col gap-4">
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
-                            <input type="tel" value={celular} onChange={(e) => setCelular(e.target.value)}
-                                disabled={datosBloqueados}
-                                placeholder="Ej: 3001234567" className={INPUT_CLASS + (datosBloqueados ? ' opacity-60 cursor-not-allowed' : '')} />
+                            <CampoCelular value={celular} onChange={(e) => setCelular(e.target.value)} disabled={datosBloqueados} />
                             {datosBloqueados && (
                                 <p className="text-xs text-zinc-400 mt-1">{TEXTO_BLOQUEADO}</p>
                             )}
