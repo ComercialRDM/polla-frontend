@@ -212,7 +212,7 @@ export default function Registro() {
     async function handleVerificarCodigoTelefono(e) {
         e.preventDefault();
         setError('');
-        if (!codigoTelefono.trim()) { setError('Ingresa el código que te llegó por WhatsApp.'); return; }
+        if (!codigoTelefono.trim()) { setError('Ingresa el código que te llegó por SMS.'); return; }
 
         setEnviando(true);
         try {
@@ -380,7 +380,7 @@ export default function Registro() {
 
                                     {codigoEnviado && (
                                         <div>
-                                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código que te llegó por WhatsApp</label>
+                                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código que te llegó por SMS</label>
                                             <input type="text" inputMode="numeric" value={codigoTelefono} onChange={(e) => setCodigoTelefono(e.target.value)}
                                                 placeholder="Ej: 123456" className={INPUT_CLASS} />
                                         </div>
@@ -389,7 +389,7 @@ export default function Registro() {
                                     {error && <p className="text-red-400 text-sm">{error}</p>}
 
                                     <button type="submit" disabled={enviando} className={BOTON_PRIMARIO_CLASS + ' py-3'}>
-                                        {enviando ? 'Enviando...' : codigoEnviado ? 'Verificar código' : 'Enviar código por WhatsApp'}
+                                        {enviando ? 'Enviando...' : codigoEnviado ? 'Verificar código' : 'Enviar código por SMS'}
                                     </button>
                                 </form>
                             ) : (
