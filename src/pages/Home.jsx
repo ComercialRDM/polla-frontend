@@ -94,7 +94,7 @@ export default function Home() {
                 <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <img src={logoRetoucherie} alt="La Retoucherie de Manuela" className="h-9 w-auto rounded-sm" />
-                        <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold">de Manuela · Polla Mundialista</p>
+                        <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold">Polla Mundialista Retoucherie</p>
                     </div>
                     <div className="flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
