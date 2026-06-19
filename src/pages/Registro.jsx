@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { registrarCuenta, obtenerDatosRegistroPorToken, loginConGoogle, completarRegistroGoogle } from '../api';
+import {
+    registrarCuenta, obtenerDatosRegistroPorToken, loginConGoogle, completarRegistroGoogle,
+    solicitarCodigoTelefono, verificarCodigoTelefono, completarRegistroTelefono,
+} from '../api';
 import { guardarSesion } from '../utils/sesion';
 import { obtenerDatosComprador, guardarDatosComprador } from '../utils/datosComprador';
 import { MAX_EQUIPOS_FAVORITOS } from '../utils/equipos';
@@ -15,6 +18,9 @@ import gafasImg from '../assets/premios/gafas.webp';
 const PREMIOS_VISTAZO = [camisetaImg, gorraImg, balonImg, gafasImg];
 
 const INPUT_CLASS = 'w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400';
+const BOTON_PRIMARIO_CLASS = 'w-full py-4 rounded-full font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60';
+const BOTON_PILL_CLASS = 'w-full py-3.5 rounded-full border border-zinc-300 dark:border-white/15 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold flex items-center justify-center gap-2 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors disabled:opacity-60';
+const TEXTO_BLOQUEADO = 'Este dato ya quedó confirmado y no se puede editar.';
 
 function validarPassword(pw) {
     if (pw.length < 8) return 'Mínimo 8 caracteres.';
@@ -88,8 +94,16 @@ export default function Registro() {
     const tokenCompra = searchParams.get('token');
     const [paso, setPaso] = useState(1);
     const [metodo, setMetodo] = useState(null);
-    const [mostrarFormPassword, setMostrarFormPassword] = useState(false);
+    const [correoConfirmado, setCorreoConfirmado] = useState(false);
     const [googleCredential, setGoogleCredential] = useState(null);
+
+    const [mostrarFormTelefono, setMostrarFormTelefono] = useState(false);
+    const [codigoEnviado, setCodigoEnviado] = useState(false);
+    const [codigoTelefono, setCodigoTelefono] = useState('');
+    const [telefonoNuevo, setTelefonoNuevo] = useState(false);
+    const [registroTokenTelefono, setRegistroTokenTelefono] = useState(null);
+    const [celularTelefono, setCelularTelefono] = useState(() => obtenerDatosComprador().celular || '');
+
     const [nombre, setNombre] = useState(() => obtenerDatosComprador().nombre || '');
     const [celular, setCelular] = useState(() => obtenerDatosComprador().celular || '');
     const [correo, setCorreo] = useState('');
@@ -112,7 +126,9 @@ export default function Registro() {
                 if (!data?.encontrado) return;
                 setNombre((prev) => prev || data.nombre || '');
                 setCelular(data.celular || '');
+                setCelularTelefono(data.celular || '');
                 setCorreo(data.correo || '');
+                setCorreoConfirmado(!!data.correo);
                 setDatosBloqueados(true);
                 setYaRegistrado(!!data.ya_registrado);
             })
@@ -153,12 +169,80 @@ export default function Registro() {
         }
     }
 
+    async function handleEnviarCodigoTelefono(e) {
+        e.preventDefault();
+        setError('');
+        if (!celularTelefono.trim() || celularTelefono.trim().length < 7) {
+            setError('Ingresa un número de celular válido.');
+            return;
+        }
+        setEnviando(true);
+        try {
+            const data = await solicitarCodigoTelefono(celularTelefono.trim());
+            if (data?.success) {
+                setCodigoEnviado(true);
+            } else {
+                setError(data?.error || 'No se pudo enviar el código.');
+            }
+        } catch {
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    async function handleVerificarCodigoTelefono(e) {
+        e.preventDefault();
+        setError('');
+        if (!codigoTelefono.trim()) { setError('Ingresa el código que te llegó por WhatsApp.'); return; }
+
+        setEnviando(true);
+        try {
+            const data = await verificarCodigoTelefono({ celular: celularTelefono.trim(), codigo: codigoTelefono.trim() });
+            if (data?.success && !data.nuevo) {
+                guardarSesion(data.usuario, recordarDispositivo);
+                navigate('/');
+                return;
+            }
+            if (data?.success && data.nuevo) {
+                setRegistroTokenTelefono(data.registro_token);
+                setTelefonoNuevo(true);
+                return;
+            }
+            setError(data?.error || 'Código incorrecto.');
+        } catch {
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    function handleContinuarTelefono(e) {
+        e.preventDefault();
+        setError('');
+        if (!nombre.trim()) { setError('Ingresa tu nombre completo.'); return; }
+
+        setCelular(celularTelefono.trim());
+        setMetodo('telefono');
+        setDatosBloqueados(true);
+        setPaso(2);
+    }
+
+    function handleContinuarCorreo(e) {
+        e.preventDefault();
+        setError('');
+        if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) {
+            setError('Ingresa un correo electrónico válido.');
+            return;
+        }
+        setCorreoConfirmado(true);
+    }
+
     function handleContinuarPassword(e) {
         e.preventDefault();
         setError('');
 
         if (!nombre.trim()) { setError('Ingresa tu nombre completo.'); return; }
-        if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) { setError('Ingresa un correo electrónico válido.'); return; }
         const errPw = validarPassword(password);
         if (errPw) { setError(errPw); return; }
         if (password !== confirmarPassword) { setError('Las contraseñas no coinciden.'); return; }
@@ -184,6 +268,13 @@ export default function Registro() {
         try {
             const data = metodo === 'google'
                 ? await completarRegistroGoogle({ credential: googleCredential, celular: celular.trim(), equipos_favoritos: equipos })
+                : metodo === 'telefono'
+                ? await completarRegistroTelefono({
+                    celular: celular.trim(),
+                    registro_token: registroTokenTelefono,
+                    nombre: nombre.trim(),
+                    equipos_favoritos: equipos,
+                })
                 : await registrarCuenta({
                     nombre: nombre.trim(),
                     celular: celular.trim(),
@@ -235,12 +326,12 @@ export default function Registro() {
                     </div>
                 )}
 
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
-                    {paso === 1 ? '¡Bienvenido! 🇨🇴' : paso === 2 ? 'Un dato más' : paso === 3 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1 text-center">
+                    {paso === 1 ? 'Inicia sesión o regístrate' : paso === 2 ? 'Un dato más' : paso === 3 ? 'Elige tus equipos favoritos' : '¡Listo! Un último paso'}
                 </h1>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6 text-center">
                     {paso === 1
-                        ? 'Crea tu cuenta para participar en la Polla Mundialista de La Retoucherie.'
+                        ? 'Participa en la Polla Mundialista de La Retoucherie y gana premios increíbles.'
                         : paso === 2
                         ? 'Ingresa tu número de celular para terminar tu registro.'
                         : paso === 3
@@ -255,65 +346,100 @@ export default function Registro() {
                             <Link to="/iniciar-sesion" className="underline font-semibold">Inicia sesión</Link>
                         </p>
                     ) : (
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-3">
                             <GoogleButton onCredential={handleGoogleCredential} />
 
-                            <div className="flex items-center gap-3">
-                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                                <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
-                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                            </div>
-
-                            {!mostrarFormPassword ? (
-                                <button type="button" onClick={() => setMostrarFormPassword(true)}
-                                    className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
-                                    Registrarme con correo y contraseña
+                            {!mostrarFormTelefono ? (
+                                <button type="button" onClick={() => setMostrarFormTelefono(true)} className={BOTON_PILL_CLASS}>
+                                    📱 Continuar con teléfono
                                 </button>
+                            ) : !telefonoNuevo ? (
+                                <form onSubmit={codigoEnviado ? handleVerificarCodigoTelefono : handleEnviarCodigoTelefono} className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 p-4">
+                                    <div>
+                                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
+                                        <input type="tel" value={celularTelefono} onChange={(e) => setCelularTelefono(e.target.value)}
+                                            disabled={codigoEnviado}
+                                            placeholder="Ej: 3001234567" className={INPUT_CLASS + (codigoEnviado ? ' opacity-60 cursor-not-allowed' : '')} />
+                                    </div>
+
+                                    {codigoEnviado && (
+                                        <div>
+                                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código que te llegó por WhatsApp</label>
+                                            <input type="text" inputMode="numeric" value={codigoTelefono} onChange={(e) => setCodigoTelefono(e.target.value)}
+                                                placeholder="Ej: 123456" className={INPUT_CLASS} />
+                                        </div>
+                                    )}
+
+                                    {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                                    <button type="submit" disabled={enviando} className={BOTON_PRIMARIO_CLASS + ' py-3'}>
+                                        {enviando ? 'Enviando...' : codigoEnviado ? 'Verificar código' : 'Enviar código por WhatsApp'}
+                                    </button>
+                                </form>
                             ) : (
-                                <form onSubmit={handleContinuarPassword} className="flex flex-col gap-4">
+                                <form onSubmit={handleContinuarTelefono} className="flex flex-col gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 p-4">
+                                    <p className="text-sm text-green-500 font-semibold">✓ Celular verificado</p>
                                     <div>
                                         <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                                         <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
                                             placeholder="Tu nombre completo" className={INPUT_CLASS} />
                                     </div>
-
-                                    <div>
-                                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
-                                        <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
-                                            disabled={datosBloqueados && !!correo}
-                                            placeholder="tucorreo@email.com" className={INPUT_CLASS + (datosBloqueados && correo ? ' opacity-60 cursor-not-allowed' : '')} />
-                                        {datosBloqueados && correo && (
-                                            <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
-                                        )}
-                                    </div>
-
-                                    <div>
-                                        <CampoPassword
-                                            label="Contraseña"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="Mínimo 8 caracteres"
-                                        />
-                                        <IndicadorPassword password={password} />
-                                    </div>
-
-                                    <CampoPassword
-                                        label="Confirmar contraseña"
-                                        value={confirmarPassword}
-                                        onChange={(e) => setConfirmarPassword(e.target.value)}
-                                        placeholder="Repite tu contraseña"
-                                    />
-
                                     {error && <p className="text-red-400 text-sm">{error}</p>}
-
-                                    <button type="submit"
-                                        className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
+                                    <button type="submit" className={BOTON_PRIMARIO_CLASS + ' py-3'}>
                                         Continuar
                                     </button>
                                 </form>
                             )}
 
-                            {error && !mostrarFormPassword && <p className="text-red-400 text-sm text-center">{error}</p>}
+                            <div className="flex items-center gap-3 my-1">
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                                <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
+                                <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
+                            </div>
+
+                            <form onSubmit={correoConfirmado ? handleContinuarPassword : handleContinuarCorreo} className="flex flex-col gap-4">
+                                <div>
+                                    <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
+                                        disabled={correoConfirmado}
+                                        placeholder="Dirección de correo electrónico" className={INPUT_CLASS + ' rounded-full' + (correoConfirmado ? ' opacity-60 cursor-not-allowed' : '')} />
+                                    {correoConfirmado && datosBloqueados && (
+                                        <p className="text-xs text-zinc-400 mt-1">{TEXTO_BLOQUEADO}</p>
+                                    )}
+                                </div>
+
+                                {correoConfirmado && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
+                                            <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)}
+                                                placeholder="Tu nombre completo" className={INPUT_CLASS} />
+                                        </div>
+
+                                        <div>
+                                            <CampoPassword
+                                                label="Contraseña"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="Mínimo 8 caracteres"
+                                            />
+                                            <IndicadorPassword password={password} />
+                                        </div>
+
+                                        <CampoPassword
+                                            label="Confirmar contraseña"
+                                            value={confirmarPassword}
+                                            onChange={(e) => setConfirmarPassword(e.target.value)}
+                                            placeholder="Repite tu contraseña"
+                                        />
+                                    </>
+                                )}
+
+                                {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                                <button type="submit" className={BOTON_PRIMARIO_CLASS}>
+                                    Continuar
+                                </button>
+                            </form>
 
                             <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
                                 ¿Ya tienes cuenta?{' '}
@@ -329,7 +455,7 @@ export default function Registro() {
                                 disabled={datosBloqueados}
                                 placeholder="Ej: 3001234567" className={INPUT_CLASS + (datosBloqueados ? ' opacity-60 cursor-not-allowed' : '')} />
                             {datosBloqueados && (
-                                <p className="text-xs text-zinc-400 mt-1">Vinculado a tu compra, no se puede editar.</p>
+                                <p className="text-xs text-zinc-400 mt-1">{TEXTO_BLOQUEADO}</p>
                             )}
                         </div>
 

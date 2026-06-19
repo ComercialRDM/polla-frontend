@@ -142,6 +142,27 @@ export function iniciarSesion({ celular, password }) {
     });
 }
 
+export function solicitarCodigoTelefono(celular) {
+    return request('/api/auth/telefono/solicitar-codigo', {
+        method: 'POST',
+        body: JSON.stringify({ celular }),
+    });
+}
+
+export function verificarCodigoTelefono({ celular, codigo }) {
+    return request('/api/auth/telefono/verificar-codigo', {
+        method: 'POST',
+        body: JSON.stringify({ celular, codigo }),
+    });
+}
+
+export function completarRegistroTelefono({ celular, registro_token, nombre, equipos_favoritos }) {
+    return request('/api/auth/telefono/completar', {
+        method: 'POST',
+        body: JSON.stringify({ celular, registro_token, nombre, equipos_favoritos }),
+    });
+}
+
 export function solicitarResetPassword({ celular, metodo = 'whatsapp' }) {
     return request('/api/auth/solicitar-reset', {
         method: 'POST',

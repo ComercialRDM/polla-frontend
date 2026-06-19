@@ -42,6 +42,7 @@ export default function GoogleButton({ onCredential }) {
                 theme: 'outline',
                 size: 'large',
                 width: 340,
+                shape: 'pill',
                 text: 'continue_with',
             });
         }).catch(() => {});
