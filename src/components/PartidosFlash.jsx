@@ -25,7 +25,7 @@ function TiempoRestante({ cierreFlash }) {
     );
 }
 
-function TarjetaFlash({ partido, usuarioId }) {
+function TarjetaFlash({ partido, celular }) {
     const ahora = useAhora();
     const [localVal, setLocalVal] = useState('');
     const [visitanteVal, setVisitanteVal] = useState('');
@@ -47,7 +47,7 @@ function TarjetaFlash({ partido, usuarioId }) {
         }
         setCargando(true);
         try {
-            const data = await votarFlash({ usuario_id: usuarioId, partido_id: partido.id, local: l, visitante: v });
+            const data = await votarFlash({ celular, partido_id: partido.id, local: l, visitante: v });
             if (data?.success) {
                 setEnviado(true);
             } else {
@@ -160,7 +160,7 @@ export default function PartidosFlash() {
                     </p>
                 </div>
                 {partidos.map(p => (
-                    <TarjetaFlash key={p.id} partido={p} usuarioId={sesion.id} />
+                    <TarjetaFlash key={p.id} partido={p} celular={sesion.celular} />
                 ))}
             </div>
         </div>

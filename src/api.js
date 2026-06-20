@@ -37,10 +37,10 @@ export function obtenerPartidosFlash() {
     return request('/api/polla/flash');
 }
 
-export function votarFlash({ usuario_id, partido_id, local, visitante }) {
+export function votarFlash({ celular, partido_id, local, visitante }) {
     return request('/api/polla/votar-flash', {
         method: 'POST',
-        body: JSON.stringify({ usuario_id, partido_id, local, visitante }),
+        body: JSON.stringify({ celular, partido_id, local, visitante }),
     });
 }
 
