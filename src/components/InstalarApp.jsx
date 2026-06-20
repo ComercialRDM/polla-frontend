@@ -2,8 +2,16 @@ import { useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'polla_instalar_app_cerrado';
 
+// Detecta específicamente Safari en iOS (no Chrome/Firefox/Edge para iOS).
+// Esos otros navegadores también incluyen "iPhone/iPad" en su user agent,
+// pero su menú de compartir no tiene la misma opción "Agregar a inicio" que
+// crea una PWA real — solo Safari lo hace, así que solo a Safari le mostramos
+// estas instrucciones manuales.
 function esIOS() {
-    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const ua = navigator.userAgent;
+    const esDispositivoIOS = /iphone|ipad|ipod/i.test(ua);
+    const esOtroNavegadorEnIOS = /CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+    return esDispositivoIOS && !esOtroNavegadorEnIOS;
 }
 
 function yaInstalada() {
