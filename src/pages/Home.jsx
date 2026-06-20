@@ -129,7 +129,7 @@ export default function Home() {
                         <img
                             src={campanaImg}
                             alt="Polla Mundialista La Retoucherie"
-                            className="w-[85%] mx-auto block rounded-xl shadow-lg object-cover active:scale-95 transition-transform cursor-pointer"
+                            className="w-[88%] mx-auto block rounded-xl shadow-lg object-cover active:scale-95 transition-transform cursor-pointer"
                         />
                     </Link>
                 </div>
