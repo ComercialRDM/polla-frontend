@@ -361,6 +361,12 @@ export function adminTestWhatsapp(token, celular) {
     });
 }
 
+export function adminRankingGlobal(token, limit = 100) {
+    return request(`/api/admin/ranking-global?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminBonosColombia(token) {
     return request('/api/admin/bonos-colombia', {
         headers: { Authorization: `Bearer ${token}` },

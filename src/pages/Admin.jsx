@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -12,6 +12,7 @@ const SECCIONES = [
     { id: 'apuestas',        label: 'Apuestas' },
     { id: 'simulador',       label: 'Simulador' },
     { id: 'partidos',        label: 'Partidos' },
+    { id: 'ranking',         label: '🏆 Ranking' },
     { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
     { id: 'localesqr',       label: 'Locales QR' },
     { id: 'seguridad',       label: '🔐 Seguridad' },
@@ -46,6 +47,11 @@ export default function Admin() {
     const [edicionPartido, setEdicionPartido] = useState(null);
     const [guardandoPartido, setGuardandoPartido] = useState(false);
     const [bonoColResult, setBonoColResult] = useState(null);
+
+    const [rankingGlobal, setRankingGlobal]   = useState([]);
+    const [cargandoRanking, setCargandoRanking] = useState(false);
+    const [rankingExpandidoId, setRankingExpandidoId] = useState(null);
+    const [mensajeCopiado, setMensajeCopiado] = useState(null);
 
     const [bonosCol, setBonosCol]             = useState([]);
     const [cargandoBonosCol, setCargandoBonosCol] = useState(false);
@@ -211,6 +217,44 @@ export default function Admin() {
         doc.save('usuarios_polla.pdf');
     }
 
+    const PLANTILLA_GANADOR = (nombre) => `🏆 ¡Felicitaciones, ${nombre}! 🇨🇴⚽
+
+Quedaste entre los ganadores de la Polla Mundialista de La Retoucherie de Manuela.
+
+Para reclamar tu premio, respóndenos por este mismo chat o visita cualquiera de nuestras sedes en Barranquilla o Cartagena.
+
+¡Gracias por participar y disfrutar el Mundial con nosotros! 🎉`;
+
+    const PLANTILLA_TOP100 = (nombre, puntos) => `⚽ ¡Hola ${nombre}!
+
+Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos} puntos.
+
+¡Sigue prediciendo los marcadores de los próximos partidos para subir en el ranking y ganar más premios! 💪🇨🇴
+
+👉 www.ganaconretoucherie.com`;
+
+    function copiarMensaje(usuario, tipo) {
+        const texto = tipo === 'ganador'
+            ? PLANTILLA_GANADOR(usuario.nombre)
+            : PLANTILLA_TOP100(usuario.nombre, usuario.puntos);
+        navigator.clipboard.writeText(texto).then(() => {
+            setMensajeCopiado(`${usuario.id}-${tipo}`);
+            setTimeout(() => setMensajeCopiado(null), 2000);
+        });
+    }
+
+    async function cargarRankingGlobal() {
+        setCargandoRanking(true);
+        try {
+            const data = await adminRankingGlobal(token, 100);
+            if (data?.success) setRankingGlobal(data.ranking);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoRanking(false);
+        }
+    }
+
     async function cargarBonosColombia() {
         setCargandoBonosCol(true);
         try {
@@ -361,12 +405,21 @@ export default function Admin() {
 
     useEffect(() => {
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
+        if (seccionActiva === 'ranking' && token) cargarBonosColombia();
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
         }
     }, [seccionActiva]);
+
+    // Ranking global: se actualiza cada minuto mientras esa pestaña esté activa
+    useEffect(() => {
+        if (seccionActiva !== 'ranking' || !token) return;
+        cargarRankingGlobal();
+        const intervalo = setInterval(cargarRankingGlobal, 60 * 1000);
+        return () => clearInterval(intervalo);
+    }, [seccionActiva, token]);
 
     async function handleLogin(e) {
         e.preventDefault();
@@ -1327,6 +1380,108 @@ export default function Admin() {
                             )}
                         </div>
                     )}
+                </div>
+                )}
+
+                {/* Ranking global + ganadores */}
+                {seccionActiva === 'ranking' && (
+                <div className="flex flex-col gap-6">
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">🏆 Top 100 — Ranking global de puntos</h2>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-zinc-400">Se actualiza solo cada minuto</span>
+                                <button onClick={cargarRankingGlobal} disabled={cargandoRanking}
+                                    className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                                    {cargandoRanking ? 'Cargando...' : 'Actualizar'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {rankingGlobal.length === 0 && !cargandoRanking && (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Todavía no hay puntos registrados.</p>
+                        )}
+
+                        {rankingGlobal.length > 0 && (
+                            <div className="overflow-x-auto max-h-[70vh]">
+                                <table className="w-full text-xs text-left">
+                                    <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 sticky top-0">
+                                        <tr>
+                                            <th className="px-3 py-2">#</th>
+                                            <th className="px-3 py-2">Nombre</th>
+                                            <th className="px-3 py-2">Puntos</th>
+                                            <th className="px-3 py-2">Exactos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                        {rankingGlobal.map((u) => (
+                                            <Fragment key={u.id}>
+                                                <tr
+                                                    onClick={() => setRankingExpandidoId(rankingExpandidoId === u.id ? null : u.id)}
+                                                    className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-white/5"
+                                                >
+                                                    <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{u.posicion}</td>
+                                                    <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{u.nombre}</td>
+                                                    <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">{u.puntos}</td>
+                                                    <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{u.exactos}</td>
+                                                </tr>
+                                                {rankingExpandidoId === u.id && (
+                                                    <tr className="bg-zinc-100/60 dark:bg-white/[0.03]">
+                                                        <td colSpan={4} className="px-3 py-3">
+                                                            <div className="flex flex-col gap-2">
+                                                                <p className="text-zinc-700 dark:text-zinc-200">
+                                                                    📱 <span className="font-semibold">{u.celular || '—'}</span>
+                                                                    {' · '}
+                                                                    ✉️ <span className="font-semibold">{u.correo || '—'}</span>
+                                                                </p>
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); copiarMensaje(u, 'ganador'); }}
+                                                                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                                                                    >
+                                                                        {mensajeCopiado === `${u.id}-ganador` ? '✓ Copiado' : '🏆 Copiar mensaje de ganador'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); copiarMensaje(u, 'top100'); }}
+                                                                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300"
+                                                                    >
+                                                                        {mensajeCopiado === `${u.id}-top100` ? '✓ Copiado' : '⚽ Copiar mensaje motivacional'}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </Fragment>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-3">🇨🇴 Ganadores Bono Colombia</h2>
+                        {bonosCol.length === 0 ? (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">No hay ganadores del Bono Colombia registrados aún.</p>
+                        ) : (
+                            <ul className="flex flex-col gap-1 text-sm">
+                                {bonosCol.map((b) => (
+                                    <li key={b.id} className="text-zinc-700 dark:text-zinc-200">
+                                        <span className="font-semibold">{b.nombre}</span> — {b.equipo_local} {b.goles_local}-{b.goles_visitante} {b.equipo_visitante} —{' '}
+                                        <span className="font-bold text-amber-600 dark:text-amber-400">${Number(b.monto_cop).toLocaleString('es-CO')}</span>
+                                        {b.reclamado ? ' (reclamado)' : ''}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <p className="text-[11px] text-zinc-400 mt-2">Ve a la pestaña "🇨🇴 Bono Col" para marcar reclamados.</p>
+                    </div>
+
+                    <div className="rounded-xl border border-dashed border-zinc-300 dark:border-white/15 bg-zinc-50/50 dark:bg-white/[0.02] p-4">
+                        <h2 className="text-lg font-bold text-zinc-400 dark:text-zinc-500 mb-1">⚡ Ganadores Sorteos Flash</h2>
+                        <p className="text-zinc-400 dark:text-zinc-500 text-sm">Pendiente: faltan las reglas y fechas de los sorteos flash para construir esta sección.</p>
+                    </div>
                 </div>
                 )}
 
