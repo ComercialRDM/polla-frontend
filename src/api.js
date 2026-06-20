@@ -367,6 +367,14 @@ export function adminRankingGlobal(token, limit = 100) {
     });
 }
 
+export function adminMarcarUsuarioTest(token, id, es_test) {
+    return request(`/api/admin/usuarios/${id}/es-test`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ es_test }),
+    });
+}
+
 export function adminBonosColombia(token) {
     return request('/api/admin/bonos-colombia', {
         headers: { Authorization: `Bearer ${token}` },

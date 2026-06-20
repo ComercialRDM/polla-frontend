@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -241,6 +241,17 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
             setMensajeCopiado(`${usuario.id}-${tipo}`);
             setTimeout(() => setMensajeCopiado(null), 2000);
         });
+    }
+
+    async function handleMarcarTest(usuario) {
+        try {
+            const data = await adminMarcarUsuarioTest(token, usuario.id, true);
+            if (data?.success) {
+                setRankingGlobal((prev) => prev.filter((u) => u.id !== usuario.id));
+            }
+        } catch (err) {
+            // silencioso
+        }
     }
 
     async function cargarRankingGlobal() {
@@ -1446,6 +1457,12 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                                         className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300"
                                                                     >
                                                                         {mensajeCopiado === `${u.id}-top100` ? '✓ Copiado' : '⚽ Copiar mensaje motivacional'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); handleMarcarTest(u); }}
+                                                                        className="px-3 py-1.5 rounded-lg text-xs font-bold bg-zinc-300 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-400 dark:hover:bg-white/20"
+                                                                    >
+                                                                        🚫 Marcar como prueba (quitar del ranking)
                                                                     </button>
                                                                 </div>
                                                             </div>
