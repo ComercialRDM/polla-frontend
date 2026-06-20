@@ -25,6 +25,7 @@ export default function InstalarApp({ onVisibleChange, mostrarBottomNav }) {
     const [promptEvent, setPromptEvent] = useState(null);
     const [mostrarIOS] = useState(() => esIOS() && !yaInstalada());
     const [cerrado, setCerrado] = useState(() => localStorage.getItem(STORAGE_KEY) === '1');
+    const [haDesplazado, setHaDesplazado] = useState(false);
 
     useEffect(() => {
         if (yaInstalada()) return;
@@ -38,7 +39,22 @@ export default function InstalarApp({ onVisibleChange, mostrarBottomNav }) {
         return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
     }, []);
 
-    const visible = !cerrado && (!!promptEvent || mostrarIOS);
+    // No interrumpir la primera vista: el aviso solo aparece después de que
+    // el usuario haya bajado al menos una pantalla completa (en Chrome y Safari).
+    useEffect(() => {
+        if (haDesplazado) return;
+
+        function handleScroll() {
+            if (window.scrollY > window.innerHeight * 0.8) {
+                setHaDesplazado(true);
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [haDesplazado]);
+
+    const visible = !cerrado && haDesplazado && (!!promptEvent || mostrarIOS);
 
     useEffect(() => {
         onVisibleChange?.(visible);
