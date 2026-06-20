@@ -28,7 +28,7 @@ export default function ComoParticipo() {
                             key={paso.titulo}
                             className="flex items-start gap-3 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4"
                         >
-                            <span className="flex-shrink-0 w-10 h-10 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-lg font-black text-amber-500 dark:text-amber-400">
+                            <span className="flex-shrink-0 w-11 h-11 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 shadow-[0_0_12px_rgba(234,179,8,0.5)] flex items-center justify-center text-xl font-black text-zinc-950">
                                 {i + 1}
                             </span>
                             <div>
