@@ -92,10 +92,6 @@ export function obtenerInfoPolla(token_acceso) {
     return request(`/api/polla/info?${params.toString()}`);
 }
 
-export function obtenerBonosVendidos() {
-    return request('/api/polla/bonos-vendidos');
-}
-
 export function verificarAcceso({ contacto }) {
     const params = new URLSearchParams({ contacto });
     return request(`/api/polla/verificar-acceso?${params.toString()}`);
