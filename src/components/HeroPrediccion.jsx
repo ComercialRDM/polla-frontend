@@ -6,7 +6,6 @@ import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComp
 import { guardarMarcadorPendiente } from '../utils/marcadorPendiente';
 import Bandera from './Bandera';
 import CountdownPartido from './CountdownPartido';
-import PozoPremios from './PozoPremios';
 import imagenColombiaCongo from '../assets/partido-colombia-vs-congo.jpg';
 
 const esColombia = (p) =>
@@ -168,7 +167,6 @@ export default function HeroPrediccion() {
             </div>
 
             <CountdownPartido partido={partido} />
-            <PozoPremios compact />
         </div>
     );
 }
