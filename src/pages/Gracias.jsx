@@ -1,8 +1,47 @@
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { obtenerInfoPolla } from '../api';
+
+const INTENTOS_MAX = 6;
+const INTERVALO_MS = 3000;
 
 export default function Gracias() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
+
+    // El webhook de Wompi que aprueba el pago llega de forma asíncrona, así que
+    // este "¡Pago exitoso!" no se muestra a ciegas: se confirma contra el
+    // backend (si no hay token, no hay nada que verificar y se asume éxito,
+    // igual que antes).
+    const [estado, setEstado] = useState(token ? 'verificando' : 'aprobado');
+
+    useEffect(() => {
+        if (!token) return;
+        let cancelado = false;
+        let intentos = 0;
+
+        async function verificar() {
+            try {
+                const data = await obtenerInfoPolla(token);
+                if (cancelado) return;
+                if (data?.acceso) {
+                    setEstado('aprobado');
+                    return;
+                }
+            } catch {
+                // sigue intentando
+            }
+            intentos += 1;
+            if (intentos >= INTENTOS_MAX) {
+                if (!cancelado) setEstado('demorado');
+                return;
+            }
+            setTimeout(verificar, INTERVALO_MS);
+        }
+
+        verificar();
+        return () => { cancelado = true; };
+    }, [token]);
 
     return (
         <div className="min-h-screen bg-white dark:bg-zinc-950 px-6 py-10 flex flex-col items-center">
@@ -14,13 +53,41 @@ export default function Gracias() {
 
             <div className="w-full max-w-md mt-16 flex flex-col items-center text-center">
 
-                <span className="text-6xl mb-4">🎉</span>
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
-                    ¡Pago exitoso!
-                </h1>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
-                    Tu Bono Digital fue procesado correctamente. Ya eres parte de la Polla Mundialista de La Retoucherie.
-                </p>
+                {estado === 'verificando' && (
+                    <>
+                        <span className="text-6xl mb-4">⏳</span>
+                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
+                            Confirmando tu pago...
+                        </h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
+                            Estamos verificando tu pago con Wompi. Esto toma solo unos segundos.
+                        </p>
+                    </>
+                )}
+
+                {estado === 'demorado' && (
+                    <>
+                        <span className="text-6xl mb-4">📨</span>
+                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
+                            Tu pago está en proceso
+                        </h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
+                            La confirmación está tardando más de lo usual. No te preocupes: en cuanto Wompi confirme tu pago, te avisaremos por WhatsApp o correo y tu bono quedará activo.
+                        </p>
+                    </>
+                )}
+
+                {estado === 'aprobado' && (
+                    <>
+                        <span className="text-6xl mb-4">🎉</span>
+                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
+                            ¡Pago exitoso!
+                        </h1>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
+                            Tu Bono Digital fue procesado correctamente. Ya eres parte de la Polla Mundialista de La Retoucherie.
+                        </p>
+                    </>
+                )}
 
                 {/* CTA registro */}
                 <div className="w-full rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/10 p-6 mb-6 text-left">

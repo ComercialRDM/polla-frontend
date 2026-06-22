@@ -9,6 +9,7 @@ import { partidosFuturos } from '../utils/partidos';
 import { obtenerSesion } from '../utils/sesion';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
 import TrustBadges from '../components/TrustBadges';
+import CuposRestantes from '../components/CuposRestantes';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 const PLAN_DEFAULT = 100000;
@@ -271,6 +272,10 @@ export default function Comprar() {
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                     Tu bono tiene <span className="font-bold text-zinc-700 dark:text-zinc-300">doble beneficio</span>: crédito real en servicios de La Retoucherie <span className="font-bold text-amber-500">+</span> cupos para participar en la Polla Mundialista y ganar premios.
                 </p>
+
+                <div className="mb-4">
+                    <CuposRestantes />
+                </div>
 
                 {/* Mecánica explicada */}
                 <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 p-4 mb-6 flex flex-col gap-3">

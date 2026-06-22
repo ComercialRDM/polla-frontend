@@ -92,6 +92,10 @@ export function obtenerInfoPolla(token_acceso) {
     return request(`/api/polla/info?${params.toString()}`);
 }
 
+export function obtenerBonosVendidos() {
+    return request('/api/polla/bonos-vendidos');
+}
+
 export function verificarAcceso({ contacto }) {
     const params = new URLSearchParams({ contacto });
     return request(`/api/polla/verificar-acceso?${params.toString()}`);
@@ -370,6 +374,13 @@ export function adminTestWhatsapp(token, celular) {
 
 export function adminRankingGlobal(token, limit = 100) {
     return request(`/api/admin/ranking-global?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminEliminarUsuario(token, id) {
+    return request(`/api/admin/usuarios/${id}`, {
+        method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
     });
 }

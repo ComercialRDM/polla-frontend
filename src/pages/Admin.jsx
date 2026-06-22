@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -151,6 +151,20 @@ export default function Admin() {
             // silencioso
         } finally {
             setUsuariosCargando(false);
+        }
+    }
+
+    async function handleEliminarUsuario(usuario) {
+        if (!window.confirm(`¿Borrar la cuenta de "${usuario.nombre}" (${usuario.celular})? Esta acción no se puede deshacer.`)) return;
+        try {
+            const data = await adminEliminarUsuario(token, usuario.id);
+            if (data?.success) {
+                setUsuarios((prev) => prev.filter((u) => u.id !== usuario.id));
+            } else {
+                window.alert(data?.error || 'No se pudo borrar el usuario.');
+            }
+        } catch {
+            window.alert('Error de conexión con el servidor.');
         }
     }
 
@@ -1362,7 +1376,8 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         <th className="pb-2 pr-3 font-semibold">Correo</th>
                                         <th className="pb-2 pr-3 font-semibold text-center">Compras</th>
                                         <th className="pb-2 pr-3 font-semibold text-right">Total pagado</th>
-                                        <th className="pb-2 font-semibold">Registro</th>
+                                        <th className="pb-2 pr-3 font-semibold">Registro</th>
+                                        <th className="pb-2 font-semibold"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1379,8 +1394,19 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                             <td className="py-2 pr-3 text-right text-zinc-900 dark:text-white font-medium">
                                                 {Number(u.total_pagado) > 0 ? '$' + Number(u.total_pagado).toLocaleString('es-CO') : '—'}
                                             </td>
-                                            <td className="py-2 text-zinc-400 whitespace-nowrap">
+                                            <td className="py-2 pr-3 text-zinc-400 whitespace-nowrap">
                                                 {new Date(u.fecha_registro).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: '2-digit' })}
+                                            </td>
+                                            <td className="py-2">
+                                                {Number(u.compras_aprobadas) === 0 && (
+                                                    <button
+                                                        onClick={() => handleEliminarUsuario(u)}
+                                                        className="text-red-500 hover:text-red-600 font-bold text-xs"
+                                                        title="Borrar cuenta (sin compras aprobadas)"
+                                                    >
+                                                        🗑 Borrar
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

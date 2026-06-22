@@ -6,6 +6,7 @@ import CountdownPartido from '../components/CountdownPartido';
 import ProximosPartidos from '../components/ProximosPartidos';
 import ResumenPublico from '../components/ResumenPublico';
 import PlanesBono from '../components/PlanesBono';
+import CuposRestantes from '../components/CuposRestantes';
 import UltimosResultados from '../components/UltimosResultados';
 import ListaPronosticos from '../components/ListaPronosticos';
 import FAQ from '../components/FAQ';
@@ -148,6 +149,10 @@ export default function Home() {
             </div>
 
             <PlanesBono />
+
+            <div className="w-full max-w-md px-4 mt-3">
+                <CuposRestantes />
+            </div>
 
             <SeccionHeader titulo="Partidos del día" id="partidos" />
             <div className="w-full max-w-md px-4 mt-4">
