@@ -7,9 +7,16 @@ import { guardarMarcadorPendiente } from '../utils/marcadorPendiente';
 import Bandera from './Bandera';
 import CountdownPartido from './CountdownPartido';
 import PozoPremios from './PozoPremios';
+import imagenColombiaCongo from '../assets/partido-colombia-vs-congo.jpg';
 
 const esColombia = (p) =>
     p && (p.equipo_local.toLowerCase() === 'colombia' || p.equipo_visitante.toLowerCase() === 'colombia');
+
+// Gráfica promocional específica para este partido (no genérica): solo se
+// muestra cuando el partido destacado es justo Colombia vs RD Congo.
+const esColombiaVsCongo = (p) =>
+    p && (p.equipo_local.toLowerCase().includes('congo') || p.equipo_visitante.toLowerCase().includes('congo'))
+      && esColombia(p);
 
 // Hero principal: captura marcador + datos de contacto ANTES de pagar. Al
 // enviar, guarda la predicción en localStorage (marcadorPendiente.js) y los
@@ -69,6 +76,13 @@ export default function HeroPrediccion() {
 
     return (
         <div className="w-full max-w-md px-4 mt-4 flex flex-col gap-3">
+            {esColombiaVsCongo(partido) && (
+                <img
+                    src={imagenColombiaCongo}
+                    alt="¿Aciertas el marcador? Colombia vs RD Congo, 23 de junio 9:00 PM, gana hasta $1.000.000"
+                    className="w-full rounded-2xl shadow-lg"
+                />
+            )}
             <div className="rounded-2xl border-2 border-[#FCD116] bg-zinc-950 p-5 shadow-[0_0_30px_rgba(252,209,22,0.25)]">
                 <p className="text-center text-[#FCD116] font-black text-lg leading-tight mb-3">
                     🏆 Acierta el marcador{esColombia(partido) ? ' y gana hasta $1.000.000' : ' y gana premios'}
