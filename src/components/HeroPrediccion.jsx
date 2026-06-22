@@ -118,7 +118,9 @@ export default function HeroPrediccion() {
                             type="number"
                             inputMode="numeric"
                             min="0"
-                            max="20"
+                            max="10"
+                            list="goles-0-10"
+                            placeholder="-"
                             value={local}
                             onChange={(e) => setLocal(e.target.value)}
                             aria-label={`Goles de ${partido.equipo_local}`}
@@ -129,12 +131,19 @@ export default function HeroPrediccion() {
                             type="number"
                             inputMode="numeric"
                             min="0"
-                            max="20"
+                            max="10"
+                            list="goles-0-10"
+                            placeholder="-"
                             value={visitante}
                             onChange={(e) => setVisitante(e.target.value)}
                             aria-label={`Goles de ${partido.equipo_visitante}`}
                             className="w-16 text-center text-2xl font-black rounded-xl border-2 border-amber-400 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white py-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
+                        <datalist id="goles-0-10">
+                            {Array.from({ length: 11 }, (_, i) => (
+                                <option key={i} value={i} />
+                            ))}
+                        </datalist>
                     </div>
 
                     <input
