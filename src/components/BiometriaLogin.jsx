@@ -30,7 +30,7 @@ export default function BiometriaLogin({ onExito }) {
             const ver = await verRes.json();
             if (!ver.success) throw new Error(ver.error);
 
-            guardarSesion(ver.usuario);
+            guardarSesion({ ...ver.usuario, token: ver.token });
             onExito?.();
         } catch (err) {
             setEstado('idle');

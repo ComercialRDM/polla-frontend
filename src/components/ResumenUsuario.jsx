@@ -6,7 +6,7 @@ export default function ResumenUsuario({ usuarioId }) {
 
     useEffect(() => {
         if (!usuarioId) return;
-        obtenerResumenUsuario(usuarioId)
+        obtenerResumenUsuario()
             .then(data => { if (data?.success) setDatos(data); })
             .catch(() => {});
     }, [usuarioId]);

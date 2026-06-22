@@ -10,7 +10,7 @@ export default function DashboardUsuario({ sesion, onSalir }) {
 
     useEffect(() => {
         if (!sesion?.id) return;
-        obtenerResumenUsuario(sesion.id)
+        obtenerResumenUsuario()
             .then(d => { if (d?.success) setDatos(d); })
             .catch(() => {});
     }, [sesion?.id]);

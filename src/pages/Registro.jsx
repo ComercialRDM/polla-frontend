@@ -167,7 +167,7 @@ export default function Registro() {
         try {
             const data = await loginConGoogle(credential);
             if (data?.success && !data.nuevo) {
-                guardarSesion(data.usuario, recordarDispositivo);
+                guardarSesion({ ...data.usuario, token: data.token }, recordarDispositivo);
                 navigate('/');
                 return;
             }
@@ -218,7 +218,7 @@ export default function Registro() {
         try {
             const data = await verificarCodigoTelefono({ celular: celularTelefono.trim(), codigo: codigoTelefono.trim() });
             if (data?.success && !data.nuevo) {
-                guardarSesion(data.usuario, recordarDispositivo);
+                guardarSesion({ ...data.usuario, token: data.token }, recordarDispositivo);
                 navigate('/');
                 return;
             }
@@ -302,7 +302,7 @@ export default function Registro() {
                 });
 
             if (data?.success) {
-                guardarSesion(data.usuario, recordarDispositivo);
+                guardarSesion({ ...data.usuario, token: data.token }, recordarDispositivo);
                 guardarDatosComprador({ nombre: nombre.trim(), celular: celular.trim() });
                 if (equipos.length > 0 && data.usuario?.calendario_token) {
                     setCalendarioToken(data.usuario.calendario_token);

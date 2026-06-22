@@ -27,7 +27,7 @@ export default function IniciarSesion() {
         try {
             const data = await iniciarSesion({ celular: celular.trim(), password });
             if (data?.success) {
-                guardarSesion(data.usuario);
+                guardarSesion({ ...data.usuario, token: data.token });
                 navigate('/');
             } else if (data?.error?.includes('No encontramos')) {
                 setSinCuenta(true);

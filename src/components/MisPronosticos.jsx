@@ -20,7 +20,7 @@ export default function MisPronosticos({ usuarioId }) {
 
     useEffect(() => {
         if (!usuarioId) return;
-        obtenerMisPronosticos(usuarioId)
+        obtenerMisPronosticos()
             .then(d => { if (d?.success) setPronosticos(d.pronosticos); })
             .catch(() => {})
             .finally(() => setCargando(false));

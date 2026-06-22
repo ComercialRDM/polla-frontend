@@ -14,6 +14,10 @@ export function obtenerSesion() {
     }
 }
 
+export function obtenerToken() {
+    return obtenerSesion()?.token || null;
+}
+
 export function cerrarSesion() {
     localStorage.removeItem(SESION_KEY);
     sessionStorage.removeItem(SESION_KEY);

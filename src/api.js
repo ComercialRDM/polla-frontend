@@ -1,4 +1,11 @@
+import { obtenerToken } from './utils/sesion';
+
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+
+function authHeader() {
+    const token = obtenerToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 async function request(path, options = {}) {
     const { headers, ...rest } = options;
@@ -25,12 +32,12 @@ export function obtenerPartidos() {
     return request('/api/partidos');
 }
 
-export function obtenerResumenUsuario(usuario_id) {
-    return request(`/api/polla/resumen-usuario?usuario_id=${usuario_id}`);
+export function obtenerResumenUsuario() {
+    return request('/api/polla/resumen-usuario', { headers: authHeader() });
 }
 
-export function obtenerMisPronosticos(usuario_id) {
-    return request(`/api/polla/mis-pronosticos?usuario_id=${usuario_id}`);
+export function obtenerMisPronosticos() {
+    return request('/api/polla/mis-pronosticos', { headers: authHeader() });
 }
 
 export function obtenerPartidosFlash() {
