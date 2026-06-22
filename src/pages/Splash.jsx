@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const DURACION_MS = 1500;
+const DURACION_MS = 700;
 
 export default function Splash({ onFinish }) {
     const [progreso, setProgreso] = useState(0);

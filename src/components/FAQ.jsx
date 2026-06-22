@@ -1,35 +1,15 @@
 const PREGUNTAS = [
     {
-        pregunta: '¿Qué es la Polla Mundialista?',
-        respuesta: 'Es un juego de pronósticos: compras un Bono Digital de La Retoucherie y, de regalo, recibes intentos para predecir el marcador exacto de los partidos de la Selección Colombia en el Mundial 2026. Si aciertas, ganas premios 🏆.',
+        pregunta: '¿Qué pasa si varias personas aciertan?',
+        respuesta: 'El premio se divide en partes iguales entre todos los que acertaron el marcador exacto.',
     },
     {
-        pregunta: '¿Cuántos intentos recibo por mi bono?',
-        respuesta: 'Depende del valor del bono que compres: $50.000, $100.000 o $200.000. Mientras más alto el valor, más intentos para pronosticar recibes.',
+        pregunta: '¿Debo acertar el marcador exacto?',
+        respuesta: 'Sí, el marcador debe ser exactamente igual al resultado final del partido.',
     },
     {
-        pregunta: '¿Hasta cuándo puedo predecir un partido?',
-        respuesta: 'Puedes ingresar tu pronóstico hasta el momento exacto en que inicia el partido. Después de eso, la votación para ese partido se cierra automáticamente.',
-    },
-    {
-        pregunta: '¿Qué pasa si no acierto el marcador?',
-        respuesta: 'No pierdes tu bono: lo puedes usar normalmente en cualquiera de nuestras sedes para servicios de belleza. Solo no participas por el premio de ese partido.',
-    },
-    {
-        pregunta: '¿Cómo y cuándo recibo mi premio si gano?',
-        respuesta: 'Los pronósticos exactos más rápidos se llevan los premios del Botín Mundialista. Te contactaremos por WhatsApp o correo para coordinar la entrega.',
-    },
-    {
-        pregunta: '¿Mi bono sigue funcionando si los equipos avanzan de ronda?',
-        respuesta: 'Sí. Cuando agregues tus equipos favoritos podrás agendar en tu calendario los partidos de octavos, cuartos, semifinal y final — se siguen sumando automáticamente con GanaConRetoucherie.',
-    },
-    {
-        pregunta: '¿Hasta cuándo es válido mi bono?',
-        respuesta: 'El saldo de tu Bono Digital es válido hasta el 1 de marzo de 2027. Tienes todo ese tiempo para usarlo en nuestras sedes, sin afán.',
-    },
-    {
-        pregunta: '¿En qué servicios puedo usar mi bono?',
-        respuesta: 'En cualquier servicio de arreglos y transformación de ropa de La Retoucherie de Manuela en nuestras sedes. El saldo se descuenta del valor total de tu arreglo.',
+        pregunta: '¿Cuándo anuncian los ganadores?',
+        respuesta: 'Se confirman apenas cierra el partido, normalmente dentro de las 24 horas siguientes. Después te contactamos por WhatsApp o correo para coordinar la entrega.',
     },
 ];
 

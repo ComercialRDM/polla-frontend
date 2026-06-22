@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { obtenerInfoPolla } from '../api';
+import { obtenerInfoPolla, votar } from '../api';
+import { obtenerMarcadorPendiente, limpiarMarcadorPendiente } from '../utils/marcadorPendiente';
 
 const INTENTOS_MAX = 6;
 const INTERVALO_MS = 3000;
@@ -14,18 +15,55 @@ export default function Gracias() {
     // backend (si no hay token, no hay nada que verificar y se asume éxito,
     // igual que antes).
     const [estado, setEstado] = useState(token ? 'verificando' : 'aprobado');
+    const [marcadorConfirmado, setMarcadorConfirmado] = useState(null);
 
     useEffect(() => {
         if (!token) return;
         let cancelado = false;
         let intentos = 0;
 
+        // Si el usuario predijo un marcador en el Hero antes de pagar (guardado
+        // en marcadorPendiente.js), apenas se confirma el pago se envía solo,
+        // reutilizando el mismo endpoint de voto pagado que usa el flujo manual
+        // — sin pedirle al usuario ninguna acción extra.
+        async function confirmarMarcadorPendiente(data) {
+            const pendiente = obtenerMarcadorPendiente();
+            if (!pendiente) return;
+
+            const partidoInfo = data.partidos?.find((p) => p.partido_id === pendiente.partido_id);
+            if (!partidoInfo || partidoInfo.ya_pronosticado) {
+                limpiarMarcadorPendiente();
+                return;
+            }
+            if (data.cupos_disponibles < partidoInfo.cupos_costo) {
+                // No hay cupos suficientes para este partido con el plan comprado;
+                // se deja el marcador pendiente para que lo registre manualmente.
+                return;
+            }
+
+            try {
+                const resultado = await votar({
+                    token_acceso: token,
+                    partido_id: pendiente.partido_id,
+                    local: pendiente.local,
+                    visitante: pendiente.visitante,
+                });
+                if (resultado?.success) {
+                    limpiarMarcadorPendiente();
+                    setMarcadorConfirmado({ local: pendiente.local, visitante: pendiente.visitante });
+                }
+            } catch {
+                // se deja el marcador pendiente, no se bloquea la pantalla de éxito
+            }
+        }
+
         async function verificar() {
             try {
                 const data = await obtenerInfoPolla(token);
                 if (cancelado) return;
                 if (data?.acceso) {
-                    setEstado('aprobado');
+                    await confirmarMarcadorPendiente(data);
+                    if (!cancelado) setEstado('aprobado');
                     return;
                 }
             } catch {
@@ -81,11 +119,27 @@ export default function Gracias() {
                     <>
                         <span className="text-6xl mb-4">🎉</span>
                         <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
-                            ¡Pago exitoso!
+                            Ya estás participando
                         </h1>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                             Tu Bono Digital fue procesado correctamente. Ya eres parte de la Polla Mundialista de La Retoucherie.
                         </p>
+                        <ul className="w-full flex flex-col gap-2 mb-8 text-left">
+                            {marcadorConfirmado && (
+                                <li className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                    <span className="text-green-500 font-bold">✓</span>
+                                    Marcador registrado: {marcadorConfirmado.local} - {marcadorConfirmado.visitante}
+                                </li>
+                            )}
+                            <li className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                <span className="text-green-500 font-bold">✓</span>
+                                Bono adquirido
+                            </li>
+                            <li className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                                <span className="text-green-500 font-bold">✓</span>
+                                Correo enviado
+                            </li>
+                        </ul>
                     </>
                 )}
 

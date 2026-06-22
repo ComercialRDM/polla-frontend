@@ -41,6 +41,7 @@ export default function Comprar() {
 
     const planDesdeUrl = Number(searchParams.get('plan'));
     const planUrlValido = PLANES.some((p) => p.valor === planDesdeUrl) ? planDesdeUrl : null;
+    const partidoDesdeUrl = Number(searchParams.get('partido')) || null;
 
     const [selectValor, setSelectValor] = useState(() =>
         String(planUrlValido ?? PLAN_DEFAULT)
@@ -81,9 +82,10 @@ export default function Comprar() {
         obtenerPartidos()
             .then((data) => {
                 if (data?.success && data.partidos.length > 0) {
-                    const lista = partidosFuturos(data.partidos, 5);
+                    const lista = partidosFuturos(data.partidos, 10);
                     setPartidos(lista);
-                    setPartidoId(lista[0]?.id ?? null);
+                    const coincide = partidoDesdeUrl && lista.some((p) => p.id === partidoDesdeUrl);
+                    setPartidoId(coincide ? partidoDesdeUrl : (lista[0]?.id ?? null));
                 }
             })
             .catch(() => setError('No se pudo cargar la información del partido.'));
