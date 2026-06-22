@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { PLANES, CUPO_VALOR, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
+import { PLANES, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, MULTIPLO_PERSONALIZADO, CUPO_VALOR_PERSONALIZADO, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
@@ -76,7 +76,7 @@ export default function Comprar() {
     const planInfo = PLANES.find((p) => p.valor === valorAPagar) ?? null;
     const cuposCustom = calcularCupos(montoCustomNumero);
     const saldoBonoCustom = calcularSaldoBono(montoCustomNumero);
-    const residuoCustom = montoCustomNumero % CUPO_VALOR;
+    const residuoCustom = montoCustomNumero % CUPO_VALOR_PERSONALIZADO;
 
     useEffect(() => {
         obtenerPartidos()
@@ -135,6 +135,10 @@ export default function Comprar() {
                 montoCustomNumero > MONTO_PERSONALIZADO_MAX
             ) {
                 setError(`Ingresa un monto entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}.`);
+                return;
+            }
+            if (montoCustomNumero % MULTIPLO_PERSONALIZADO !== 0) {
+                setError(`El monto debe ser un múltiplo exacto de ${formatoPesos(MULTIPLO_PERSONALIZADO)}.`);
                 return;
             }
         }
@@ -352,14 +356,14 @@ export default function Comprar() {
                 {esOtroMonto && (
                     <div className="mb-6">
                         <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">
-                            Ingresa el monto (múltiplos de {formatoPesos(CUPO_VALOR)})
+                            Ingresa el monto (múltiplos de {formatoPesos(MULTIPLO_PERSONALIZADO)})
                         </label>
                         <input
                             type="number"
                             inputMode="numeric"
                             min={MONTO_PERSONALIZADO_MIN}
                             max={MONTO_PERSONALIZADO_MAX}
-                            step={CUPO_VALOR}
+                            step={MULTIPLO_PERSONALIZADO}
                             value={montoCustom}
                             onChange={(e) => setMontoCustom(e.target.value)}
                             placeholder={`Entre ${formatoPesos(MONTO_PERSONALIZADO_MIN)} y ${formatoPesos(MONTO_PERSONALIZADO_MAX)}`}
