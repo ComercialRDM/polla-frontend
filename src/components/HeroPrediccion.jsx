@@ -74,14 +74,29 @@ export default function HeroPrediccion() {
 
     if (!partido) return null;
 
+    function irAlMarcador() {
+        document.getElementById('marcador-inputs')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     return (
         <div className="w-full max-w-md px-4 mt-4 flex flex-col gap-3">
             {esColombiaVsCongo(partido) && (
-                <img
-                    src={imagenColombiaCongo}
-                    alt="¿Aciertas el marcador? Colombia vs RD Congo, 23 de junio 9:00 PM, gana hasta $1.000.000"
-                    className="w-full rounded-2xl shadow-lg"
-                />
+                <button
+                    type="button"
+                    onClick={irAlMarcador}
+                    aria-label="Bajar a ingresar tu marcador"
+                    className="relative block w-full cursor-pointer active:scale-[0.98] transition-transform"
+                >
+                    <img
+                        src={imagenColombiaCongo}
+                        alt="¿Aciertas el marcador? Colombia vs RD Congo, 23 de junio 9:00 PM, gana hasta $1.000.000"
+                        className="w-full rounded-2xl shadow-lg"
+                    />
+                    <span className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center text-[#FCD116] animate-bounce drop-shadow-[0_0_6px_rgba(0,0,0,0.6)]">
+                        <span className="text-xs font-black bg-zinc-950 px-2 py-0.5 rounded-full mb-0.5">Ingresa tu marcador</span>
+                        <span className="text-2xl leading-none">⌄</span>
+                    </span>
+                </button>
             )}
             <div className="rounded-2xl border-2 border-[#FCD116] bg-zinc-950 p-5 shadow-[0_0_30px_rgba(252,209,22,0.25)]">
                 <p className="text-center text-[#FCD116] font-black text-lg leading-tight mb-3">
@@ -95,7 +110,7 @@ export default function HeroPrediccion() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-4">
-                    <div className="flex items-center justify-center gap-3">
+                    <div id="marcador-inputs" className="flex items-center justify-center gap-3">
                         <input
                             type="number"
                             inputMode="numeric"
