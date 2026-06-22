@@ -12,7 +12,7 @@ import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
-const PLAN_DEFAULT = 100000;
+const PLAN_DEFAULT = 25000;
 const VALOR_OTRO = 'otro';
 
 // Carga el script del Widget Checkout de Wompi una sola vez (a diferencia de
@@ -285,7 +285,7 @@ export default function Comprar() {
                         <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">1</span>
                         <div>
                             <p className="text-zinc-900 dark:text-white font-bold text-base">Compra tu Bono Digital</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Elige el plan que más te convenga. Cada $25.000 equivale a 1 cupo para pronosticar.</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Elige el plan que más te convenga. Cada bono incluye cupos para pronosticar.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">

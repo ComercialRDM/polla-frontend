@@ -1,10 +1,7 @@
 export const PLANES = [
-    { valor: 25000,   saldoBono: 30000,   intentos: 1,  etiqueta: '1 cupo' },
-    { valor: 50000,   saldoBono: 70000,   intentos: 2,  etiqueta: '2 cupos' },
-    { valor: 100000,  saldoBono: 130000,  intentos: 4,  etiqueta: '4 cupos', destacado: 'popular' },
-    { valor: 200000,  saldoBono: 250000,  intentos: 8,  etiqueta: '8 cupos', destacado: 'premium' },
-    { valor: 500000,  saldoBono: 650000,  intentos: 20, etiqueta: '20 cupos' },
-    { valor: 1000000, saldoBono: 1500000, intentos: 40, etiqueta: '40 cupos' },
+    { valor: 10000, saldoBono: 15000, intentos: 1, etiqueta: '1 cupo' },
+    { valor: 25000, saldoBono: 35000, intentos: 2, etiqueta: '2 cupos', destacado: 'popular' },
+    { valor: 50000, saldoBono: 80000, intentos: 3, etiqueta: '3 cupos' },
 ];
 
 // 1 cupo de pronóstico = $25.000 de recarga
