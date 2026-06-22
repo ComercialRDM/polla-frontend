@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PLANES, CUPO_VALOR, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
@@ -52,6 +52,8 @@ export default function Comprar() {
     const [mensajeExito, setMensajeExito] = useState('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
+    const [aceptaTerminos, setAceptaTerminos] = useState(false);
+    const enviandoRef = useRef(false);
 
     const esOtroMonto = selectValor === VALOR_OTRO;
     const montoCustomNumero = Number(montoCustom) || 0;
@@ -85,8 +87,24 @@ export default function Comprar() {
         e.preventDefault();
         setError('');
 
-        if (!form.nombre.trim() || !form.correo.trim() || !form.celular.trim()) {
-            setError('Por favor completa todos los campos.');
+        // Guarda sincrónico (no depende del re-render de `disabled`) para que un
+        // doble clic/doble tap no dispare dos veces la creación del link de pago.
+        if (enviandoRef.current) return;
+
+        if (!form.nombre.trim()) {
+            setError('Ingresa tu nombre completo.');
+            return;
+        }
+        if (!form.correo.trim()) {
+            setError('Ingresa tu correo electrónico.');
+            return;
+        }
+        if (!form.celular.trim()) {
+            setError('Ingresa tu número de celular.');
+            return;
+        }
+        if (!aceptaTerminos) {
+            setError('Debes aceptar los Términos y Condiciones para continuar.');
             return;
         }
         if (!partidoId) {
@@ -106,6 +124,7 @@ export default function Comprar() {
 
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
 
+        enviandoRef.current = true;
         setCargando(true);
         try {
             if (mostrarTransferencia) {
@@ -149,6 +168,7 @@ export default function Comprar() {
         } catch {
             setError('Error de conexión con el servidor. Intenta de nuevo.');
         } finally {
+            enviandoRef.current = false;
             setCargando(false);
         }
     }
@@ -345,8 +365,9 @@ export default function Comprar() {
                     <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mt-2">Ingresa tus datos</p>
 
                     <div>
-                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
+                        <label htmlFor="comprar-nombre" className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Nombre completo</label>
                         <input
+                            id="comprar-nombre"
                             type="text"
                             name="nombre"
                             value={form.nombre}
@@ -356,8 +377,9 @@ export default function Comprar() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
+                        <label htmlFor="comprar-correo" className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
                         <input
+                            id="comprar-correo"
                             type="email"
                             name="correo"
                             value={form.correo}
@@ -367,8 +389,9 @@ export default function Comprar() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Celular (WhatsApp)</label>
+                        <label htmlFor="comprar-celular" className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Celular (WhatsApp)</label>
                         <input
+                            id="comprar-celular"
                             type="tel"
                             name="celular"
                             value={form.celular}
@@ -377,6 +400,21 @@ export default function Comprar() {
                             className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                         />
                     </div>
+
+                    <label className="flex items-start gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        <input
+                            type="checkbox"
+                            checked={aceptaTerminos}
+                            onChange={(e) => setAceptaTerminos(e.target.checked)}
+                            className="mt-0.5 accent-amber-400"
+                        />
+                        <span>
+                            Acepto los{' '}
+                            <Link to="/terminos" target="_blank" className="text-amber-500 dark:text-amber-400 underline">Términos y Condiciones</Link>{' '}
+                            y la{' '}
+                            <Link to="/privacidad" target="_blank" className="text-amber-500 dark:text-amber-400 underline">Política de Privacidad</Link>.
+                        </span>
+                    </label>
 
                     {/* 3. Partido */}
                     {partidos.length > 0 && (

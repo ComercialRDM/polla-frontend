@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { verificarAcceso } from '../api';
 
-const WHATSAPP_NUMERO = '573000000000'; // TODO: reemplazar con el número real de La Retoucherie de Manuela
+const WHATSAPP_NUMERO = '573103963708';
 
 export default function Ingresar() {
     const navigate = useNavigate();
