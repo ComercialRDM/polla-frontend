@@ -1,7 +1,7 @@
 const PASOS = [
     { icono: '⚽', titulo: 'Elige tu marcador', descripcion: 'Predice el resultado exacto.' },
     { icono: '🎟️', titulo: 'Compra tu bono', descripcion: 'Válido en servicios de arreglos de prendas de vestir hasta el 1 de marzo de 2027.' },
-    { icono: '🏆', titulo: 'Gana si aciertas', descripcion: 'Participa por el premio.' },
+    { icono: '🏆', titulo: 'Gana si aciertas', descripcion: 'Gana hasta $1.000.000 si aciertas el marcador. Si hay empate, se reparte entre el número de ganadores.' },
 ];
 
 export default function ComoFunciona() {
