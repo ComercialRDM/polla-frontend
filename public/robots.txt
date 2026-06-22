@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboardpollardm
+Disallow: /redimircodigordm
+Disallow: /adminqr
+
+Sitemap: https://www.ganaconretoucherie.com/sitemap.xml

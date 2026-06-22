@@ -1,24 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import Splash from './pages/Splash';
 import Home from './pages/Home';
-import Premios from './pages/Premios';
-import ComoParticipo from './pages/ComoParticipo';
-import Nosotros from './pages/Nosotros';
 import Comprar from './pages/Comprar';
-import Gracias from './pages/Gracias';
-import Ingresar from './pages/Ingresar';
-import Registro from './pages/Registro';
-import IniciarSesion from './pages/IniciarSesion';
-import RecuperarPassword from './pages/RecuperarPassword';
-import Polla from './pages/Polla';
-import Admin from './pages/Admin';
-import RedimirCodigo from './pages/RedimirCodigo';
-import AdminQR from './pages/AdminQR';
-import Terminos from './pages/Terminos';
-import Privacidad from './pages/Privacidad';
-import Anexo from './pages/Anexo';
-import ResultadosFinales from './pages/ResultadosFinales';
+
+// Code-splitting: estas rutas se descargan solo cuando el usuario navega a
+// ellas, en vez de ir todas en el bundle inicial (la mayoría son de bajo
+// tráfico: admin, legales, resultados, etc.). Home y Comprar quedan eager
+// porque son las rutas de entrada del embudo de compra.
+const Premios = lazy(() => import('./pages/Premios'));
+const ComoParticipo = lazy(() => import('./pages/ComoParticipo'));
+const Nosotros = lazy(() => import('./pages/Nosotros'));
+const Gracias = lazy(() => import('./pages/Gracias'));
+const Ingresar = lazy(() => import('./pages/Ingresar'));
+const Registro = lazy(() => import('./pages/Registro'));
+const IniciarSesion = lazy(() => import('./pages/IniciarSesion'));
+const RecuperarPassword = lazy(() => import('./pages/RecuperarPassword'));
+const Polla = lazy(() => import('./pages/Polla'));
+const Admin = lazy(() => import('./pages/Admin'));
+const RedimirCodigo = lazy(() => import('./pages/RedimirCodigo'));
+const AdminQR = lazy(() => import('./pages/AdminQR'));
+const Terminos = lazy(() => import('./pages/Terminos'));
+const Privacidad = lazy(() => import('./pages/Privacidad'));
+const Anexo = lazy(() => import('./pages/Anexo'));
+const ResultadosFinales = lazy(() => import('./pages/ResultadosFinales'));
+
 import BotonWhatsApp from './components/BotonWhatsApp';
 import InstalarApp from './components/InstalarApp';
 import ThemeToggle from './components/ThemeToggle';
@@ -56,26 +62,28 @@ function AppRoutes() {
     return (
         <>
             <CapturarRef />
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/premios" element={<Premios />} />
-                <Route path="/como-participo" element={<ComoParticipo />} />
-                <Route path="/nosotros" element={<Nosotros />} />
-                <Route path="/comprar" element={<Comprar />} />
-                <Route path="/gracias" element={<Gracias />} />
-                <Route path="/registro" element={<Registro />} />
-                <Route path="/iniciar-sesion" element={<IniciarSesion />} />
-                <Route path="/recuperar-password" element={<RecuperarPassword />} />
-                <Route path="/ingresar" element={<Ingresar />} />
-                <Route path="/polla" element={<Polla />} />
-                <Route path="/terminos" element={<Terminos />} />
-                <Route path="/privacidad" element={<Privacidad />} />
-                <Route path="/anexo" element={<Anexo />} />
-                <Route path="/resultados" element={<ResultadosFinales />} />
-                <Route path="/dashboardpollardm" element={<Admin />} />
-                <Route path="/redimircodigordm" element={<RedimirCodigo />} />
-                <Route path="/adminqr" element={<AdminQR />} />
-            </Routes>
+            <Suspense fallback={<div className="min-h-screen bg-white dark:bg-zinc-950" />}>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/premios" element={<Premios />} />
+                    <Route path="/como-participo" element={<ComoParticipo />} />
+                    <Route path="/nosotros" element={<Nosotros />} />
+                    <Route path="/comprar" element={<Comprar />} />
+                    <Route path="/gracias" element={<Gracias />} />
+                    <Route path="/registro" element={<Registro />} />
+                    <Route path="/iniciar-sesion" element={<IniciarSesion />} />
+                    <Route path="/recuperar-password" element={<RecuperarPassword />} />
+                    <Route path="/ingresar" element={<Ingresar />} />
+                    <Route path="/polla" element={<Polla />} />
+                    <Route path="/terminos" element={<Terminos />} />
+                    <Route path="/privacidad" element={<Privacidad />} />
+                    <Route path="/anexo" element={<Anexo />} />
+                    <Route path="/resultados" element={<ResultadosFinales />} />
+                    <Route path="/dashboardpollardm" element={<Admin />} />
+                    <Route path="/redimircodigordm" element={<RedimirCodigo />} />
+                    <Route path="/adminqr" element={<AdminQR />} />
+                </Routes>
+            </Suspense>
             <BotonWhatsApp desplazado={mostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
             <InstalarApp onVisibleChange={setMostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
             <ThemeToggle />
