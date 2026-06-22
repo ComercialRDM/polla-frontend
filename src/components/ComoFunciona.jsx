@@ -1,6 +1,6 @@
 const PASOS = [
     { icono: '⚽', titulo: 'Elige tu marcador', descripcion: 'Predice el resultado exacto.' },
-    { icono: '🎟️', titulo: 'Compra tu bono', descripcion: 'Conserva su valor en servicios.' },
+    { icono: '🎟️', titulo: 'Compra tu bono', descripcion: 'Válido en servicios de arreglos de prendas de vestir hasta el 1 de marzo de 2027.' },
     { icono: '🏆', titulo: 'Gana si aciertas', descripcion: 'Participa por el premio.' },
 ];
 
