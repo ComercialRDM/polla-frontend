@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { obtenerSesion, cerrarSesion } from '../utils/sesion';
 import HeroPrediccion from '../components/HeroPrediccion';
-import ComoFunciona from '../components/ComoFunciona';
 import PlanesBono from '../components/PlanesBono';
 import CuposRestantes from '../components/CuposRestantes';
 import ResumenPublico from '../components/ResumenPublico';
@@ -68,8 +67,6 @@ export default function Home() {
             ) : (
                 <HeroPrediccion />
             )}
-
-            <ComoFunciona />
 
             {/* ── BONOS ── */}
             <Divisor />

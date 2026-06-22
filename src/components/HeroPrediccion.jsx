@@ -6,6 +6,7 @@ import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComp
 import { guardarMarcadorPendiente } from '../utils/marcadorPendiente';
 import Bandera from './Bandera';
 import CountdownPartido from './CountdownPartido';
+import ComoFunciona from './ComoFunciona';
 import imagenColombiaCongo from '../assets/partido-colombia-vs-congo.jpg';
 
 const esColombia = (p) =>
@@ -97,6 +98,9 @@ export default function HeroPrediccion() {
                     </span>
                 </button>
             )}
+
+            <ComoFunciona />
+
             <div className="rounded-2xl border-2 border-[#FCD116] bg-zinc-950 p-5 shadow-[0_0_30px_rgba(252,209,22,0.25)]">
                 <p className="text-center text-[#FCD116] font-black text-lg leading-tight mb-3">
                     🏆 Acierta el marcador{esColombia(partido) ? ' y gana hasta $1.000.000' : ' y gana premios'}

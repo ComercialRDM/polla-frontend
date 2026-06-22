@@ -6,7 +6,7 @@ const PASOS = [
 
 export default function ComoFunciona() {
     return (
-        <div className="w-full max-w-md px-4 mt-8">
+        <div className="w-full">
             <h2 className="text-center font-display text-xl text-zinc-900 dark:text-white uppercase tracking-wide mb-4">
                 ¿Cómo funciona?
             </h2>
