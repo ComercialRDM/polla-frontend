@@ -1796,9 +1796,9 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 <>
                 {/* Métricas */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <Metrica titulo="🎟️ Bonos vendidos" valor={aprobadas.length} />
+                    <Metrica titulo="💰 Ingresos por bonos" valor={formatoPesos(ingresos)} />
                     <Metrica titulo="Pendientes" valor={pendientes.length} />
-                    <Metrica titulo="Aprobadas" valor={aprobadas.length} />
-                    <Metrica titulo="Ingresos" valor={formatoPesos(ingresos)} />
                     <Metrica titulo="Total transacciones" valor={transacciones.length} />
                 </div>
 
