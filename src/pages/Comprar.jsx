@@ -12,7 +12,7 @@ import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
-const PLAN_DEFAULT = 25000;
+const PLAN_DEFAULT = 10000;
 const VALOR_OTRO = 'otro';
 
 // Carga el script del Widget Checkout de Wompi una sola vez (a diferencia de
@@ -283,31 +283,6 @@ export default function Comprar() {
                     <CuposRestantes />
                 </div>
 
-                {/* Mecánica explicada */}
-                <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 p-4 mb-6 flex flex-col gap-3">
-                    <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">1</span>
-                        <div>
-                            <p className="text-zinc-900 dark:text-white font-bold text-base">Compra tu Bono Digital</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Elige el plan que más te convenga. Cada bono incluye cupos para pronosticar.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">2</span>
-                        <div>
-                            <p className="text-zinc-900 dark:text-white font-bold text-base">Predice el marcador</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Antes de cada partido de Colombia, ingresa tu pronóstico del resultado final.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-400 text-zinc-950 font-black text-sm flex items-center justify-center">3</span>
-                        <div>
-                            <p className="text-zinc-900 dark:text-white font-bold text-base">Gana premios si aciertas</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Los mejores pronósticos ganan premios exclusivos. Además, tu bono tiene hasta <span className="font-bold text-amber-500">$5.000.000 en beneficios</span> acumulados para usar en La Retoucherie.</p>
-                        </div>
-                    </div>
-                </div>
-
                 {/* ── Selector de plan ── */}
                 <div className="mb-3">
                     <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">
@@ -454,8 +429,17 @@ export default function Comprar() {
                         </span>
                     </label>
 
-                    {/* 3. Partido */}
-                    {partidos.length > 0 && (
+                    {/* 3. Partido: si se llegó con un partido ya elegido (desde el Hero), se
+                        muestra fijo sin selector — esta compra es para participar en ese
+                        partido puntual. Sin partido_id en la URL, se mantiene el selector
+                        general (entradas genéricas como "Comprar mi bono" desde Home). */}
+                    {partidoDesdeUrl && partidoSeleccionado ? (
+                        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 px-4 py-3 flex items-center justify-center gap-2 text-sm font-bold text-zinc-900 dark:text-white">
+                            <Bandera equipo={partidoSeleccionado.equipo_local} className="w-5 h-5" /> {partidoSeleccionado.equipo_local}
+                            <span className="text-zinc-400 font-normal">vs</span>
+                            <Bandera equipo={partidoSeleccionado.equipo_visitante} className="w-5 h-5" /> {partidoSeleccionado.equipo_visitante}
+                        </div>
+                    ) : partidos.length > 0 && (
                         <div>
                             <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Partido en el que quieres participar</label>
                             <select

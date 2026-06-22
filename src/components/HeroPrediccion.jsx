@@ -114,36 +114,29 @@ export default function HeroPrediccion() {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-4">
                     <div id="marcador-inputs" className="flex items-center justify-center gap-3">
-                        <input
-                            type="number"
-                            inputMode="numeric"
-                            min="0"
-                            max="10"
-                            list="goles-0-10"
-                            placeholder="-"
+                        <select
                             value={local}
                             onChange={(e) => setLocal(e.target.value)}
                             aria-label={`Goles de ${partido.equipo_local}`}
                             className="w-16 text-center text-2xl font-black rounded-xl border-2 border-amber-400 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white py-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        />
+                        >
+                            <option value="">-</option>
+                            {Array.from({ length: 11 }, (_, i) => (
+                                <option key={i} value={i}>{i}</option>
+                            ))}
+                        </select>
                         <span className="text-white font-black text-xl">-</span>
-                        <input
-                            type="number"
-                            inputMode="numeric"
-                            min="0"
-                            max="10"
-                            list="goles-0-10"
-                            placeholder="-"
+                        <select
                             value={visitante}
                             onChange={(e) => setVisitante(e.target.value)}
                             aria-label={`Goles de ${partido.equipo_visitante}`}
                             className="w-16 text-center text-2xl font-black rounded-xl border-2 border-amber-400 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white py-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        />
-                        <datalist id="goles-0-10">
+                        >
+                            <option value="">-</option>
                             {Array.from({ length: 11 }, (_, i) => (
-                                <option key={i} value={i} />
+                                <option key={i} value={i}>{i}</option>
                             ))}
-                        </datalist>
+                        </select>
                     </div>
 
                     <input
@@ -160,13 +153,18 @@ export default function HeroPrediccion() {
                         onChange={(e) => setForm((f) => ({ ...f, correo: e.target.value }))}
                         className="w-full rounded-lg bg-white dark:bg-zinc-900 border border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
-                    <input
-                        type="tel"
-                        placeholder="WhatsApp"
-                        value={form.celular || ''}
-                        onChange={(e) => setForm((f) => ({ ...f, celular: e.target.value }))}
-                        className="w-full rounded-lg bg-white dark:bg-zinc-900 border border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    />
+                    <div className="flex">
+                        <span className="flex items-center gap-1 rounded-l-lg border border-r-0 border-white/10 bg-zinc-200 dark:bg-zinc-800 px-3 text-zinc-700 dark:text-zinc-300 text-sm font-semibold select-none">
+                            🇨🇴 +57
+                        </span>
+                        <input
+                            type="tel"
+                            placeholder="WhatsApp"
+                            value={form.celular || ''}
+                            onChange={(e) => setForm((f) => ({ ...f, celular: e.target.value }))}
+                            className="w-full rounded-lg rounded-l-none bg-white dark:bg-zinc-900 border border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                    </div>
 
                     {error && <p className="text-red-400 text-xs text-center">{error}</p>}
 

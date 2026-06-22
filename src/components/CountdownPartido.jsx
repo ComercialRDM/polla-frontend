@@ -25,13 +25,20 @@ export default function CountdownPartido({ partido: partidoProp } = {}) {
             return;
         }
 
+        // Sin partido por prop: busca el próximo en general. `cancelado` evita
+        // que esta búsqueda (asíncrona) sobrescriba un partido que haya llegado
+        // por prop mientras tanto (ej. el padre todavía no terminó de cargar el
+        // suyo en el primer render).
+        let cancelado = false;
         obtenerPartidos()
             .then((data) => {
+                if (cancelado) return;
                 if (data?.success && data.partidos.length > 0) {
                     setPartido(partidosFuturos(data.partidos, 1)[0] ?? null);
                 }
             })
             .catch(() => {});
+        return () => { cancelado = true; };
     }, [partidoProp]);
 
     useEffect(() => {
