@@ -14,6 +14,19 @@ const REF_STORAGE_KEY = 'polla_ref_token';
 const PLAN_DEFAULT = 100000;
 const VALOR_OTRO = 'otro';
 
+// Carga el script del Widget Checkout de Wompi una sola vez (a diferencia de
+// los Payment Links, este sí pre-llena nombre/correo/celular del comprador).
+function cargarWidgetWompi() {
+    return new Promise((resolve, reject) => {
+        if (window.WidgetCheckout) return resolve();
+        const script = document.createElement('script');
+        script.src = 'https://checkout.wompi.co/widget.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('No se pudo cargar el widget de pago'));
+        document.body.appendChild(script);
+    });
+}
+
 const CUENTA_TRANSFERENCIA = {
     banco: 'Bancolombia',
     tipo: 'Ahorros',
@@ -86,6 +99,7 @@ export default function Comprar() {
     async function handleSubmit(e) {
         e.preventDefault();
         setError('');
+        let widgetAbierto = false;
 
         // Guarda sincrónico (no depende del re-render de `disabled`) para que un
         // doble clic/doble tap no dispare dos veces la creación del link de pago.
@@ -160,16 +174,29 @@ export default function Comprar() {
                 ref,
             });
 
-            if (data?.success && data.checkout_url) {
-                window.location.href = data.checkout_url;
+            if (data?.success && data.widget) {
+                await cargarWidgetWompi();
+                const checkout = new window.WidgetCheckout(data.widget);
+                widgetAbierto = true;
+                checkout.open((result) => {
+                    enviandoRef.current = false;
+                    setCargando(false);
+                    if (result?.transaction?.id) {
+                        window.location.href = data.widget.redirectUrl;
+                    } else {
+                        setError('No completaste el pago. Puedes intentarlo de nuevo cuando quieras.');
+                    }
+                });
             } else {
-                setError(data?.error || 'No se pudo generar el link de pago.');
+                setError(data?.error || 'No se pudo iniciar el pago.');
             }
         } catch {
             setError('Error de conexión con el servidor. Intenta de nuevo.');
         } finally {
-            enviandoRef.current = false;
-            setCargando(false);
+            if (!widgetAbierto) {
+                enviandoRef.current = false;
+                setCargando(false);
+            }
         }
     }
 
