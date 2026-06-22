@@ -9,6 +9,7 @@ import PlanesBono from '../components/PlanesBono';
 import UltimosResultados from '../components/UltimosResultados';
 import ListaPronosticos from '../components/ListaPronosticos';
 import FAQ from '../components/FAQ';
+import Testimonios from '../components/Testimonios';
 import Footer from '../components/Footer';
 import PartidosFlash from '../components/PartidosFlash';
 import DashboardUsuario from '../components/DashboardUsuario';
@@ -253,6 +254,11 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+
+            {/* ── TESTIMONIOS ── */}
+            <Divisor />
+            <SeccionHeader titulo="💬 Nuestros clientes" id="testimonios" />
+            <Testimonios />
 
             <FAQ />
 
