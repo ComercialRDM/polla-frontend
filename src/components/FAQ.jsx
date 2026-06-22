@@ -23,6 +23,14 @@ const PREGUNTAS = [
         pregunta: '¿Mi bono sigue funcionando si los equipos avanzan de ronda?',
         respuesta: 'Sí. Cuando agregues tus equipos favoritos podrás agendar en tu calendario los partidos de octavos, cuartos, semifinal y final — se siguen sumando automáticamente con GanaConRetoucherie.',
     },
+    {
+        pregunta: '¿Hasta cuándo es válido mi bono?',
+        respuesta: 'El saldo de tu Bono Digital es válido hasta el 1 de marzo de 2027. Tienes todo ese tiempo para usarlo en nuestras sedes, sin afán.',
+    },
+    {
+        pregunta: '¿En qué servicios puedo usar mi bono?',
+        respuesta: 'En cualquier servicio de arreglos y transformación de ropa de La Retoucherie de Manuela en nuestras sedes. El saldo se descuenta del valor total de tu arreglo.',
+    },
 ];
 
 // Preguntas frecuentes para que el usuario entienda rápido la dinámica del evento.
