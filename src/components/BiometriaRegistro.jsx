@@ -3,7 +3,10 @@ import { startRegistration } from '@simplewebauthn/browser';
 
 const API = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 
-export default function BiometriaRegistro({ usuarioId }) {
+// Requiere la contraseña de la cuenta (no solo el usuarioId): registrar una
+// passkey da acceso permanente, así que el backend exige re-autenticación
+// antes de generar el challenge — ver src/routes/passkeys.js en el backend.
+export default function BiometriaRegistro({ celular, password }) {
     const [estado, setEstado] = useState('idle'); // idle | cargando | ok | error
     const [msg, setMsg] = useState('');
 
@@ -11,7 +14,11 @@ export default function BiometriaRegistro({ usuarioId }) {
         setEstado('cargando');
         setMsg('');
         try {
-            const optsRes = await fetch(`${API}/api/passkey/registro-opciones?usuario_id=${usuarioId}`);
+            const optsRes = await fetch(`${API}/api/passkey/registro-opciones`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ celular, password }),
+            });
             const opts = await optsRes.json();
             if (opts.error) throw new Error(opts.error);
 
@@ -20,7 +27,7 @@ export default function BiometriaRegistro({ usuarioId }) {
             const verRes = await fetch(`${API}/api/passkey/registro-verificar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario_id: usuarioId, response: attResp }),
+                body: JSON.stringify({ usuario_id: opts.usuario_id, response: attResp }),
             });
             const ver = await verRes.json();
             if (!ver.success) throw new Error(ver.error);
