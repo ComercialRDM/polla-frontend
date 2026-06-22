@@ -1,4 +1,6 @@
 import ricardoImg from '../assets/testimonios/ricardo-angulo.jpg';
+import andresImg from '../assets/testimonios/andres-villafanez.jpg';
+import paoImg from '../assets/testimonios/pao-de-la-espriella.jpg';
 
 const TESTIMONIOS = [
     {
@@ -6,6 +8,20 @@ const TESTIMONIOS = [
         foto: ricardoImg,
         titulo: '"100% real y seguro"',
         texto: 'Conozco la trayectoria de Retoucherie, así que compré mi bono sin dudarlo. El proceso es transparente y el sorteo es totalmente legal. ¡No te quedes fuera, asegura tu bono hoy mismo!',
+        estrellas: 5,
+    },
+    {
+        nombre: 'Andres Villafañez',
+        foto: andresImg,
+        titulo: '"Compré en 2 minutos"',
+        texto: 'Me encantó lo rápido y fácil que es participar desde el celular. Todo el proceso es digital y súper confiable. ¿Qué esperas? ¡Haz clic aquí y compra el tuyo antes de que se agoten!',
+        estrellas: 5,
+    },
+    {
+        nombre: 'Pao de la Espriella',
+        foto: paoImg,
+        titulo: '"¡Cumplen con lo que prometen!"',
+        texto: 'Al principio tenía dudas, pero transmiten todo en vivo y entregan los premios de verdad. Es una oportunidad increíble. ¡Anímate a participar y compra tu bono ahora!',
         estrellas: 5,
     },
 ];
