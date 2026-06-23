@@ -85,7 +85,7 @@ export default function HeroPrediccion() {
                     type="button"
                     onClick={irAlMarcador}
                     aria-label="Bajar a ingresar tu marcador"
-                    className="relative block w-4/5 mx-auto cursor-pointer active:scale-[0.98] transition-transform"
+                    className="relative block w-[90%] mx-auto cursor-pointer active:scale-[0.98] transition-transform"
                 >
                     <img
                         src={imagenColombiaCongo}
