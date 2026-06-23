@@ -403,6 +403,12 @@ export function adminListarEspeciales(token) {
     });
 }
 
+export function adminRankingEspeciales(token) {
+    return request('/api/admin/ranking-especiales', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminInvitarEspecial(token, id) {
     return request(`/api/admin/especiales/${id}/invitar`, {
         method: 'POST',

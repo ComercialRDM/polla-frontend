@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -67,6 +67,8 @@ export default function Admin() {
     const [resultadoEspeciales, setResultadoEspeciales] = useState(null);
     const [invitandoId, setInvitandoId]       = useState(null);
     const [resultadoInvitar, setResultadoInvitar] = useState(null);
+    const [rankingEspeciales, setRankingEspeciales] = useState([]);
+    const [cargandoRankingEspeciales, setCargandoRankingEspeciales] = useState(false);
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -363,6 +365,18 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarRankingEspeciales() {
+        setCargandoRankingEspeciales(true);
+        try {
+            const data = await adminRankingEspeciales(token);
+            if (data?.success) setRankingEspeciales(data.ranking);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoRankingEspeciales(false);
+        }
+    }
+
     async function handleInvitar(id) {
         setInvitandoId(id);
         setResultadoInvitar(null);
@@ -507,7 +521,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) cargarBonosColombia();
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
-        if (seccionActiva === 'influenciadores' && token) cargarEspeciales();
+        if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -1853,6 +1867,51 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     {resultadoInvitar && (
                         <div className={`mt-3 rounded-lg p-3 text-xs ${resultadoInvitar.success ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'}`}>
                             {resultadoInvitar.success ? '✅ Invitación enviada correctamente' : `❌ ${resultadoInvitar.error}`}
+                        </div>
+                    )}
+
+                    {/* Ranking solo entre influenciadores */}
+                    <div className="flex items-center justify-between mb-3 mt-6 pt-4 border-t border-zinc-200 dark:border-white/10">
+                        <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-200">🏆 Ranking entre influenciadores</h3>
+                        <button onClick={cargarRankingEspeciales} disabled={cargandoRankingEspeciales}
+                            className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                            {cargandoRankingEspeciales ? 'Cargando...' : 'Actualizar'}
+                        </button>
+                    </div>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                        Solo compiten entre ellos, no afecta el ranking de premios real.
+                    </p>
+
+                    {rankingEspeciales.length === 0 && !cargandoRankingEspeciales && (
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">Ningún influenciador ha registrado pronósticos aún.</p>
+                    )}
+
+                    {rankingEspeciales.length > 0 && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                    <tr>
+                                        <th className="px-3 py-2">#</th>
+                                        <th className="px-3 py-2">Nombre</th>
+                                        <th className="px-3 py-2">Celular</th>
+                                        <th className="px-3 py-2">Puntos</th>
+                                        <th className="px-3 py-2">Exactos</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                    {rankingEspeciales.map((r) => (
+                                        <tr key={r.id}>
+                                            <td className="px-3 py-2 font-black text-zinc-900 dark:text-white">
+                                                {r.posicion === 1 ? '🥇' : r.posicion === 2 ? '🥈' : r.posicion === 3 ? '🥉' : r.posicion}
+                                            </td>
+                                            <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{r.nombre}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{r.celular}</td>
+                                            <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">{r.puntos}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{r.exactos}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>
