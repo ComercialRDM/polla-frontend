@@ -416,6 +416,12 @@ export function adminInvitarEspecial(token, id) {
     });
 }
 
+export function adminFlashGanadores(token) {
+    return request('/api/admin/flash-ganadores', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminBonosColombia(token) {
     return request('/api/admin/bonos-colombia', {
         headers: { Authorization: `Bearer ${token}` },

@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -57,6 +57,9 @@ export default function Admin() {
     const [bonosCol, setBonosCol]             = useState([]);
     const [cargandoBonosCol, setCargandoBonosCol] = useState(false);
     const [reclamandoId, setReclamandoId]     = useState(null);
+
+    const [flashGanadores, setFlashGanadores]     = useState([]);
+    const [cargandoFlash, setCargandoFlash]       = useState(false);
 
     const [especiales, setEspeciales]         = useState([]);
     const [cargandoEspeciales, setCargandoEspeciales] = useState(false);
@@ -305,6 +308,18 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarFlashGanadores() {
+        setCargandoFlash(true);
+        try {
+            const data = await adminFlashGanadores(token);
+            if (data?.success) setFlashGanadores(data.partidos);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoFlash(false);
+        }
+    }
+
     async function handleReclamarBono(id) {
         setReclamandoId(id);
         try {
@@ -519,7 +534,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
 
     useEffect(() => {
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
-        if (seccionActiva === 'ranking' && token) cargarBonosColombia();
+        if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
         if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
@@ -1611,9 +1626,62 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                         <p className="text-[11px] text-zinc-400 mt-2">Ve a la pestaña "🇨🇴 Bono Col" para marcar reclamados.</p>
                     </div>
 
-                    <div className="rounded-xl border border-dashed border-zinc-300 dark:border-white/15 bg-zinc-50/50 dark:bg-white/[0.02] p-4">
-                        <h2 className="text-lg font-bold text-zinc-400 dark:text-zinc-500 mb-1">⚡ Ganadores Sorteos Flash</h2>
-                        <p className="text-zinc-400 dark:text-zinc-500 text-sm">Pendiente: faltan las reglas y fechas de los sorteos flash para construir esta sección.</p>
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">⚡ Ganadores Sorteos Flash</h2>
+                            <button onClick={cargarFlashGanadores} disabled={cargandoFlash}
+                                className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                                {cargandoFlash ? 'Cargando...' : 'Actualizar'}
+                            </button>
+                        </div>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                            Premios físicos (camisetas, gafas, gorras, balones) a discreción de la empresa. 1 solo ganador por
+                            partido: el primero, por hora de registro, que acertó el marcador exacto.
+                        </p>
+
+                        {flashGanadores.length === 0 && !cargandoFlash && (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Aún no hay pronósticos flash registrados.</p>
+                        )}
+
+                        <div className="flex flex-col gap-3">
+                            {flashGanadores.map((p) => (
+                                <div key={p.partido_id} className="rounded-lg border border-zinc-200 dark:border-white/10 p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="font-semibold text-zinc-900 dark:text-white text-sm">
+                                            {p.equipo_local} {p.goles_local ?? '?'}-{p.goles_visitante ?? '?'} {p.equipo_visitante}
+                                        </p>
+                                        <span className="text-[11px] text-zinc-400">{p.estado === 'cerrado' ? 'Cerrado' : 'En curso'}</span>
+                                    </div>
+
+                                    {p.goles_local === null && (
+                                        <p className="text-xs text-zinc-400">Aún sin marcador final — el ganador se calcula al cerrar el partido.</p>
+                                    )}
+
+                                    {p.goles_local !== null && !p.ganador && (
+                                        <p className="text-xs text-zinc-400">Nadie acertó el marcador exacto en esta promoción.</p>
+                                    )}
+
+                                    {p.ganador && (
+                                        <p className="text-sm mb-2">
+                                            🏆 <span className="font-bold text-amber-600 dark:text-amber-400">{p.ganador.nombre}</span>
+                                            {' · '}📱 {p.ganador.celular}
+                                            {' · '}{new Date(p.ganador.created_at).toLocaleString('es-CO')}
+                                        </p>
+                                    )}
+
+                                    <details className="text-xs">
+                                        <summary className="cursor-pointer text-zinc-400">Ver los {p.pronosticos.length} pronósticos</summary>
+                                        <ul className="mt-1 flex flex-col gap-0.5">
+                                            {p.pronosticos.map((pr) => (
+                                                <li key={pr.pronostico_id} className={pr.es_ganador ? 'font-bold text-amber-600 dark:text-amber-400' : 'text-zinc-500 dark:text-zinc-400'}>
+                                                    {pr.es_ganador ? '🏆 ' : ''}{pr.nombre} — {pr.pred_local}-{pr.pred_visitante} — {new Date(pr.created_at).toLocaleString('es-CO')}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </details>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 )}
