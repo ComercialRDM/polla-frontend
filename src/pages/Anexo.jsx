@@ -157,7 +157,7 @@ export default function Anexo() {
                         Dentro de los <strong>10 días hábiles</strong> siguientes a la confirmación del resultado, el Operador
                         contactará al beneficiario por WhatsApp y/o correo electrónico registrado. El Participante contará con
                         <strong> 20 días calendario</strong> desde ese primer contacto para presentarse en cualquiera de las
-                        sedes habilitadas (Barranquilla o Cartagena), exhibir su documento de identidad y reclamar su premio.
+                        sedes habilitadas en Barranquilla, exhibir su documento de identidad y reclamar su premio.
                     </P>
                     <P>
                         Una vez reclamado el premio, el Operador dispondrá de <strong>20 días hábiles contados desde

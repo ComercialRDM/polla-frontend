@@ -8,7 +8,6 @@ const SEDES = [
     { ciudad: 'Barranquilla', nombre: 'Cc Buenavista', direccion: 'Sótano 2, local 17', telefono: '6053131966' },
     { ciudad: 'Barranquilla', nombre: 'Cc Viva Barranquilla', direccion: 'Sótano 1', telefono: '6053093750' },
     { ciudad: 'Barranquilla', nombre: 'Cc Aranjuez', direccion: 'Calle 82 #53', telefono: '6052022021' },
-    { ciudad: 'Cartagena', nombre: 'Cc Caribe Plaza', direccion: 'Sótano 1', telefono: '6056515251' },
 ];
 
 export default function Nosotros() {
@@ -24,7 +23,7 @@ export default function Nosotros() {
                 <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-6 text-center">
                     <h1 className="text-zinc-900 dark:text-white font-black text-xl mb-2">📍 Quiénes somos</h1>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-                        La Retoucherie es un centro de belleza y bienestar con sedes en Barranquilla y Cartagena.
+                        La Retoucherie es un centro de belleza y bienestar con sedes en Barranquilla.
                         Esta Polla Mundialista es nuestro regalo para celebrar el Mundial 2026 junto a nuestros clientes.
                     </p>
 

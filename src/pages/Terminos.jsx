@@ -52,7 +52,7 @@ export default function Terminos() {
                         <strong>1.1 Actividad comercial principal — Bono de Servicios.</strong> La operación económica consiste
                         en la compra, por parte del cliente (en adelante "el Participante"), de un Bono de Servicios digital
                         (en adelante "el Bono"), redimible exclusivamente en servicios de sastrería y/o estética prestados
-                        presencialmente en las sedes de La Retoucherie de Manuela en Barranquilla y Cartagena.
+                        presencialmente en las sedes de La Retoucherie de Manuela en Barranquilla.
                     </P>
                     <P>
                         <strong>1.2 Actividad de fidelización — acceso gratuito al Concurso.</strong> Como estrategia de
@@ -70,7 +70,7 @@ export default function Terminos() {
                     <P>
                         <strong>1.4 Cobertura geográfica.</strong> El Bono puede comprarse desde cualquier lugar del mundo
                         a través de www.ganaconretoucherie.com. La redención presencial de los servicios solo es posible en
-                        las sedes físicas del Operador en Barranquilla (tres sedes) y Cartagena (una sede).
+                        las sedes físicas del Operador en Barranquilla (tres sedes).
                     </P>
 
                     {/* 2 */}

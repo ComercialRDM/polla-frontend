@@ -248,7 +248,7 @@ export default function Admin() {
 
 Quedaste entre los ganadores de la Polla Mundialista de La Retoucherie de Manuela.
 
-Para reclamar tu premio, respóndenos por este mismo chat o visita cualquiera de nuestras sedes en Barranquilla o Cartagena.
+Para reclamar tu premio, respóndenos por este mismo chat o visita cualquiera de nuestras sedes en Barranquilla.
 
 ¡Gracias por participar y disfrutar el Mundial con nosotros! 🎉`;
 
