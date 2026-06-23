@@ -289,7 +289,12 @@ export default function Terminos() {
                     <ol className="list-decimal list-inside text-sm text-zinc-600 dark:text-zinc-300 space-y-1 pl-1">
                         <li>Mayor puntaje obtenido en la <strong>Gran Final</strong> del Mundial.</li>
                         <li>Mayor número de aciertos exactos en las <strong>Semifinales</strong>.</li>
-                        <li>Si persiste el empate, el premio correspondiente a esos puestos se <strong>divide en partes iguales</strong> entre los empatados.</li>
+                        <li>
+                            Si persiste el empate: con <strong>10 empatados o menos</strong>, el premio correspondiente a esos
+                            puestos se <strong>divide en partes iguales</strong> entre todos. Con <strong>más de 10 empatados</strong>,
+                            se realiza un <strong>sorteo</strong> entre todos ellos y se eligen <strong>10 ganadores</strong>, que se
+                            reparten el premio en partes iguales entre sí.
+                        </li>
                     </ol>
 
                     {/* 9 */}

@@ -149,7 +149,12 @@ export default function Anexo() {
                     <ol className="list-decimal list-inside text-sm text-zinc-600 dark:text-zinc-300 space-y-1 pl-1">
                         <li>Mayor puntaje obtenido en la <strong>Gran Final</strong> del Mundial 2026.</li>
                         <li>Mayor número de pronósticos exactos en las <strong>Semifinales</strong>.</li>
-                        <li>Si el empate persiste: el premio de los puestos empatados se <strong>divide en partes iguales</strong>.</li>
+                        <li>
+                            Si el empate persiste: con <strong>10 empatados o menos</strong>, el premio de los puestos empatados se
+                            <strong> divide en partes iguales</strong> entre todos. Con <strong>más de 10 empatados</strong>, se
+                            realiza un <strong>sorteo</strong> y se eligen <strong>10 ganadores</strong>, que reparten el premio en
+                            partes iguales entre sí.
+                        </li>
                     </ol>
 
                     <S>6. Procedimiento de reclamación y entrega</S>
