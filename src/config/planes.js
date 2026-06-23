@@ -14,7 +14,7 @@ export const CUPO_VALOR_PERSONALIZADO = 10000;
 
 // Rango permitido para montos personalizados ("Otro monto"). Deben ser
 // múltiplos exactos de $1.000.
-export const MONTO_PERSONALIZADO_MIN = 25000;
+export const MONTO_PERSONALIZADO_MIN = 50000;
 export const MONTO_PERSONALIZADO_MAX = 1000000;
 export const MULTIPLO_PERSONALIZADO = 1000;
 
