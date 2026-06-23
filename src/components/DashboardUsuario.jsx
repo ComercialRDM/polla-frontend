@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { obtenerResumenUsuario } from '../api';
 import MisPronosticos from './MisPronosticos';
+import ProximosPartidos from './ProximosPartidos';
 
 export default function DashboardUsuario({ sesion, onSalir }) {
     const [datos, setDatos] = useState(null);
@@ -94,6 +95,9 @@ export default function DashboardUsuario({ sesion, onSalir }) {
 
             {/* Reta a un amigo */}
             {datos && <RetaAmigo token={datos.token_polla} />}
+
+            {/* Próximos partidos: elige uno, predice el marcador y compra el bono */}
+            <ProximosPartidos limite={10} titulo="⚽ Próximos 10 partidos" />
 
             {/* Historial de pronósticos */}
             <MisPronosticos usuarioId={sesion.id} />

@@ -5,7 +5,7 @@ import { partidosFuturos } from '../utils/partidos';
 import { obtenerSesion } from '../utils/sesion';
 import Bandera from './Bandera';
 
-export default function ProximosPartidos() {
+export default function ProximosPartidos({ limite = 5, titulo = '⚽ Próximos partidos' }) {
     const [partidos, setPartidos] = useState([]);
     const sesion = obtenerSesion();
     const favoritos = (sesion?.equipos_favoritos || []).map((e) => e.toLowerCase());
@@ -13,17 +13,17 @@ export default function ProximosPartidos() {
     useEffect(() => {
         obtenerPartidos()
             .then((data) => {
-                if (data?.success) setPartidos(partidosFuturos(data.partidos, 5));
+                if (data?.success) setPartidos(partidosFuturos(data.partidos, limite));
             })
             .catch(() => {});
-    }, []);
+    }, [limite]);
 
     if (partidos.length === 0) return null;
 
     return (
         <div className="w-full max-w-md px-6 mt-6 relative z-10">
             <h2 className="text-center text-zinc-900 dark:text-white font-black text-xl mb-1">
-                ⚽ Próximos partidos
+                {titulo}
             </h2>
             <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm mb-4">
                 Elige un partido, compra tu bono y juega tu pronóstico 🔥
