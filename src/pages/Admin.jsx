@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -60,6 +60,9 @@ export default function Admin() {
 
     const [flashGanadores, setFlashGanadores]     = useState([]);
     const [cargandoFlash, setCargandoFlash]       = useState(false);
+
+    const [rankingFinal, setRankingFinal]         = useState(null);
+    const [cargandoRankingFinal, setCargandoRankingFinal] = useState(false);
 
     const [especiales, setEspeciales]         = useState([]);
     const [cargandoEspeciales, setCargandoEspeciales] = useState(false);
@@ -317,6 +320,18 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
             // silencioso
         } finally {
             setCargandoFlash(false);
+        }
+    }
+
+    async function cargarRankingFinal() {
+        setCargandoRankingFinal(true);
+        try {
+            const data = await adminRankingFinal(token);
+            if (data?.success) setRankingFinal(data);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoRankingFinal(false);
         }
     }
 
@@ -1528,6 +1543,65 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 {/* Ranking global + ganadores */}
                 {seccionActiva === 'ranking' && (
                 <div className="flex flex-col gap-6">
+                    <div className="rounded-xl border border-amber-400/40 bg-amber-50/50 dark:bg-amber-900/10 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">🥇 Podio final del torneo</h2>
+                            <button onClick={cargarRankingFinal} disabled={cargandoRankingFinal}
+                                className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                                {cargandoRankingFinal ? 'Calculando...' : 'Calcular ganadores finales'}
+                            </button>
+                        </div>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                            Solo lectura: calcula el podio aplicando los 3 criterios de desempate (puntaje total → puntaje en la
+                            Gran Final → exactos en Semifinales). Si un grupo empatado tiene más de 10 personas, sortea 10
+                            ganadores entre ellos. No envía mensajes ni modifica nada — revisa el resultado y notifica manualmente
+                            con el botón "🏆 Copiar mensaje de ganador" en la pestaña Usuarios.
+                        </p>
+
+                        {!rankingFinal && !cargandoRankingFinal && (
+                            <p className="text-zinc-400 text-sm">Pulsa "Calcular ganadores finales" para ver el resultado.</p>
+                        )}
+
+                        {rankingFinal && (
+                            <div className="flex flex-col gap-3">
+                                {rankingFinal.podio.length === 0 && (
+                                    <p className="text-zinc-400 text-sm">Todavía no hay participantes con puntos para calcular el podio.</p>
+                                )}
+                                {rankingFinal.podio.map((bloque, i) => (
+                                    <div key={i} className="rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 p-3">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <p className="font-bold text-zinc-900 dark:text-white text-sm">
+                                                Puesto {bloque.puestos} — ${bloque.premio_total.toLocaleString('es-CO')}
+                                            </p>
+                                            {bloque.empatados > 1 && (
+                                                <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+                                                    {bloque.empatados} empatados{bloque.sorteo_realizado ? ' · sorteo realizado' : ''}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-zinc-400 mb-2">
+                                            ${bloque.monto_por_ganador.toLocaleString('es-CO')} por ganador
+                                            {bloque.sorteo_realizado ? ` (10 de ${bloque.empatados} sorteados)` : ''}
+                                        </p>
+                                        <ul className="flex flex-col gap-0.5 text-sm">
+                                            {bloque.ganadores.map((g) => (
+                                                <li key={g.id} className="text-zinc-700 dark:text-zinc-200">
+                                                    <span className="font-semibold">{g.nombre}</span> — {g.puntos_total} pts
+                                                    {' · '}📱 {g.celular || '—'} · ✉️ {g.correo || '—'}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        {bloque.no_sorteados.length > 0 && (
+                                            <p className="text-[11px] text-zinc-400 mt-2">
+                                                No sorteados: {bloque.no_sorteados.map((u) => u.nombre).join(', ')}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-lg font-bold text-zinc-900 dark:text-white">🏆 Top 100 — Ranking global de puntos</h2>

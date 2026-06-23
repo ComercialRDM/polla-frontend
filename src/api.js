@@ -422,6 +422,12 @@ export function adminFlashGanadores(token) {
     });
 }
 
+export function adminRankingFinal(token) {
+    return request('/api/admin/ranking-final', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminBonosColombia(token) {
     return request('/api/admin/bonos-colombia', {
         headers: { Authorization: `Bearer ${token}` },
