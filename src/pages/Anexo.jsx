@@ -141,7 +141,7 @@ export default function Anexo() {
                     </div>
                     <P>
                         Cuando la facturación total supere $10.000.000 COP, el 10% del exceso se distribuye automáticamente
-                        al pozo (50% / 30% / 20% para 1.er, 2.do y 3.er puesto) hasta los topes máximos indicados.
+                        a la tabla de premios (50% / 30% / 20% para 1.er, 2.do y 3.er puesto) hasta los topes máximos indicados.
                         Los premios se entregan en <strong>Gift Cards</strong>, no en efectivo.
                     </P>
 

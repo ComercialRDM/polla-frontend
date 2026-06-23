@@ -110,12 +110,9 @@ export default function Terminos() {
                             </thead>
                             <tbody className="divide-y divide-zinc-100 dark:divide-white/5 text-zinc-700 dark:text-zinc-300">
                                 {[
-                                    ['$25.000 COP', '$30.000 COP', '1 cupo'],
-                                    ['$50.000 COP', '$70.000 COP', '2 cupos'],
-                                    ['$100.000 COP', '$130.000 COP', '4 cupos'],
-                                    ['$200.000 COP', '$250.000 COP', '8 cupos'],
-                                    ['$500.000 COP', '$650.000 COP', '20 cupos'],
-                                    ['$1.000.000 COP', '$1.500.000 COP', '40 cupos'],
+                                    ['$10.000 COP', '$15.000 COP', '1 cupo'],
+                                    ['$25.000 COP', '$40.000 COP', '2 cupos'],
+                                    ['$50.000 COP', '$80.000 COP', '5 cupos'],
                                 ].map(([valor, saldo, cupos]) => (
                                     <tr key={valor}>
                                         <td className="p-2 font-medium">{valor}</td>
@@ -127,8 +124,8 @@ export default function Terminos() {
                         </table>
                     </div>
                     <P>
-                        También se aceptan montos personalizados entre $25.000 y $2.000.000 COP, con saldo equivalente
-                        al 130% del valor pagado y cupos calculados a razón de 1 cupo por cada $25.000 COP.
+                        También se aceptan montos personalizados entre $50.000 y $1.000.000 COP, con saldo equivalente
+                        al 160% del valor pagado y cupos calculados a razón de 1 cupo por cada $10.000 COP.
                     </P>
 
                     {/* 4 */}
@@ -268,9 +265,9 @@ export default function Terminos() {
                     </div>
                     <P>
                         <strong>7.2 Crecimiento dinámico.</strong> Cuando la facturación total acumulada de Bonos supere
-                        <strong> $10.000.000 COP</strong>, el 10 % de cada peso adicional vendido se destinará al pozo, con la
+                        <strong> $10.000.000 COP</strong>, el 10 % de cada peso adicional vendido se destinará a la tabla de premios, con la
                         distribución 50% / 30% / 20% para el 1.er, 2.do y 3.er puesto respectivamente, hasta los topes máximos.
-                        El pozo actualizado en tiempo real se puede consultar en la sección "Premios" del Sitio.
+                        La tabla de premios actualizada en tiempo real se puede consultar en la sección "Premios" del Sitio.
                     </P>
                     <P>
                         <strong>7.3 Forma de entrega.</strong> Los premios se entregan exclusivamente en <strong>Gift Cards
