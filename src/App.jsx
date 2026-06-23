@@ -26,7 +26,6 @@ const Anexo = lazy(() => import('./pages/Anexo'));
 const ResultadosFinales = lazy(() => import('./pages/ResultadosFinales'));
 
 import BotonWhatsApp from './components/BotonWhatsApp';
-import InstalarApp from './components/InstalarApp';
 import ThemeToggle from './components/ThemeToggle';
 import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
@@ -56,7 +55,6 @@ function RutaProtegida({ children }) {
 
 function AppRoutes() {
     const location = useLocation();
-    const [mostrarInstalarApp, setMostrarInstalarApp] = useState(false);
     const mostrarBottomNav = RUTAS_CON_BOTTOM_NAV.includes(location.pathname);
 
     return (
@@ -84,8 +82,7 @@ function AppRoutes() {
                     <Route path="/adminqr" element={<AdminQR />} />
                 </Routes>
             </Suspense>
-            <BotonWhatsApp desplazado={mostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
-            <InstalarApp onVisibleChange={setMostrarInstalarApp} mostrarBottomNav={mostrarBottomNav} />
+            <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} />
             <ThemeToggle />
             {mostrarBottomNav && <BottomNav />}
         </>
