@@ -117,26 +117,32 @@ export default function Gracias() {
 
                 {estado === 'aprobado' && (
                     <>
-                        <span className="text-6xl mb-4">🎉</span>
-                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
-                            Ya estás participando
+                        <span className="text-7xl mb-3">🎉</span>
+                        <h1 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">
+                            ¡Ya estás participando!
                         </h1>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-5">
                             Tu Bono Digital fue procesado correctamente. Ya eres parte de la Polla Mundialista de La Retoucherie.
                         </p>
-                        <ul className="w-full flex flex-col gap-2 mb-8 text-left">
-                            {marcadorConfirmado && (
-                                <li className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                    <span className="text-green-500 font-bold">✓</span>
-                                    Marcador registrado: {marcadorConfirmado.local} - {marcadorConfirmado.visitante}
-                                </li>
-                            )}
-                            <li className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                <span className="text-green-500 font-bold">✓</span>
+
+                        {marcadorConfirmado && (
+                            <div className="w-full rounded-2xl border-2 border-green-400 bg-green-50 dark:bg-green-900/15 px-5 py-4 mb-4 text-center">
+                                <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">
+                                    ✓ Marcador registrado
+                                </p>
+                                <p className="text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
+                                    {marcadorConfirmado.local} - {marcadorConfirmado.visitante}
+                                </p>
+                            </div>
+                        )}
+
+                        <ul className="w-full flex flex-col gap-2 mb-8">
+                            <li className="flex items-center gap-3 text-sm font-bold text-zinc-700 dark:text-zinc-200 bg-zinc-50 dark:bg-white/5 rounded-xl px-4 py-3">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs shrink-0">✓</span>
                                 Bono adquirido
                             </li>
-                            <li className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                <span className="text-green-500 font-bold">✓</span>
+                            <li className="flex items-center gap-3 text-sm font-bold text-zinc-700 dark:text-zinc-200 bg-zinc-50 dark:bg-white/5 rounded-xl px-4 py-3">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs shrink-0">✓</span>
                                 Correo enviado
                             </li>
                         </ul>
