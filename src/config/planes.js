@@ -1,7 +1,7 @@
 export const PLANES = [
     { valor: 10000, saldoBono: 15000, intentos: 1, etiqueta: '1 cupo' },
     { valor: 25000, saldoBono: 40000, intentos: 2, etiqueta: '2 cupos', destacado: 'popular' },
-    { valor: 50000, saldoBono: 80000, intentos: 3, etiqueta: '3 cupos' },
+    { valor: 50000, saldoBono: 80000, intentos: 5, etiqueta: '5 cupos' },
 ];
 
 // Usado solo para el monedero (dinero disponible informativo). Los cupos
