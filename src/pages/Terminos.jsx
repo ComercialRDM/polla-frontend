@@ -232,9 +232,9 @@ export default function Terminos() {
                     </P>
 
                     {/* 7 */}
-                    <S>7. Pozo de Premios en Efectivo (Gift Cards)</S>
+                    <S>7. Tabla de Premios en Efectivo (Gift Cards)</S>
                     <P>
-                        <strong>7.1 Base garantizada.</strong> El Operador garantiza un pozo mínimo de premios de
+                        <strong>7.1 Base garantizada.</strong> El Operador garantiza una tabla de premios mínima de
                         <strong> $3.500.000 COP</strong>, distribuido así:
                     </P>
 

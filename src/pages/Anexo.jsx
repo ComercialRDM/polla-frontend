@@ -104,7 +104,7 @@ export default function Anexo() {
                         </table>
                     </div>
 
-                    <S>4. Pozo de premios</S>
+                    <S>4. Tabla de premios</S>
 
                     <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10">
                         <table className="w-full text-xs text-left">

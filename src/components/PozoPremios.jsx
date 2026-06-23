@@ -37,7 +37,7 @@ export default function PozoPremios({ compact = false }) {
     if (compact) {
         return (
             <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-4 text-center">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 font-medium uppercase tracking-wider">Pozo de premios en vivo</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 font-medium uppercase tracking-wider">Tabla de premios en vivo</p>
                 <div className="flex justify-around gap-2">
                     <div>
                         <p className="text-lg">🥇</p>
@@ -59,7 +59,7 @@ export default function PozoPremios({ compact = false }) {
     return (
         <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_20px_rgba(234,179,8,0.2)] backdrop-blur-lg p-5 mb-6">
             <div className="text-center mb-4">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mb-1">Pozo de premios en tiempo real</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mb-1">Tabla de premios en tiempo real</p>
                 <p className="text-zinc-400 dark:text-zinc-500 text-xs">Se actualiza con cada bono vendido</p>
             </div>
 
@@ -103,14 +103,14 @@ export default function PozoPremios({ compact = false }) {
                         />
                     </div>
                     <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 text-center">
-                        Al superar {formatCOP(UMBRAL_DINAMICO)} en ventas, el 10% de cada peso adicional engrosa el pozo
+                        Al superar {formatCOP(UMBRAL_DINAMICO)} en ventas, el 10% de cada peso adicional engrosa la tabla de premios
                     </p>
                 </div>
             )}
 
             {superaUmbral && (
                 <p className="text-center text-xs text-amber-500 font-semibold mb-2">
-                    El pozo ya está en modo dinámico — crece con cada bono vendido
+                    La tabla de premios ya está en modo dinámico — crece con cada bono vendido
                 </p>
             )}
 

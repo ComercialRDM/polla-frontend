@@ -96,7 +96,7 @@ export default function ResultadosFinales() {
                         {/* Resumen del pozo */}
                         <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 p-5 mb-6">
                             <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mb-3 text-center">
-                                Pozo de premios actual
+                                Tabla de premios actual
                             </p>
                             <div className="grid grid-cols-3 gap-3 text-center">
                                 {['primero', 'segundo', 'tercero'].map((k, i) => (
