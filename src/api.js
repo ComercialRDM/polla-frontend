@@ -389,6 +389,27 @@ export function adminMarcarUsuarioTest(token, id, es_test) {
     });
 }
 
+export function adminCrearEspeciales(token, { personas, valorBono, intentos }) {
+    return request('/api/admin/especiales/crear', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ personas, valorBono, intentos }),
+    });
+}
+
+export function adminListarEspeciales(token) {
+    return request('/api/admin/especiales', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminInvitarEspecial(token, id) {
+    return request(`/api/admin/especiales/${id}/invitar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function adminBonosColombia(token) {
     return request('/api/admin/bonos-colombia', {
         headers: { Authorization: `Bearer ${token}` },

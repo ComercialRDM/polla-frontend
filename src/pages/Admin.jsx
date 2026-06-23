@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -14,6 +14,7 @@ const SECCIONES = [
     { id: 'partidos',        label: 'Partidos' },
     { id: 'ranking',         label: '🏆 Ranking' },
     { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
+    { id: 'influenciadores', label: '🎖️ Influenciadores' },
     { id: 'localesqr',       label: 'Locales QR' },
     { id: 'seguridad',       label: '🔐 Seguridad' },
 ];
@@ -56,6 +57,15 @@ export default function Admin() {
     const [bonosCol, setBonosCol]             = useState([]);
     const [cargandoBonosCol, setCargandoBonosCol] = useState(false);
     const [reclamandoId, setReclamandoId]     = useState(null);
+
+    const [especiales, setEspeciales]         = useState([]);
+    const [cargandoEspeciales, setCargandoEspeciales] = useState(false);
+    const [filasInfluencers, setFilasInfluencers] = useState([{ nombre: '', celular: '', correo: '' }]);
+    const [valorBonoEspecial, setValorBonoEspecial] = useState(500000);
+    const [intentosEspecial, setIntentosEspecial] = useState(30);
+    const [creandoEspeciales, setCreandoEspeciales] = useState(false);
+    const [resultadoEspeciales, setResultadoEspeciales] = useState(null);
+    const [invitandoId, setInvitandoId]       = useState(null);
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -304,6 +314,65 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarEspeciales() {
+        setCargandoEspeciales(true);
+        try {
+            const data = await adminListarEspeciales(token);
+            if (data?.success) setEspeciales(data.bonos);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoEspeciales(false);
+        }
+    }
+
+    function handleCambiarFilaInfluencer(idx, campo, valor) {
+        setFilasInfluencers((prev) => prev.map((fila, i) => (i === idx ? { ...fila, [campo]: valor } : fila)));
+    }
+
+    function handleAgregarFilaInfluencer() {
+        setFilasInfluencers((prev) => [...prev, { nombre: '', celular: '', correo: '' }]);
+    }
+
+    function handleQuitarFilaInfluencer(idx) {
+        setFilasInfluencers((prev) => prev.filter((_, i) => i !== idx));
+    }
+
+    async function handleCrearEspeciales(e) {
+        e.preventDefault();
+        const personas = filasInfluencers
+            .map((f) => ({ nombre: f.nombre.trim(), celular: f.celular.trim(), correo: f.correo.trim() || undefined }))
+            .filter((f) => f.nombre && f.celular);
+
+        if (personas.length === 0) return;
+
+        setCreandoEspeciales(true);
+        setResultadoEspeciales(null);
+        try {
+            const data = await adminCrearEspeciales(token, { personas, valorBono: Number(valorBonoEspecial), intentos: Number(intentosEspecial) });
+            setResultadoEspeciales(data);
+            if (data?.success) {
+                setFilasInfluencers([{ nombre: '', celular: '', correo: '' }]);
+                cargarEspeciales();
+            }
+        } catch (err) {
+            setResultadoEspeciales({ success: false, error: err.message });
+        } finally {
+            setCreandoEspeciales(false);
+        }
+    }
+
+    async function handleInvitar(id) {
+        setInvitandoId(id);
+        try {
+            await adminInvitarEspecial(token, id);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setInvitandoId(null);
+        }
+    }
+
     async function handleTestWhatsapp(e) {
         e.preventDefault();
         if (!testWaCelular.trim()) return;
@@ -432,6 +501,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) cargarBonosColombia();
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
+        if (seccionActiva === 'influenciadores' && token) cargarEspeciales();
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -1618,6 +1688,148 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             </div>
                         )}
                     </div>
+                </div>
+                )}
+
+                {/* Influenciadores / Creadores de contenido */}
+                {seccionActiva === 'influenciadores' && (
+                <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4 mb-6">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">🎖️ Influenciadores / Creadores de contenido</h2>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
+                        Crea Bonos Especiales para que prueben la app y le muestren a sus seguidores cómo participar.
+                        Reciben cupos para predecir y un bono REAL de servicios (válido en tienda), pero quedan excluidos
+                        del ranking de premios y del Bono Colombia.
+                    </p>
+
+                    <form onSubmit={handleCrearEspeciales} className="mb-5">
+                        <div className="flex flex-wrap gap-3 mb-3">
+                            <label className="text-xs text-zinc-600 dark:text-zinc-300">
+                                Valor del bono (COP)
+                                <input
+                                    type="number"
+                                    value={valorBonoEspecial}
+                                    onChange={(e) => setValorBonoEspecial(e.target.value)}
+                                    className="block mt-1 w-36 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                />
+                            </label>
+                            <label className="text-xs text-zinc-600 dark:text-zinc-300">
+                                Intentos (cupos)
+                                <input
+                                    type="number"
+                                    value={intentosEspecial}
+                                    onChange={(e) => setIntentosEspecial(e.target.value)}
+                                    className="block mt-1 w-28 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                />
+                            </label>
+                        </div>
+
+                        <div className="flex flex-col gap-2 mb-3">
+                            {filasInfluencers.map((fila, idx) => (
+                                <div key={idx} className="flex flex-wrap gap-2 items-center">
+                                    <input
+                                        type="text"
+                                        placeholder="Nombre completo"
+                                        value={fila.nombre}
+                                        onChange={(e) => handleCambiarFilaInfluencer(idx, 'nombre', e.target.value)}
+                                        className="flex-1 min-w-[140px] rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                    />
+                                    <input
+                                        type="tel"
+                                        placeholder="Celular (WhatsApp)"
+                                        value={fila.celular}
+                                        onChange={(e) => handleCambiarFilaInfluencer(idx, 'celular', e.target.value)}
+                                        className="flex-1 min-w-[140px] rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                    />
+                                    <input
+                                        type="email"
+                                        placeholder="Correo (opcional)"
+                                        value={fila.correo}
+                                        onChange={(e) => handleCambiarFilaInfluencer(idx, 'correo', e.target.value)}
+                                        className="flex-1 min-w-[140px] rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                    />
+                                    {filasInfluencers.length > 1 && (
+                                        <button type="button" onClick={() => handleQuitarFilaInfluencer(idx)} className="text-red-500 text-xs font-bold px-2">✕</button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button type="button" onClick={handleAgregarFilaInfluencer} className="text-xs px-3 py-2 rounded-lg border border-zinc-300 dark:border-white/10 text-zinc-600 dark:text-zinc-300 font-bold">
+                                + Agregar otro
+                            </button>
+                            <button type="submit" disabled={creandoEspeciales} className="text-xs px-4 py-2 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                                {creandoEspeciales ? 'Creando...' : `Crear Bono Especial ($${Number(valorBonoEspecial).toLocaleString('es-CO')} + ${intentosEspecial} intentos)`}
+                            </button>
+                        </div>
+                    </form>
+
+                    {resultadoEspeciales && (
+                        <div className={`mb-4 rounded-lg p-3 text-xs ${resultadoEspeciales.success ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'}`}>
+                            {resultadoEspeciales.success ? (
+                                <ul className="list-disc pl-4">
+                                    {resultadoEspeciales.resultados?.map((r, i) => (
+                                        <li key={i}>
+                                            {r.nombre}: {r.error ? `❌ ${r.error}` : '✅ creado'}
+                                            {r.correoEnviado === false && ' (correo falló)'}
+                                            {r.whatsappEnviado === false && ' (WhatsApp falló)'}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>❌ {resultadoEspeciales.error}</p>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-between mb-3 pt-3 border-t border-zinc-200 dark:border-white/10">
+                        <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-200">Influenciadores ya creados</h3>
+                        <button onClick={cargarEspeciales} disabled={cargandoEspeciales}
+                            className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                            {cargandoEspeciales ? 'Cargando...' : 'Actualizar'}
+                        </button>
+                    </div>
+
+                    {especiales.length === 0 && !cargandoEspeciales && (
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">Aún no has creado ningún Bono Especial.</p>
+                    )}
+
+                    {especiales.length > 0 && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                    <tr>
+                                        <th className="px-3 py-2">Nombre</th>
+                                        <th className="px-3 py-2">Celular</th>
+                                        <th className="px-3 py-2">Bono</th>
+                                        <th className="px-3 py-2">Cupos</th>
+                                        <th className="px-3 py-2">Creado</th>
+                                        <th className="px-3 py-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                    {especiales.map((e) => (
+                                        <tr key={e.transaccion_id}>
+                                            <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{e.nombre}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{e.celular}</td>
+                                            <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">${Number(e.saldo_bono).toLocaleString('es-CO')}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{e.intentos_usados}/{e.intentos_totales}</td>
+                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{new Date(e.fecha_creacion).toLocaleDateString('es-CO')}</td>
+                                            <td className="px-3 py-2">
+                                                <button
+                                                    onClick={() => handleInvitar(e.transaccion_id)}
+                                                    disabled={invitandoId === e.transaccion_id}
+                                                    className="px-2 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
+                                                >
+                                                    {invitandoId === e.transaccion_id ? 'Enviando...' : '📲 Enviar invitación'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
                 )}
 

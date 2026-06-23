@@ -154,7 +154,14 @@ export default function Polla() {
 
             <div className="w-full max-w-md mt-6 relative">
                 <div className="flex items-start justify-between mb-1">
-                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
+                    <div>
+                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
+                        {info.es_especial && (
+                            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">
+                                🎖️ Bono Especial
+                            </span>
+                        )}
+                    </div>
                     <button
                         onClick={handleCerrarSesion}
                         className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-500 hover:border-red-500 transition-colors"
