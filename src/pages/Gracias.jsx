@@ -158,21 +158,21 @@ export default function Gracias() {
                     <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
                         Regístrate para poder:
                     </p>
-                    <ul className="flex flex-col gap-2 mb-5">
-                        <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                            <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                    <ul className="flex flex-col gap-2.5 mb-5">
+                        <li className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[11px] font-black shrink-0 mt-0.5">1</span>
                             Ver los resultados de los partidos de Colombia en tiempo real
                         </li>
-                        <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                            <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                        <li className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[11px] font-black shrink-0 mt-0.5">2</span>
                             Ingresar tu pronóstico antes de cada partido
                         </li>
-                        <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                            <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                        <li className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[11px] font-black shrink-0 mt-0.5">3</span>
                             Saber si ganaste un premio y cómo reclamarlo
                         </li>
-                        <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                            <span className="text-amber-500 font-bold mt-0.5">✓</span>
+                        <li className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[11px] font-black shrink-0 mt-0.5">4</span>
                             Recibir notificaciones por WhatsApp de tus partidos
                         </li>
                     </ul>
