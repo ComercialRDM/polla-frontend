@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -369,6 +369,9 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         try {
             const data = await adminInvitarEspecial(token, id);
             setResultadoInvitar({ id, ...data });
+            if (data?.success) {
+                setEspeciales((prev) => prev.map((e) => (e.transaccion_id === id ? { ...e, invitacion_enviada: true } : e)));
+            }
         } catch (err) {
             setResultadoInvitar({ id, success: false, error: err.message });
         } finally {
@@ -1820,7 +1823,15 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                             <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">${Number(e.saldo_bono).toLocaleString('es-CO')}</td>
                                             <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{e.intentos_usados}/{e.intentos_totales}</td>
                                             <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{new Date(e.fecha_creacion).toLocaleDateString('es-CO')}</td>
-                                            <td className="px-3 py-2">
+                                            <td className="px-3 py-2 flex gap-1.5">
+                                                <a
+                                                    href={`${API_BASE}/api/polla/bono/${e.token_acceso}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-2 py-1 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300 whitespace-nowrap"
+                                                >
+                                                    🖼️ Descargar bono
+                                                </a>
                                                 <button
                                                     onClick={() => handleInvitar(e.transaccion_id)}
                                                     disabled={invitandoId === e.transaccion_id}
@@ -1828,6 +1839,9 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                 >
                                                     {invitandoId === e.transaccion_id ? 'Enviando...' : '📲 Enviar invitación'}
                                                 </button>
+                                                {e.invitacion_enviada && (
+                                                    <span className="text-green-600 dark:text-green-400 font-bold text-xs whitespace-nowrap self-center">✅ Enviado</span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
