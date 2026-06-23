@@ -66,6 +66,7 @@ export default function Admin() {
     const [creandoEspeciales, setCreandoEspeciales] = useState(false);
     const [resultadoEspeciales, setResultadoEspeciales] = useState(null);
     const [invitandoId, setInvitandoId]       = useState(null);
+    const [resultadoInvitar, setResultadoInvitar] = useState(null);
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -364,10 +365,12 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
 
     async function handleInvitar(id) {
         setInvitandoId(id);
+        setResultadoInvitar(null);
         try {
-            await adminInvitarEspecial(token, id);
+            const data = await adminInvitarEspecial(token, id);
+            setResultadoInvitar({ id, ...data });
         } catch (err) {
-            // silencioso
+            setResultadoInvitar({ id, success: false, error: err.message });
         } finally {
             setInvitandoId(null);
         }
@@ -1769,10 +1772,12 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             {resultadoEspeciales.success ? (
                                 <ul className="list-disc pl-4">
                                     {resultadoEspeciales.resultados?.map((r, i) => (
-                                        <li key={i}>
+                                        <li key={i} className="mb-1">
                                             {r.nombre}: {r.error ? `❌ ${r.error}` : '✅ creado'}
                                             {r.correoEnviado === false && ' (correo falló)'}
                                             {r.whatsappEnviado === false && ' (WhatsApp falló)'}
+                                            {r.errorCorreo && <div className="pl-4 opacity-70">↳ correo: {r.errorCorreo}</div>}
+                                            {r.errorWhatsapp && <div className="pl-4 opacity-70">↳ WhatsApp: {typeof r.errorWhatsapp === 'string' ? r.errorWhatsapp : JSON.stringify(r.errorWhatsapp)}</div>}
                                         </li>
                                     ))}
                                 </ul>
@@ -1828,6 +1833,12 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    )}
+
+                    {resultadoInvitar && (
+                        <div className={`mt-3 rounded-lg p-3 text-xs ${resultadoInvitar.success ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'}`}>
+                            {resultadoInvitar.success ? '✅ Invitación enviada correctamente' : `❌ ${resultadoInvitar.error}`}
                         </div>
                     )}
                 </div>
