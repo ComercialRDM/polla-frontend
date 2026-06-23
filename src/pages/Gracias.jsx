@@ -110,7 +110,7 @@ export default function Gracias() {
                             Tu pago está en proceso
                         </h1>
                         <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
-                            La confirmación está tardando más de lo usual. No te preocupes: en cuanto Wompi confirme tu pago, te avisaremos por WhatsApp o correo y tu bono quedará activo.
+                            La confirmación está tardando más de lo usual. No te preocupes: en cuanto Wompi confirme tu pago, te avisaremos por correo electrónico y tu bono quedará activo.
                         </p>
                     </>
                 )}
