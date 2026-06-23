@@ -277,7 +277,9 @@ export default function Terminos() {
                     <P>
                         <strong>7.4 Bono Colombia.</strong> Por cada partido de la Selección Colombia en la Fase de Grupos del
                         Mundial 2026, el Operador destinará <strong>$1.000.000 COP adicionales</strong> al o los Participantes que
-                        aciertenelexacto marcador de ese partido. Si hay varios acertantes, el bono se divide en partes iguales.
+                        acierten el marcador exacto de ese partido. Si hay 10 acertantes o menos, el bono se divide en partes
+                        iguales entre todos. Si hay <strong>más de 10 acertantes</strong>, se realiza un sorteo entre todos ellos y
+                        se eligen <strong>10 ganadores</strong>, cada uno con <strong>$100.000 COP</strong> ($1.000.000 en total).
                         Si nadie acierta el marcador exacto, el Bono Colombia no se otorga para ese partido (sin acumulación).
                     </P>
 

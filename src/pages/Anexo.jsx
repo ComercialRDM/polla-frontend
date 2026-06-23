@@ -134,7 +134,7 @@ export default function Anexo() {
                                 <tr>
                                     <td className="p-2">🇨🇴 Bono Colombia (por partido grupo)</td>
                                     <td className="p-2 font-bold text-yellow-600 dark:text-yellow-400">$1.000.000 COP</td>
-                                    <td className="p-2">Dividido entre acertantes exactos</td>
+                                    <td className="p-2">Dividido entre acertantes exactos (si son más de 10, se sortean 10 ganadores de $100.000 c/u)</td>
                                 </tr>
                             </tbody>
                         </table>
