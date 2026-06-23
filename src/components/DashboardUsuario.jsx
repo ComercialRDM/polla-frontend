@@ -79,6 +79,13 @@ export default function DashboardUsuario({ sesion, onSalir }) {
                                 {datos.intentos_disponibles > 0 ? '+ Bono' : '🎟️ Comprar intentos'}
                             </Link>
                         </div>
+
+                        {/* Push a comprar un bono más grande */}
+                        <div className="px-4 pb-3.5 border-t border-white/5 pt-3">
+                            <p className="text-xs text-zinc-400 leading-snug">
+                                {mensajePush(datos)}
+                            </p>
+                        </div>
                     </>
                 )}
 
@@ -92,6 +99,19 @@ export default function DashboardUsuario({ sesion, onSalir }) {
             <MisPronosticos usuarioId={sesion.id} />
         </div>
     );
+}
+
+// Mensaje motivacional para empujar la compra de un bono más grande / más partidos.
+// No inventa estadísticas ("X% de usuarios compran...") que no podemos verificar en vivo
+// — se ancla a hechos reales: el premio del Bono Colombia y la situación real del usuario.
+function mensajePush(datos) {
+    if (datos.intentos_disponibles === 0) {
+        return '🔥 Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.';
+    }
+    if (!datos.token_polla || datos.posicion > 3) {
+        return '🚀 Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar hasta $1.000.000 en el Bono Colombia.';
+    }
+    return '💪 ¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.';
 }
 
 function BloqueRanking({ datos }) {
