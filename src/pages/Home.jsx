@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { obtenerSesion, cerrarSesion } from '../utils/sesion';
 import HeroPrediccion from '../components/HeroPrediccion';
 import PlanesBono from '../components/PlanesBono';
@@ -65,7 +65,25 @@ export default function Home() {
             {sesion ? (
                 <DashboardUsuario sesion={sesion} onSalir={handleCerrarSesion} />
             ) : (
-                <HeroPrediccion />
+                <>
+                    {/* Botones auth */}
+                    <div className="w-full max-w-md px-4 mt-3 flex gap-3">
+                        <Link
+                            to="/registro"
+                            className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-white bg-zinc-900 active:scale-95 transition-transform"
+                        >
+                            Registrarse
+                        </Link>
+                        <Link
+                            to="/iniciar-sesion"
+                            className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform"
+                        >
+                            Iniciar Sesión
+                        </Link>
+                    </div>
+
+                    <HeroPrediccion />
+                </>
             )}
 
             {/* ── BONOS ── */}
