@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { obtenerResumenUsuario } from '../api';
 import MisPronosticos from './MisPronosticos';
 import ProximosPartidos from './ProximosPartidos';
+import Bandera from './Bandera';
 
 export default function DashboardUsuario({ sesion, onSalir }) {
     const [datos, setDatos] = useState(null);
@@ -27,10 +28,17 @@ export default function DashboardUsuario({ sesion, onSalir }) {
                             👋 Hola, {nombre}
                         </p>
                         {equipos.length > 0 && (
-                            <p className="text-zinc-400 text-xs mt-0.5 truncate">
-                                ❤️ {equipos.slice(0, 3).join(' · ')}
-                                {equipos.length > 3 && ` +${equipos.length - 3}`}
-                            </p>
+                            <div className="mt-1">
+                                <p className="text-zinc-500 text-[10px] uppercase tracking-wide font-bold mb-1">Equipos favoritos</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {equipos.map((equipo) => (
+                                        <span key={equipo} className="flex items-center gap-1 bg-white/5 rounded-full pl-1 pr-2 py-0.5">
+                                            <Bandera equipo={equipo} className="w-4 h-4 flex-shrink-0" />
+                                            <span className="text-zinc-300 text-xs font-semibold">{equipo}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         )}
                     </div>
                     <button
@@ -83,7 +91,7 @@ export default function DashboardUsuario({ sesion, onSalir }) {
 
                         {/* Push a comprar un bono más grande */}
                         <div className="px-4 pb-3.5 border-t border-white/5 pt-3">
-                            <p className="text-xs text-zinc-400 leading-snug">
+                            <p className="text-sm text-zinc-300 leading-snug">
                                 {mensajePush(datos)}
                             </p>
                         </div>
@@ -136,7 +144,7 @@ function BloqueRanking({ datos }) {
                             de {total_participantes} {total_participantes === 1 ? 'participante' : 'participantes'}
                         </span>
                     </div>
-                    <p className="text-xs mt-1 leading-tight">
+                    <p className="text-sm mt-1 leading-tight">
                         {esLider ? (
                             <span className="text-[#FCD116] font-semibold">¡Vas en primer lugar! Sigue así 💪</span>
                         ) : (
@@ -203,7 +211,7 @@ function RetaAmigo({ token }) {
         <div className="w-full max-w-md px-4 mt-3">
             <div className="rounded-2xl bg-zinc-900 border border-white/8 px-4 py-3">
                 <p className="text-white font-bold text-sm mb-0.5">🏆 Reta a un amigo</p>
-                <p className="text-zinc-500 text-xs mb-3">
+                <p className="text-zinc-400 text-sm mb-3">
                     Comparte con tu grupo de fútbol y compitan juntos por los premios.
                 </p>
                 <div className="flex gap-2">

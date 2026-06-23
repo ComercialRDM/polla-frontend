@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { obtenerMisPronosticos } from '../api';
+import Bandera from './Bandera';
 
 const ESTADO_CONFIG = {
     3:    { label: 'EXACTO',   clase: 'bg-green-500/15 border-green-500/40 text-green-400',  icono: '🎯' },
     1:    { label: '+1 PT',    clase: 'bg-yellow-500/15 border-yellow-500/40 text-yellow-400', icono: '✅' },
     0:    { label: 'FALLÓ',    clase: 'bg-red-500/15 border-red-500/40 text-red-400',          icono: '❌' },
-    null: { label: 'PENDIENTE', clase: 'bg-zinc-700/40 border-zinc-600/40 text-zinc-400',     icono: '⏳' },
+    null: { label: 'PENDIENTE', clase: 'bg-amber-500/10 border-amber-400/40 text-amber-400',  icono: '⏳' },
 };
 
 function formatFecha(isoStr) {
@@ -40,7 +41,7 @@ export default function MisPronosticos({ usuarioId }) {
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-5 bg-[#FCD116] rounded-full" />
-                    <p className="text-white font-bold text-sm">Mis pronósticos</p>
+                    <p className="text-zinc-900 dark:text-white font-bold text-sm">Mis pronósticos</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-[#FCD116] font-black text-xs">{totalPuntos} pts</span>
@@ -61,15 +62,17 @@ export default function MisPronosticos({ usuarioId }) {
                             className="rounded-xl bg-zinc-900 border border-white/5 px-3 py-2.5 flex items-center gap-3"
                         >
                             {/* Badge de resultado */}
-                            <div className={`flex-shrink-0 rounded-lg border px-2 py-1.5 text-center min-w-[62px] ${cfg.clase}`}>
-                                <p className="text-base leading-none">{cfg.icono}</p>
-                                <p className="font-black text-[10px] leading-tight mt-0.5">{cfg.label}</p>
+                            <div className={`flex-shrink-0 rounded-xl border px-2.5 py-2 text-center min-w-[64px] ${cfg.clase}`}>
+                                <p className="text-lg leading-none">{cfg.icono}</p>
+                                <p className="font-black text-[10px] leading-tight mt-1 uppercase tracking-wide">{cfg.label}</p>
                             </div>
 
                             {/* Partido info */}
                             <div className="flex-1 min-w-0">
-                                <p className="text-white text-xs font-semibold truncate">
+                                <p className="text-white text-xs font-semibold truncate flex items-center gap-1">
+                                    <Bandera equipo={p.equipo_local} className="w-4 h-4 flex-shrink-0" />
                                     {p.equipo_local} vs {p.equipo_visitante}
+                                    <Bandera equipo={p.equipo_visitante} className="w-4 h-4 flex-shrink-0" />
                                     {p.es_flash && <span className="ml-1 text-[#FCD116] text-[9px] font-black">⚡FLASH</span>}
                                 </p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
