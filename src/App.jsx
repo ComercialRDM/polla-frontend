@@ -24,6 +24,7 @@ const Terminos = lazy(() => import('./pages/Terminos'));
 const Privacidad = lazy(() => import('./pages/Privacidad'));
 const Anexo = lazy(() => import('./pages/Anexo'));
 const ResultadosFinales = lazy(() => import('./pages/ResultadosFinales'));
+const ComoFunciona = lazy(() => import('./pages/ComoFunciona'));
 
 import BotonWhatsApp from './components/BotonWhatsApp';
 import ThemeToggle from './components/ThemeToggle';
@@ -65,6 +66,7 @@ function AppRoutes() {
                     <Route path="/" element={<Home />} />
                     <Route path="/premios" element={<Premios />} />
                     <Route path="/como-participo" element={<ComoParticipo />} />
+                    <Route path="/como-funciona" element={<ComoFunciona />} />
                     <Route path="/nosotros" element={<Nosotros />} />
                     <Route path="/comprar" element={<Comprar />} />
                     <Route path="/gracias" element={<Gracias />} />

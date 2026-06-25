@@ -9,6 +9,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="GanaConRetoucherie" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+    <!-- Fuentes: precargadas y aplicadas sin bloquear el render (evita el
+         @import bloqueante que retrasaba el primer pintado en toda la app) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap"
+      />
+    </noscript>
+
     <title>Polla Mundialista - La Retoucherie de Manuela</title>
     <meta name="description" content="Compra tu Bono Digital de La Retoucherie de Manuela y predice los marcadores del Mundial 2026 con la Polla Mundialista. Gana premios en efectivo y crédito real en servicios de arreglos de ropa." />
     <link rel="canonical" href="https://www.ganaconretoucherie.com/" />

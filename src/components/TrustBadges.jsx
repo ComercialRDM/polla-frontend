@@ -31,7 +31,7 @@ export default function TrustBadges({ compact = false }) {
 
             </div>
             {!compact && (
-                <p className="text-zinc-400 dark:text-zinc-500 text-[10px] text-center">
+                <p className="text-zinc-500 dark:text-zinc-400 text-[10px] text-center">
                     Pagos procesados por Wompi (Bancolombia) · Transacciones cifradas 256-bit
                 </p>
             )}

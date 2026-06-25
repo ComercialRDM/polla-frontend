@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -77,4 +76,28 @@ body {
 
 .parpadeo-verde {
   animation: parpadeo 1s infinite;
+}
+
+@media print {
+  /* Botones flotantes (WhatsApp, selector de tema) no aportan nada en una
+     impresión/PDF y se solapan con el contenido. */
+  a[aria-label="Escríbenos por WhatsApp"],
+  button[aria-label^="Tema:"] {
+    display: none !important;
+  }
+
+  /* Las animaciones de entrada (Framer Motion whileInView) dependen de un
+     IntersectionObserver que nunca se dispara durante el renderizado de
+     impresión: sin esto, las tarjetas que no llegaron a animarse quedan con
+     opacity:0 y se imprimen en blanco. Forzamos el estado final visible. */
+  .como-funciona-page * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* El ícono +/× del acordeón de FAQ no aporta nada en una hoja impresa
+     (las respuestas se fuerzan abiertas vía JS en el evento beforeprint). */
+  .como-funciona-page details summary > span {
+    display: none;
+  }
 }
