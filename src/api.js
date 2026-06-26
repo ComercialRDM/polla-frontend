@@ -51,14 +51,14 @@ export function votarFlash({ celular, partido_id, local, visitante }) {
     });
 }
 
-export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref }) {
+export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref, aff_token }) {
     return request('/api/transacciones/crear-link', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token }),
     });
 }
 
-export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, ref }) {
+export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, ref, aff_token }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('correo', correo);
@@ -67,6 +67,7 @@ export async function crearTransferencia({ nombre, correo, celular, partido_id, 
     formData.append('valor', valor);
     formData.append('comprobante', comprobante);
     if (ref) formData.append('ref', ref);
+    if (aff_token) formData.append('aff_token', aff_token);
 
     const res = await fetch(`${API_BASE}/api/transacciones/crear-transferencia`, {
         method: 'POST',
@@ -466,6 +467,42 @@ export async function adminAbrirFotoRegistroInfluencer(token, id) {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
+}
+
+export function registrarClicAfiliado({ codigo_afiliado, utm_source, utm_medium, utm_campaign }) {
+    return request('/api/referidos/clic', {
+        method: 'POST',
+        body: JSON.stringify({ codigo_afiliado, utm_source, utm_medium, utm_campaign }),
+    });
+}
+
+export function adminListarAfiliados(token) {
+    return request('/api/admin/afiliados', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminEditarAfiliado(token, id, { porcentaje_comision, activo }) {
+    return request(`/api/admin/afiliados/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ porcentaje_comision, activo }),
+    });
+}
+
+export function adminListarComisiones(token, estado) {
+    const params = estado ? `?estado=${encodeURIComponent(estado)}` : '';
+    return request(`/api/admin/comisiones${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminActualizarEstadoComision(token, id, estado) {
+    return request(`/api/admin/comisiones/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ estado }),
+    });
 }
 
 export function obtenerRankingInfluencers(token) {

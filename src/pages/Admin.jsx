@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -79,6 +79,12 @@ export default function Admin() {
     const [registrosInfluencer, setRegistrosInfluencer] = useState([]);
     const [cargandoRegistrosInfluencer, setCargandoRegistrosInfluencer] = useState(false);
     const [marcandoRegistroId, setMarcandoRegistroId] = useState(null);
+
+    const [afiliados, setAfiliados] = useState([]);
+    const [cargandoAfiliados, setCargandoAfiliados] = useState(false);
+    const [comisiones, setComisiones] = useState([]);
+    const [cargandoComisiones, setCargandoComisiones] = useState(false);
+    const [actualizandoComisionId, setActualizandoComisionId] = useState(null);
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -452,6 +458,67 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarAfiliados() {
+        setCargandoAfiliados(true);
+        try {
+            const data = await adminListarAfiliados(token);
+            if (data?.success) setAfiliados(data.afiliados);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoAfiliados(false);
+        }
+    }
+
+    async function handleEditarPorcentaje(id, porcentajeActual) {
+        const nuevo = window.prompt('Nuevo % de comisión para este afiliado:', porcentajeActual);
+        if (nuevo == null || nuevo.trim() === '') return;
+        const porcentajeNum = Number(nuevo);
+        if (!Number.isFinite(porcentajeNum) || porcentajeNum < 0 || porcentajeNum > 100) {
+            window.alert('Ingresa un porcentaje válido entre 0 y 100.');
+            return;
+        }
+        try {
+            const data = await adminEditarAfiliado(token, id, { porcentaje_comision: porcentajeNum });
+            if (data?.success) cargarAfiliados();
+        } catch (err) {
+            // silencioso
+        }
+    }
+
+    async function handleToggleAfiliadoActivo(id, activo) {
+        try {
+            const data = await adminEditarAfiliado(token, id, { activo });
+            if (data?.success) cargarAfiliados();
+        } catch (err) {
+            // silencioso
+        }
+    }
+
+    async function cargarComisiones() {
+        setCargandoComisiones(true);
+        try {
+            const data = await adminListarComisiones(token);
+            if (data?.success) setComisiones(data.comisiones);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoComisiones(false);
+        }
+    }
+
+    async function handleActualizarComision(id, estado) {
+        setActualizandoComisionId(id);
+        try {
+            const data = await adminActualizarEstadoComision(token, id, estado);
+            if (data?.success) setComisiones((prev) => prev.map((c) => (c.id === id ? { ...c, estado } : c)));
+        } catch (err) {
+            // silencioso
+        } finally {
+            setActualizandoComisionId(null);
+        }
+    }
+
     async function handleInvitar(id) {
         setInvitandoId(id);
         setResultadoInvitar(null);
@@ -596,7 +663,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
-        if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); }
+        if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); cargarAfiliados(); cargarComisiones(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -2166,6 +2233,138 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                             <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{r.celular}</td>
                                             <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">{r.puntos}</td>
                                             <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{r.exactos}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* Programa de afiliados: clics, ventas atribuidas y comisión */}
+                    <div className="flex items-center justify-between mb-3 mt-6 pt-4 border-t border-zinc-200 dark:border-white/10">
+                        <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-200">💰 Programa de afiliados</h3>
+                        <button onClick={cargarAfiliados} disabled={cargandoAfiliados}
+                            className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                            {cargandoAfiliados ? 'Cargando...' : 'Actualizar'}
+                        </button>
+                    </div>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                        Cada influencer con Bono Especial tiene su propio código de afiliado (distinto de su link de sesión).
+                        % de comisión editable por persona.
+                    </p>
+
+                    {afiliados.length === 0 && !cargandoAfiliados && (
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">Aún no hay afiliados (se crean automáticamente al hacerles un Bono Especial).</p>
+                    )}
+
+                    {afiliados.length > 0 && (
+                        <div className="overflow-x-auto mb-6">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                    <tr>
+                                        <th className="px-3 py-2">Nombre</th>
+                                        <th className="px-3 py-2">Código</th>
+                                        <th className="px-3 py-2">%</th>
+                                        <th className="px-3 py-2">Clics</th>
+                                        <th className="px-3 py-2">Ventas</th>
+                                        <th className="px-3 py-2">Comisión generada</th>
+                                        <th className="px-3 py-2">Pendiente</th>
+                                        <th className="px-3 py-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                    {afiliados.map((a) => (
+                                        <tr key={a.id} className={!a.activo ? 'opacity-50' : ''}>
+                                            <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{a.nombre}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300 font-mono">{a.codigo_afiliado}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{Number(a.porcentaje_comision)}%</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{a.total_clics}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{a.total_ventas}</td>
+                                            <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">${Number(a.comision_generada).toLocaleString('es-CO')}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">${Number(a.comision_pendiente).toLocaleString('es-CO')}</td>
+                                            <td className="px-3 py-2 flex gap-1.5">
+                                                <button
+                                                    onClick={() => handleEditarPorcentaje(a.id, Number(a.porcentaje_comision))}
+                                                    className="px-2 py-1 rounded-lg text-xs font-bold bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-white/20 whitespace-nowrap"
+                                                >
+                                                    Editar %
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleAfiliadoActivo(a.id, !a.activo)}
+                                                    className="px-2 py-1 rounded-lg text-xs font-bold bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-white/20 whitespace-nowrap"
+                                                >
+                                                    {a.activo ? 'Desactivar' : 'Activar'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* Comisiones individuales (cada venta atribuida) */}
+                    <div className="flex items-center justify-between mb-3 pt-3 border-t border-zinc-200 dark:border-white/10">
+                        <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-200">Comisiones por venta</h3>
+                        <button onClick={cargarComisiones} disabled={cargandoComisiones}
+                            className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                            {cargandoComisiones ? 'Cargando...' : 'Actualizar'}
+                        </button>
+                    </div>
+
+                    {comisiones.length === 0 && !cargandoComisiones && (
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">Aún no hay comisiones generadas.</p>
+                    )}
+
+                    {comisiones.length > 0 && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs text-left">
+                                <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                    <tr>
+                                        <th className="px-3 py-2">Afiliado</th>
+                                        <th className="px-3 py-2">Venta</th>
+                                        <th className="px-3 py-2">Comisión</th>
+                                        <th className="px-3 py-2">Estado</th>
+                                        <th className="px-3 py-2">Fecha</th>
+                                        <th className="px-3 py-2"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                    {comisiones.map((c) => (
+                                        <tr key={c.id}>
+                                            <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{c.influencer_nombre}</td>
+                                            <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">${Number(c.monto_venta).toLocaleString('es-CO')}</td>
+                                            <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">${Number(c.monto_comision).toLocaleString('es-CO')} ({Number(c.porcentaje)}%)</td>
+                                            <td className="px-3 py-2">
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                    c.estado === 'PAGADA' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                    : c.estado === 'ANULADA' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                                }`}>
+                                                    {c.estado}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{new Date(c.creado_en).toLocaleDateString('es-CO')}</td>
+                                            <td className="px-3 py-2 flex gap-1.5">
+                                                {c.estado !== 'PAGADA' && (
+                                                    <button
+                                                        onClick={() => handleActualizarComision(c.id, 'PAGADA')}
+                                                        disabled={actualizandoComisionId === c.id}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
+                                                    >
+                                                        Marcar pagada
+                                                    </button>
+                                                )}
+                                                {c.estado !== 'ANULADA' && (
+                                                    <button
+                                                        onClick={() => handleActualizarComision(c.id, 'ANULADA')}
+                                                        disabled={actualizandoComisionId === c.id}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 whitespace-nowrap"
+                                                    >
+                                                        Anular
+                                                    </button>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

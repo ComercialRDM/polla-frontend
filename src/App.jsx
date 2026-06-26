@@ -32,11 +32,13 @@ import ThemeToggle from './components/ThemeToggle';
 import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
+import { registrarClicAfiliado } from './api';
 
 const RUTAS_CON_BOTTOM_NAV = [];
 
 const SPLASH_KEY = 'polla_splash_visto';
 const REF_STORAGE_KEY = 'polla_ref_token';
+const AFF_STORAGE_KEY = 'polla_aff_token';
 
 function CapturarRef() {
     const [searchParams] = useSearchParams();
@@ -44,6 +46,35 @@ function CapturarRef() {
     useEffect(() => {
         const ref = searchParams.get('ref');
         if (ref) localStorage.setItem(REF_STORAGE_KEY, ref);
+    }, [searchParams]);
+
+    return null;
+}
+
+// Programa de afiliados (influencers): captura ?aff=codigo, registra el clic
+// en el backend (que valida el código y lo firma) y guarda el token firmado
+// devuelto — nunca el código en texto plano — para reenviarlo al comprar.
+// Es un sistema paralelo a CapturarRef/REF_STORAGE_KEY (el de "invita amigos"
+// ya existente): no lo toca ni lo reemplaza.
+function CapturarAfiliado() {
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const codigo = searchParams.get('aff');
+        if (!codigo) return;
+
+        registrarClicAfiliado({
+            codigo_afiliado: codigo,
+            utm_source: searchParams.get('utm_source') || undefined,
+            utm_medium: searchParams.get('utm_medium') || undefined,
+            utm_campaign: searchParams.get('utm_campaign') || undefined,
+        })
+            .then((data) => {
+                if (data?.success && data.token) {
+                    localStorage.setItem(AFF_STORAGE_KEY, data.token);
+                }
+            })
+            .catch(() => {});
     }, [searchParams]);
 
     return null;
@@ -62,6 +93,7 @@ function AppRoutes() {
     return (
         <>
             <CapturarRef />
+            <CapturarAfiliado />
             <Suspense fallback={<div className="min-h-screen bg-white dark:bg-zinc-950" />}>
                 <Routes>
                     <Route path="/" element={<Home />} />

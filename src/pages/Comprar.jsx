@@ -12,6 +12,7 @@ import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
+const AFF_STORAGE_KEY = 'polla_aff_token';
 const PLAN_DEFAULT = 10000;
 const VALOR_OTRO = 'otro';
 
@@ -144,6 +145,7 @@ export default function Comprar() {
         }
 
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
+        const affToken = localStorage.getItem(AFF_STORAGE_KEY) || '';
 
         enviandoRef.current = true;
         setCargando(true);
@@ -162,6 +164,7 @@ export default function Comprar() {
                     valor: valorAPagar,
                     comprobante,
                     ref,
+                    aff_token: affToken,
                 });
                 if (data?.success) {
                     setMensajeExito(data.mensaje || 'Tu comprobante fue recibido. Te avisaremos cuando se confirme el pago.');
@@ -179,6 +182,7 @@ export default function Comprar() {
                 partido_id: partidoId,
                 valor: valorAPagar,
                 ref,
+                aff_token: affToken,
             });
 
             if (data?.success && data.widget) {
