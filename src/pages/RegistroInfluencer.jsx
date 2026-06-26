@@ -54,13 +54,22 @@ export default function RegistroInfluencer() {
             </div>
 
             <div className="w-full max-w-md mt-6">
-                <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-white/15 bg-white dark:bg-zinc-900 px-4 py-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-white/5 active:scale-95 transition-all"
+                >
+                    &larr; Volver
+                </Link>
 
-                <div className="flex items-center gap-3 mt-4 mb-2">
-                    <img src={logoRetoucherie} alt="La Retoucherie de Manuela" className="h-10 w-auto rounded-md" />
+                <div className="flex flex-col items-center text-center mt-8 mb-3">
+                    <img
+                        src={logoRetoucherie}
+                        alt="La Retoucherie de Manuela"
+                        className="h-28 w-28 object-cover rounded-3xl ring-4 ring-amber-400/40 shadow-xl shadow-amber-500/20 mb-5"
+                    />
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">Creadores de contenido</h1>
                 </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6 text-center">
                     Regístrate como influencer de la Polla Mundialista. Participas en un ranking aparte,
                     solo entre creadores de contenido, y los <strong className="text-zinc-700 dark:text-zinc-200">3 mejores</strong> ganan premio.
                     Después de registrarte te enviaremos tu Bono Especial.
