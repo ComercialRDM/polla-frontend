@@ -416,11 +416,30 @@ export function adminInvitarEspecial(token, id) {
     });
 }
 
-export function registrarInfluencer({ nombre, correo, celular, red_contenido }) {
-    return request('/api/influencers/registrar', {
+export async function registrarInfluencer({ nombre, correo, celular, red_contenido, foto, autoriza_foto }) {
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('correo', correo);
+    formData.append('celular', celular);
+    formData.append('red_contenido', red_contenido);
+    formData.append('autoriza_foto', autoriza_foto ? 'true' : 'false');
+    if (foto) formData.append('foto', foto);
+
+    const res = await fetch(`${API_BASE}/api/influencers/registrar`, {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, red_contenido }),
+        body: formData,
     });
+
+    let data = null;
+    try {
+        data = await res.json();
+    } catch {
+        data = null;
+    }
+    if (!res.ok && !data) {
+        throw new Error(`Error ${res.status}`);
+    }
+    return data;
 }
 
 export function adminListarRegistrosInfluencer(token) {
@@ -435,6 +454,26 @@ export function adminMarcarRegistroInfluencer(token, id, atendido) {
         headers: { Authorization: `Bearer ${token}` },
         body: JSON.stringify({ atendido }),
     });
+}
+
+export async function adminAbrirFotoRegistroInfluencer(token, id) {
+    const res = await fetch(`${API_BASE}/api/admin/influencers/registros/${id}/foto`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+        throw new Error('No se pudo cargar la foto');
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+}
+
+export function obtenerRankingInfluencers(token) {
+    return request(`/api/polla/ranking-influencers?token_acceso=${encodeURIComponent(token)}`);
+}
+
+export function urlFotoInfluencer(usuarioId) {
+    return `${API_BASE}/api/polla/foto-influencer/${usuarioId}`;
 }
 
 export function adminFlashGanadores(token) {

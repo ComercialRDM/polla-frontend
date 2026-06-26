@@ -29,7 +29,7 @@ export default function Terminos() {
                 <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Términos y Condiciones</h1>
-                <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">Versión 2.0 — 17 de junio de 2026</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">Versión 2.1 — 26 de junio de 2026</p>
                 <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-6">
                     Operador: <strong className="text-zinc-700 dark:text-zinc-300">RDM MASTER COLOMBIA SAS</strong> · NIT 901.765.354-3<br />
                     Carrera 51 #95-31, Barranquilla · comercial@retoucherie.com.co · +57 310 396 3708
@@ -341,7 +341,30 @@ export default function Terminos() {
                     </P>
 
                     {/* 13 */}
-                    <S>13. Privacidad y Datos Personales</S>
+                    <S>13. Programa de Creadores de Contenido (Influencers)</S>
+                    <P>
+                        <strong>13.1 Registro voluntario.</strong> Toda persona puede solicitar su ingreso al Programa de
+                        Creadores de Contenido a través del formulario público del Sitio, indicando nombre, correo,
+                        celular y la(s) red(es) social(es) donde crea contenido. El Operador revisa cada solicitud y,
+                        a su entera discreción, decide si otorga el Bono Especial correspondiente.
+                    </P>
+                    <P>
+                        <strong>13.2 Naturaleza del Bono Especial.</strong> El Bono Especial otorga cupos de pronóstico y
+                        un crédito real en servicios de La Retoucherie de Manuela, pero el Creador de Contenido queda
+                        excluido de la tabla de premios en efectivo y del Bono Colombia: solo compite dentro de un
+                        ranking independiente, exclusivo entre Creadores de Contenido.
+                    </P>
+                    <P>
+                        <strong>13.3 Foto de perfil.</strong> La subida de una foto al registrarse es opcional. Si el
+                        solicitante decide subirla y marca la casilla de autorización correspondiente, declara ser el
+                        titular de los derechos sobre dicha imagen y <strong>autoriza expresamente</strong> al Operador a
+                        publicarla junto a su nombre en el ranking de Creadores de Contenido, visible para los demás
+                        participantes del Programa. El Operador podrá eliminar la foto a solicitud del titular,
+                        escribiendo a comercial@retoucherie.com.co.
+                    </P>
+
+                    {/* 14 */}
+                    <S>14. Privacidad y Datos Personales</S>
                     <P>
                         El tratamiento de datos personales de los Participantes se rige por la{' '}
                         <Link to="/privacidad" className="text-amber-500 dark:text-amber-400 underline">
@@ -350,15 +373,15 @@ export default function Terminos() {
                         publicada en el Sitio, que hace parte integral de estos Términos.
                     </P>
 
-                    {/* 14 */}
-                    <S>14. Legislación y Jurisdicción</S>
+                    {/* 15 */}
+                    <S>15. Legislación y Jurisdicción</S>
                     <P>
                         Estos Términos se rigen por las leyes de la República de Colombia. Cualquier controversia se
                         someterá a los jueces y tribunales de Barranquilla, Atlántico, Colombia.
                     </P>
 
-                    {/* 15 */}
-                    <S>15. Aceptación</S>
+                    {/* 16 */}
+                    <S>16. Aceptación</S>
                     <P>
                         Al registrarse en el Sitio y/o adquirir un Bono, el Participante declara ser mayor de 18 años,
                         haber leído íntegramente estos Términos y Condiciones y la{' '}

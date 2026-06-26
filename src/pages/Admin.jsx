@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -428,6 +428,14 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
     function handleUsarDatosRegistro(registro) {
         setFilasInfluencers([{ nombre: registro.nombre, celular: registro.celular, correo: registro.correo }]);
         document.getElementById('form-bono-especial')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function handleVerFotoRegistro(id) {
+        try {
+            await adminAbrirFotoRegistroInfluencer(token, id);
+        } catch (err) {
+            // silencioso
+        }
     }
 
     async function handleMarcarRegistroInfluencer(id, atendido) {
@@ -1941,6 +1949,14 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                 </td>
                                                 <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{new Date(r.fecha_registro).toLocaleDateString('es-CO')}</td>
                                                 <td className="px-3 py-2 flex gap-1.5">
+                                                    {r.tiene_foto && (
+                                                        <button
+                                                            onClick={() => handleVerFotoRegistro(r.id)}
+                                                            className="px-2 py-1 rounded-lg text-xs font-bold bg-zinc-700 text-white hover:bg-zinc-600 whitespace-nowrap"
+                                                        >
+                                                            🖼️ Ver foto
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleUsarDatosRegistro(r)}
                                                         className="px-2 py-1 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300 whitespace-nowrap"

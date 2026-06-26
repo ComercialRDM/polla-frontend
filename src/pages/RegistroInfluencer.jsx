@@ -17,9 +17,19 @@ export default function RegistroInfluencer() {
     const [correo, setCorreo] = useState('');
     const [celular, setCelular] = useState('');
     const [redContenido, setRedContenido] = useState('');
+    const [foto, setFoto] = useState(null);
+    const [fotoPreview, setFotoPreview] = useState(null);
+    const [autorizaFoto, setAutorizaFoto] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState('');
     const [enviado, setEnviado] = useState(false);
+
+    function handleFotoChange(e) {
+        const archivo = e.target.files?.[0] || null;
+        setFoto(archivo);
+        setFotoPreview(archivo ? URL.createObjectURL(archivo) : null);
+        if (!archivo) setAutorizaFoto(false);
+    }
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -29,10 +39,18 @@ export default function RegistroInfluencer() {
         if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) return setError('Ingresa un correo válido.');
         if (!celular.trim() || celular.trim().length < 7) return setError('Ingresa un número de celular válido.');
         if (!redContenido) return setError('Selecciona en qué red creas contenido.');
+        if (foto && !autorizaFoto) return setError('Debes autorizar el uso de tu foto para poder subirla.');
 
         setEnviando(true);
         try {
-            const data = await registrarInfluencer({ nombre: nombre.trim(), correo: correo.trim(), celular: celular.trim(), red_contenido: redContenido });
+            const data = await registrarInfluencer({
+                nombre: nombre.trim(),
+                correo: correo.trim(),
+                celular: celular.trim(),
+                red_contenido: redContenido,
+                foto,
+                autoriza_foto: autorizaFoto,
+            });
             if (data?.success) {
                 setEnviado(true);
             } else {
@@ -148,6 +166,40 @@ export default function RegistroInfluencer() {
                                 ))}
                             </div>
                         </fieldset>
+
+                        <div>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Foto de perfil (opcional)</label>
+                            <div className="flex items-center gap-4">
+                                {fotoPreview ? (
+                                    <img src={fotoPreview} alt="Vista previa" className="w-16 h-16 rounded-full object-cover border-2 border-amber-400" />
+                                ) : (
+                                    <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-2xl shrink-0">🙂</div>
+                                )}
+                                <label className="cursor-pointer text-sm font-bold text-amber-600 dark:text-amber-400 underline">
+                                    {foto ? 'Cambiar foto' : 'Subir foto'}
+                                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFotoChange} className="hidden" />
+                                </label>
+                            </div>
+                            <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-2">
+                                Esta foto se mostraría públicamente en el ranking de creadores de contenido.
+                            </p>
+                        </div>
+
+                        {foto && (
+                            <label className="flex items-start gap-3 rounded-lg border border-amber-300/50 bg-amber-50 dark:bg-amber-900/10 px-4 py-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={autorizaFoto}
+                                    onChange={(e) => setAutorizaFoto(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 accent-amber-500 shrink-0"
+                                />
+                                <span className="text-zinc-700 dark:text-zinc-200 text-xs">
+                                    Autorizo a La Retoucherie de Manuela a usar mi foto públicamente en el ranking de
+                                    creadores de contenido de la Polla Mundialista, según los{' '}
+                                    <Link to="/terminos" target="_blank" className="underline font-semibold">Términos y Condiciones</Link>.
+                                </span>
+                            </label>
+                        )}
 
                         {error && (
                             <p className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{error}</p>

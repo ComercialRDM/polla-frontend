@@ -4,6 +4,7 @@ import { obtenerInfoPolla, votar } from '../api';
 import { formatoPesos } from '../config/planes';
 import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
+import RankingInfluencers from '../components/RankingInfluencers';
 import EquiposFavoritos from '../components/EquiposFavoritos';
 import PartidosFavoritos from '../components/PartidosFavoritos';
 import CompartirPronostico from '../components/CompartirPronostico';
@@ -192,6 +193,9 @@ export default function Polla() {
                         </Link>
                     )}
                 </div>
+
+                {/* Ranking solo entre creadores de contenido (Bono Especial) */}
+                {info.es_especial && <RankingInfluencers token={token} />}
 
                 {/* Pozo de premios en tiempo real */}
                 <PozoPremios compact />
