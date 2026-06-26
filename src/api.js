@@ -416,6 +416,27 @@ export function adminInvitarEspecial(token, id) {
     });
 }
 
+export function registrarInfluencer({ nombre, correo, celular, red_contenido }) {
+    return request('/api/influencers/registrar', {
+        method: 'POST',
+        body: JSON.stringify({ nombre, correo, celular, red_contenido }),
+    });
+}
+
+export function adminListarRegistrosInfluencer(token) {
+    return request('/api/admin/influencers/registros', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminMarcarRegistroInfluencer(token, id, atendido) {
+    return request(`/api/admin/influencers/registros/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ atendido }),
+    });
+}
+
 export function adminFlashGanadores(token) {
     return request('/api/admin/flash-ganadores', {
         headers: { Authorization: `Bearer ${token}` },

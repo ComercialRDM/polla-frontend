@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -75,6 +75,10 @@ export default function Admin() {
     const [resultadoInvitar, setResultadoInvitar] = useState(null);
     const [rankingEspeciales, setRankingEspeciales] = useState([]);
     const [cargandoRankingEspeciales, setCargandoRankingEspeciales] = useState(false);
+
+    const [registrosInfluencer, setRegistrosInfluencer] = useState([]);
+    const [cargandoRegistrosInfluencer, setCargandoRegistrosInfluencer] = useState(false);
+    const [marcandoRegistroId, setMarcandoRegistroId] = useState(null);
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -407,6 +411,39 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarRegistrosInfluencer() {
+        setCargandoRegistrosInfluencer(true);
+        try {
+            const data = await adminListarRegistrosInfluencer(token);
+            if (data?.success) setRegistrosInfluencer(data.registros);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoRegistrosInfluencer(false);
+        }
+    }
+
+    // Copia los datos del registro público a la primera fila del formulario de
+    // Bono Especial, para que el admin solo tenga que confirmar valor/cupos.
+    function handleUsarDatosRegistro(registro) {
+        setFilasInfluencers([{ nombre: registro.nombre, celular: registro.celular, correo: registro.correo }]);
+        document.getElementById('form-bono-especial')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function handleMarcarRegistroInfluencer(id, atendido) {
+        setMarcandoRegistroId(id);
+        try {
+            const data = await adminMarcarRegistroInfluencer(token, id, atendido);
+            if (data?.success) {
+                setRegistrosInfluencer((prev) => prev.map((r) => (r.id === id ? { ...r, atendido } : r)));
+            }
+        } catch (err) {
+            // silencioso
+        } finally {
+            setMarcandoRegistroId(null);
+        }
+    }
+
     async function handleInvitar(id) {
         setInvitandoId(id);
         setResultadoInvitar(null);
@@ -551,7 +588,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
-        if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); }
+        if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -1863,7 +1900,70 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                         del ranking de premios y del Bono Colombia.
                     </p>
 
-                    <form onSubmit={handleCrearEspeciales} className="mb-5">
+                    {/* Solicitudes públicas de /influencers, pendientes de Bono Especial */}
+                    <div className="rounded-xl border border-amber-300/50 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-900/10 p-4 mb-6">
+                        <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-100">📋 Solicitudes de registro (link público)</h3>
+                            <button onClick={cargarRegistrosInfluencer} disabled={cargandoRegistrosInfluencer}
+                                className="text-xs px-3 py-1 rounded-lg bg-amber-400 text-zinc-950 font-bold hover:bg-amber-300 disabled:opacity-60">
+                                {cargandoRegistrosInfluencer ? 'Cargando...' : 'Actualizar'}
+                            </button>
+                        </div>
+                        <p className="text-zinc-600 dark:text-zinc-300 text-xs mb-3">
+                            Envíales este link para que se registren solos: <strong>{window.location.origin}/influencers</strong>
+                        </p>
+
+                        {registrosInfluencer.length === 0 && !cargandoRegistrosInfluencer && (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Aún no hay registros.</p>
+                        )}
+
+                        {registrosInfluencer.length > 0 && (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-xs text-left">
+                                    <thead className="bg-white/60 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                        <tr>
+                                            <th className="px-3 py-2">Nombre</th>
+                                            <th className="px-3 py-2">Correo</th>
+                                            <th className="px-3 py-2">Celular</th>
+                                            <th className="px-3 py-2">Red</th>
+                                            <th className="px-3 py-2">Fecha</th>
+                                            <th className="px-3 py-2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-amber-200/40 dark:divide-white/5">
+                                        {registrosInfluencer.map((r) => (
+                                            <tr key={r.id} className={r.atendido ? 'opacity-50' : ''}>
+                                                <td className="px-3 py-2 font-semibold text-zinc-900 dark:text-white">{r.nombre}</td>
+                                                <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{r.correo}</td>
+                                                <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{r.celular}</td>
+                                                <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300 capitalize">
+                                                    {r.red_contenido === 'instagram' ? '📸 Instagram' : r.red_contenido === 'tiktok' ? '🎵 TikTok' : '📸🎵 Ambas'}
+                                                </td>
+                                                <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{new Date(r.fecha_registro).toLocaleDateString('es-CO')}</td>
+                                                <td className="px-3 py-2 flex gap-1.5">
+                                                    <button
+                                                        onClick={() => handleUsarDatosRegistro(r)}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300 whitespace-nowrap"
+                                                    >
+                                                        Usar estos datos
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleMarcarRegistroInfluencer(r.id, !r.atendido)}
+                                                        disabled={marcandoRegistroId === r.id}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-white/20 disabled:opacity-60 whitespace-nowrap"
+                                                    >
+                                                        {r.atendido ? '↩️ Pendiente' : '✅ Atendido'}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    <form id="form-bono-especial" onSubmit={handleCrearEspeciales} className="mb-5">
                         <div className="flex flex-wrap gap-3 mb-3">
                             <label className="text-xs text-zinc-600 dark:text-zinc-300">
                                 Valor del bono (COP)
