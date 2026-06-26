@@ -20,6 +20,18 @@ export default function BonosSection() {
                     Bonos
                 </motion.h2>
 
+                <motion.p
+                    variants={fadeUp}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={VIEWPORT_ONCE}
+                    className="text-center text-zinc-500 dark:text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto mb-16 -mt-10"
+                >
+                    Cada bono es un crédito real que puedes usar en arreglos, ajustes y transformaciones
+                    de ropa en La Retoucherie de Manuela. Cómpralo, úsalo cuando quieras, y de regalo
+                    participas en la Polla Mundialista.
+                </motion.p>
+
                 <motion.div
                     variants={stagger}
                     initial="hidden"

@@ -5,19 +5,46 @@ export const PASOS_PARTICIPAR = [
     {
         icono: 'ShoppingCart',
         titulo: 'Compra tu bono',
-        descripcion: 'Elige el monto de tu Bono de Servicios. Cada bono otorga cupos para pronosticar.',
+        descripcion:
+            'Elige el monto de tu Bono de Servicios: saldo real para arreglos de ropa y sastrería en La Retoucherie de Manuela. Ese saldo ya es tuyo, sin importar el resultado de la Polla.',
     },
     {
         icono: 'Goal',
         titulo: 'Pronostica el marcador',
-        descripcion: 'Predice el resultado exacto de los partidos del Mundial 2026 habilitados.',
+        descripcion:
+            'Con los cupos de tu bono, predice el resultado exacto de los partidos del Mundial 2026 habilitados. Participar en la Polla no tiene ningún costo adicional.',
     },
     {
         icono: 'Trophy',
         titulo: 'Gana puntos y premios',
-        descripcion: 'Acumula puntos por cada acierto y compite por la tabla de premios.',
+        descripcion:
+            'Acumula puntos por cada acierto y compite por la tabla de premios, mientras tu saldo en servicios de La Retoucherie ya está disponible para usar cuando quieras.',
     },
 ];
+
+// Mensaje central de la dinámica: el bono es un crédito real en servicios
+// (no una apuesta) y el concurso es un beneficio gratuito adicional — el
+// cliente sale ganando compre o no acierte un solo marcador.
+export const SIEMPRE_GANAS = {
+    titulo: 'Siempre ganas',
+    bullets: [
+        {
+            icono: 'Scissors',
+            texto:
+                'Tu bono es saldo real y queda disponible para usar en arreglos, ajustes y transformaciones de ropa en La Retoucherie de Manuela, sin importar si aciertas un marcador o no.',
+        },
+        {
+            icono: 'Gift',
+            texto:
+                'Participar en la Polla Mundialista es 100% gratuito: es un beneficio adicional que se suma a tu compra, no un costo ni una apuesta.',
+        },
+        {
+            icono: 'TrendingUp',
+            texto:
+                'Mientras más alto el bono, más saldo extra recibes en servicios (hasta 160%) y más cupos tienes para pronosticar y ganar premios.',
+        },
+    ],
+};
 
 export const FASES_PUNTOS = [
     { fase: 'Grupos', exacto: 100, tendencia: 50, cupos: 1 },
