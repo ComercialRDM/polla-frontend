@@ -69,7 +69,7 @@ export default function RegistroInfluencer() {
                     />
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">Creadores de contenido</h1>
                 </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6 text-center">
+                <p className="text-zinc-500 dark:text-zinc-400 text-base font-bold mb-6 text-center">
                     Regístrate como influencer de la Polla Mundialista. Participas en un ranking aparte,
                     solo entre creadores de contenido, y los <strong className="text-zinc-700 dark:text-zinc-200">3 mejores</strong> ganan premio.
                     Después de registrarte te enviaremos tu Bono Especial.
