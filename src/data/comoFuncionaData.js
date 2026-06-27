@@ -60,8 +60,8 @@ export const PUNTOS_EXTRA = [
         icono: 'Share2',
         titulo: 'Comparte en Instagram',
         descripcion: 'Comparte tu pronóstico en Stories (máx. 1 vez por partido).',
-        puntos: '+10 pts',
-        tope: 'Tope: 200 pts',
+        puntos: '+20 pts',
+        tope: 'Tope: 500 pts',
     },
     {
         icono: 'UserPlus',

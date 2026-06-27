@@ -6,7 +6,7 @@ import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
 export default function CompartirPronostico({ equipoLocal, equipoVisitante, localPred, visitantePred, tokenAcceso, partidoId }) {
     const [copiado, setCopiado] = useState(false);
     const [generando, setGenerando] = useState(false);
-    const [ptoGanado, setPtoGanado] = useState(false);
+    const [ptoGanado, setPtoGanado] = useState(0);
     const [mensaje, setMensaje] = useState('');
 
     // Carga una imagen con soporte CORS (para flagcdn.com)
@@ -294,8 +294,8 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
                 try {
                     const resp = await registrarCompartida(tokenAcceso, partidoId);
                     if (resp?.puntos_ganados > 0) {
-                        setPtoGanado(true);
-                        setTimeout(() => setPtoGanado(false), 3000);
+                        setPtoGanado(resp.puntos_ganados);
+                        setTimeout(() => setPtoGanado(0), 3000);
                     }
                 } catch {
                     // No interrumpir la experiencia si falla el registro
@@ -343,9 +343,9 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
                     >
                         {generando ? 'Preparando imagen...' : '📲 Compartir en Instagram Stories'}
                     </button>
-                    {ptoGanado && (
+                    {ptoGanado > 0 && (
                         <span className="absolute -top-2 right-2 bg-[#FCD116] text-black text-xs font-black px-2 py-0.5 rounded-full animate-bounce shadow-lg">
-                            +1 pto ⭐
+                            +{ptoGanado} pts ⭐
                         </span>
                     )}
                 </div>

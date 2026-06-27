@@ -92,8 +92,8 @@ export default function Anexo() {
                             <tbody className="divide-y divide-zinc-100 dark:divide-white/5 text-zinc-700 dark:text-zinc-300">
                                 <tr>
                                     <td className="p-2">Compartir pronóstico en Instagram Stories (máx. 1 vez por partido)</td>
-                                    <td className="p-2 font-bold text-amber-600 dark:text-amber-400">+10 pts</td>
-                                    <td className="p-2">200 pts totales</td>
+                                    <td className="p-2 font-bold text-amber-600 dark:text-amber-400">+20 pts</td>
+                                    <td className="p-2">500 pts totales</td>
                                 </tr>
                                 <tr>
                                     <td className="p-2">Referido que compra un Bono con tu enlace personal</td>

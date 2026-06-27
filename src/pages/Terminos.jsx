@@ -220,8 +220,8 @@ export default function Terminos() {
                     <S>6. Puntos Adicionales por Fidelización</S>
                     <P>
                         <strong>6.1 Compartir en Instagram Stories.</strong> Al compartir tu pronóstico mediante el botón
-                        "Compartir" dentro de la plataforma, recibes <strong>10 puntos</strong> por cada historia publicada
-                        (máximo 1 vez por partido). Tope acumulable por este concepto: <strong>200 puntos</strong> totales.
+                        "Compartir" dentro de la plataforma, recibes <strong>20 puntos</strong> por cada historia publicada
+                        (máximo 1 vez por partido). Tope acumulable por este concepto: <strong>500 puntos</strong> totales.
                     </P>
                     <P>
                         <strong>6.2 Programa de Referidos.</strong> Al invitar a alguien con tu enlace personal y esa persona
