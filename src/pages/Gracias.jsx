@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
 import { obtenerMarcadorPendiente, limpiarMarcadorPendiente } from '../utils/marcadorPendiente';
+import { obtenerSesion } from '../utils/sesion';
 
 const INTENTOS_MAX = 6;
 const INTERVALO_MS = 3000;
@@ -16,6 +17,10 @@ export default function Gracias() {
     // igual que antes).
     const [estado, setEstado] = useState(token ? 'verificando' : 'aprobado');
     const [marcadorConfirmado, setMarcadorConfirmado] = useState(null);
+    // La cuenta y la sesión ya quedaron creadas desde Comprar.jsx al generar el
+    // pago (antes incluso de que se confirme) — si existe, no hay que pedirle
+    // que se registre, solo lo mandamos a su dashboard.
+    const tieneSesion = Boolean(obtenerSesion());
 
     useEffect(() => {
         if (!token) return;
@@ -149,14 +154,15 @@ export default function Gracias() {
                     </>
                 )}
 
-                {/* CTA registro */}
+                {/* CTA: si ya hay sesión (se guarda desde Comprar.jsx al generar el pago),
+                    no tiene sentido pedirle que se registre — se le manda directo a su cuenta. */}
                 <div className="w-full rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/10 p-6 mb-6 text-left">
                     <p className="text-2xl mb-2">🏆</p>
                     <p className="text-zinc-900 dark:text-white font-extrabold text-lg mb-2">
-                        ¡Un paso más para ganar!
+                        {tieneSesion ? '¡Ya quedaste registrado!' : '¡Un paso más para ganar!'}
                     </p>
                     <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-                        Regístrate para poder:
+                        {tieneSesion ? 'Desde tu cuenta puedes:' : 'Regístrate para poder:'}
                     </p>
                     <ul className="flex flex-col gap-2.5 mb-5">
                         <li className="flex items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
@@ -177,21 +183,23 @@ export default function Gracias() {
                         </li>
                     </ul>
                     <Link
-                        to="/registro"
+                        to={tieneSesion ? '/' : '/registro'}
                         className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
                     >
-                        Registrarme ahora — ¡es gratis!
+                        {tieneSesion ? 'Ir a mi cuenta' : 'Registrarme ahora — ¡es gratis!'}
                     </Link>
                 </div>
 
                 {/* Opciones secundarias */}
                 <div className="flex flex-col gap-3 w-full">
-                    <Link
-                        to="/iniciar-sesion"
-                        className="block w-full py-3 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60"
-                    >
-                        Ya tengo cuenta — Iniciar sesión
-                    </Link>
+                    {!tieneSesion && (
+                        <Link
+                            to="/iniciar-sesion"
+                            className="block w-full py-3 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60"
+                        >
+                            Ya tengo cuenta — Iniciar sesión
+                        </Link>
+                    )}
                     {token && (
                         <Link
                             to={`/polla?token=${token}`}

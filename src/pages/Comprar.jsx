@@ -6,7 +6,7 @@ import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
 import Bandera from '../components/Bandera';
 import { partidosFuturos } from '../utils/partidos';
-import { obtenerSesion } from '../utils/sesion';
+import { obtenerSesion, guardarSesion } from '../utils/sesion';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
 import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
@@ -144,6 +144,16 @@ export default function Comprar() {
 
     const partidoSeleccionado = partidos.find((p) => p.id === partidoId) ?? null;
 
+    // La cuenta ya queda creada en el backend desde que se genera la
+    // transacción (antes incluso de que el pago se confirme), así que se
+    // guarda la sesión de una vez — el comprador no tiene que "registrarse"
+    // por separado para ver su dashboard.
+    function guardarSesionDePago(data) {
+        if (data?.usuario && data?.token) {
+            guardarSesion({ ...data.usuario, token: data.token });
+        }
+    }
+
     function handleChange(e) {
         const nuevoForm = { ...form, [e.target.name]: e.target.value };
         setForm(nuevoForm);
@@ -224,6 +234,7 @@ export default function Comprar() {
                     aff_token: affToken,
                 });
                 if (data?.success && data.redirect_url) {
+                    guardarSesionDePago(data);
                     window.location.href = data.redirect_url;
                 } else {
                     setError(data?.error || 'No se pudo iniciar el pago por PSE.');
@@ -242,6 +253,7 @@ export default function Comprar() {
                     aff_token: affToken,
                 });
                 if (data?.success && data.redirect_url) {
+                    guardarSesionDePago(data);
                     window.location.href = data.redirect_url;
                 } else {
                     setError(data?.error || 'No se pudo iniciar el pago con Botón Bancolombia.');
@@ -267,6 +279,7 @@ export default function Comprar() {
                     aff_token: affToken,
                 });
                 if (data?.success) {
+                    guardarSesionDePago(data);
                     setMensajeExito(data.mensaje || 'Tu comprobante fue recibido. Te avisaremos cuando se confirme el pago.');
                     setEnviado(true);
                 } else {
@@ -286,6 +299,7 @@ export default function Comprar() {
             });
 
             if (data?.success && data.widget) {
+                guardarSesionDePago(data);
                 await cargarWidgetWompi();
                 const checkout = new window.WidgetCheckout(data.widget);
                 widgetAbierto = true;
@@ -324,11 +338,12 @@ export default function Comprar() {
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">¡Comprobante recibido!</h1>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">{mensajeExito}</p>
 
-                    {/* CTA registro */}
+                    {/* Ya quedó con sesión iniciada (guardarSesionDePago) — no necesita
+                        registrarse aparte, solo lo mandamos a su dashboard. */}
                     <div className="w-full rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/10 p-6 mb-4 text-left">
                         <p className="text-2xl mb-2">🏆</p>
-                        <p className="text-zinc-900 dark:text-white font-extrabold text-lg mb-2">¡Un paso más para ganar!</p>
-                        <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4">Regístrate para poder:</p>
+                        <p className="text-zinc-900 dark:text-white font-extrabold text-lg mb-2">¡Ya quedaste registrado!</p>
+                        <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4">Desde tu cuenta puedes:</p>
                         <ul className="flex flex-col gap-2 mb-5">
                             <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                                 <span className="text-amber-500 font-bold mt-0.5">✓</span>
@@ -348,19 +363,13 @@ export default function Comprar() {
                             </li>
                         </ul>
                         <Link
-                            to="/registro"
+                            to="/"
                             className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
                         >
-                            Registrarme ahora — ¡es gratis!
+                            Ir a mi cuenta
                         </Link>
                     </div>
 
-                    <Link
-                        to="/iniciar-sesion"
-                        className="block w-full py-3 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 mb-3"
-                    >
-                        Ya tengo cuenta — Iniciar sesión
-                    </Link>
                     <Link to="/" className="text-xs text-zinc-400 underline">Volver al inicio</Link>
                 </div>
             </div>

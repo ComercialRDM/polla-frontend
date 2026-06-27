@@ -31,7 +31,7 @@ export default function HeroComoFunciona() {
                     src={logoRetoucherie}
                     alt="La Retoucherie de Manuela"
                     decoding="async"
-                    className="h-14 w-auto rounded-lg mb-10"
+                    className="h-[73px] w-auto rounded-lg mb-10"
                 />
 
                 <motion.h1
