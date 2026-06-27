@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PLANES, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, MULTIPLO_PERSONALIZADO, CUPO_VALOR_PERSONALIZADO, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
-import { obtenerPartidos, crearLinkPago, crearTransferencia } from '../api';
+import { obtenerPartidos, crearLinkPago, crearTransferencia, obtenerBancosPse, crearPSE, crearBancolombia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
 import Bandera from '../components/Bandera';
@@ -51,6 +51,15 @@ export default function Comprar() {
     const [mostrarTransferencia, setMostrarTransferencia] = useState(false);
     const [comprobante, setComprobante] = useState(null);
 
+    // Método de pago: 'wompi' abre el Widget (tarjeta/Nequi/Daviplata/etc, lo
+    // que esté activo en la cuenta de Wompi). 'pse' y 'bancolombia' van por la
+    // API directa de Wompi (botón propio, sin pasar por el widget). 'breb'
+    // queda deshabilitado hasta que Wompi lo habilite (ver loadtest/04 y la
+    // conversación: Bre-B todavía no aparece en el dashboard de Wompi).
+    const [metodoPago, setMetodoPago] = useState('wompi');
+    const [bancosPse, setBancosPse] = useState([]);
+    const [bancoSeleccionado, setBancoSeleccionado] = useState('');
+
     const [partidos, setPartidos] = useState([]);
     const [partidoId, setPartidoId] = useState(null);
 
@@ -59,8 +68,10 @@ export default function Comprar() {
         const sesion = obtenerSesion();
         return {
             nombre: sesion?.nombre || guardados.nombre || '',
-            correo: guardados.correo || '',
+            correo: sesion?.correo || guardados.correo || '',
             celular: sesion?.celular || guardados.celular || '',
+            tipo_documento: sesion?.tipo_documento || 'CC',
+            documento: sesion?.documento || '',
         };
     });
 
@@ -78,6 +89,16 @@ export default function Comprar() {
     const cuposCustom = calcularCupos(montoCustomNumero);
     const saldoBonoCustom = calcularSaldoBono(montoCustomNumero);
     const residuoCustom = montoCustomNumero % CUPO_VALOR_PERSONALIZADO;
+
+    useEffect(() => {
+        if (metodoPago === 'pse' && bancosPse.length === 0) {
+            obtenerBancosPse()
+                .then((data) => {
+                    if (data?.success) setBancosPse(data.bancos);
+                })
+                .catch(() => setError('No se pudo cargar la lista de bancos PSE.'));
+        }
+    }, [metodoPago, bancosPse.length]);
 
     useEffect(() => {
         obtenerPartidos()
@@ -143,6 +164,16 @@ export default function Comprar() {
                 return;
             }
         }
+        if (!mostrarTransferencia && metodoPago === 'pse') {
+            if (!form.documento.trim()) {
+                setError('Ingresa tu número de documento (lo exige PSE).');
+                return;
+            }
+            if (!bancoSeleccionado) {
+                setError('Selecciona tu banco para pagar con PSE.');
+                return;
+            }
+        }
 
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
         const affToken = localStorage.getItem(AFF_STORAGE_KEY) || '';
@@ -150,6 +181,45 @@ export default function Comprar() {
         enviandoRef.current = true;
         setCargando(true);
         try {
+            if (!mostrarTransferencia && metodoPago === 'pse') {
+                const data = await crearPSE({
+                    nombre: form.nombre.trim(),
+                    correo: form.correo.trim(),
+                    celular: form.celular.trim(),
+                    partido_id: partidoId,
+                    valor: valorAPagar,
+                    tipo_documento: form.tipo_documento,
+                    documento: form.documento.trim(),
+                    financial_institution_code: bancoSeleccionado,
+                    ref,
+                    aff_token: affToken,
+                });
+                if (data?.success && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    setError(data?.error || 'No se pudo iniciar el pago por PSE.');
+                }
+                return;
+            }
+
+            if (!mostrarTransferencia && metodoPago === 'bancolombia') {
+                const data = await crearBancolombia({
+                    nombre: form.nombre.trim(),
+                    correo: form.correo.trim(),
+                    celular: form.celular.trim(),
+                    partido_id: partidoId,
+                    valor: valorAPagar,
+                    ref,
+                    aff_token: affToken,
+                });
+                if (data?.success && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    setError(data?.error || 'No se pudo iniciar el pago con Botón Bancolombia.');
+                }
+                return;
+            }
+
             if (mostrarTransferencia) {
                 if (!comprobante) {
                     setError('Adjunta la foto o captura del comprobante de la transferencia.');
@@ -418,6 +488,93 @@ export default function Comprar() {
                         />
                     </div>
 
+                    {/* Selector de método de pago (solo aplica cuando NO se eligió "Transferencia") */}
+                    {!mostrarTransferencia && (
+                        <div>
+                            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Método de pago</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setMetodoPago('wompi')}
+                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'wompi' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                >
+                                    💳 Tarjeta / Nequi / Daviplata
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMetodoPago('pse')}
+                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'pse' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                >
+                                    🏦 PSE
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMetodoPago('bancolombia')}
+                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'bancolombia' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                >
+                                    🏛️ Botón Bancolombia
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled
+                                    title="Bre-B todavía no está habilitado por Wompi para esta cuenta"
+                                    className="py-3 rounded-xl text-sm font-bold border-2 border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60"
+                                >
+                                    🔜 Bre-B — Próximamente
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Documento + banco: solo PSE los exige */}
+                    {!mostrarTransferencia && metodoPago === 'pse' && (
+                        <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-slate-900/60 p-4 flex flex-col gap-3">
+                            <div className="flex gap-2">
+                                <div className="w-28">
+                                    <label htmlFor="comprar-tipo-documento" className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Tipo</label>
+                                    <select
+                                        id="comprar-tipo-documento"
+                                        name="tipo_documento"
+                                        value={form.tipo_documento}
+                                        onChange={handleChange}
+                                        className="w-full rounded-lg bg-white dark:bg-slate-900 border border-zinc-200 dark:border-white/10 px-2 py-3 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    >
+                                        <option value="CC">CC</option>
+                                        <option value="CE">CE</option>
+                                        <option value="NIT">NIT</option>
+                                    </select>
+                                </div>
+                                <div className="flex-1">
+                                    <label htmlFor="comprar-documento" className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de documento</label>
+                                    <input
+                                        id="comprar-documento"
+                                        type="text"
+                                        name="documento"
+                                        inputMode="numeric"
+                                        value={form.documento}
+                                        onChange={handleChange}
+                                        placeholder="Ej: 1099888777"
+                                        className="w-full rounded-lg bg-white dark:bg-slate-900 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="comprar-banco" className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Banco</label>
+                                <select
+                                    id="comprar-banco"
+                                    value={bancoSeleccionado}
+                                    onChange={(e) => setBancoSeleccionado(e.target.value)}
+                                    className="w-full rounded-lg bg-white dark:bg-slate-900 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                >
+                                    <option value="">Selecciona tu banco...</option>
+                                    {bancosPse.map((b) => (
+                                        <option key={b.codigo} value={b.codigo}>{b.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
                     <label className="flex items-start gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                         <input
                             type="checkbox"
@@ -516,10 +673,14 @@ export default function Comprar() {
                         className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform disabled:opacity-60 text-base"
                     >
                         {cargando
-                            ? (mostrarTransferencia ? 'Enviando comprobante...' : 'Generando link de pago...')
+                            ? (mostrarTransferencia ? 'Enviando comprobante...' : 'Generando tu pago...')
                             : mostrarTransferencia
                                 ? 'Enviar comprobante de transferencia'
-                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''} con Wompi`}
+                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
+                                    metodoPago === 'pse' ? ' con PSE'
+                                        : metodoPago === 'bancolombia' ? ' con Botón Bancolombia'
+                                            : ' con Wompi'
+                                )}
                     </button>
 
                     <button

@@ -88,6 +88,24 @@ export async function crearTransferencia({ nombre, correo, celular, partido_id, 
     return data;
 }
 
+export function obtenerBancosPse() {
+    return request('/api/transacciones/bancos-pse');
+}
+
+export function crearPSE({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token }) {
+    return request('/api/transacciones/crear-pse', {
+        method: 'POST',
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token }),
+    });
+}
+
+export function crearBancolombia({ nombre, correo, celular, partido_id, valor, ref, aff_token }) {
+    return request('/api/transacciones/crear-bancolombia', {
+        method: 'POST',
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token }),
+    });
+}
+
 export function obtenerInfoPolla(token_acceso) {
     const params = new URLSearchParams({ token_acceso });
     return request(`/api/polla/info?${params.toString()}`);
