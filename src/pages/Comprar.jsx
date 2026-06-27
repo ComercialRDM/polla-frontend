@@ -10,6 +10,7 @@ import { obtenerSesion } from '../utils/sesion';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
 import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
+import brebQr from '../assets/breb-qr.png';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 const AFF_STORAGE_KEY = 'polla_aff_token';
@@ -36,6 +37,12 @@ const CUENTA_TRANSFERENCIA = {
     titular: 'La Retoucherie de Manuela',
     nit: '901765354',
 };
+
+// Bre-B no tiene integración automática todavía (no existe API/webhook
+// público para comercio electrónico, solo la "llave" para transferencias
+// manuales desde la app del banco) — se trata igual que la transferencia
+// bancaria: el cliente paga manualmente y sube el comprobante.
+const BREB_LLAVE = '0092669218';
 
 export default function Comprar() {
     const [searchParams] = useSearchParams();
@@ -220,9 +227,9 @@ export default function Comprar() {
                 return;
             }
 
-            if (mostrarTransferencia) {
+            if (mostrarTransferencia || metodoPago === 'breb') {
                 if (!comprobante) {
-                    setError('Adjunta la foto o captura del comprobante de la transferencia.');
+                    setError('Adjunta la foto o captura del comprobante de pago.');
                     setCargando(false);
                     return;
                 }
@@ -233,6 +240,7 @@ export default function Comprar() {
                     partido_id: partidoId,
                     valor: valorAPagar,
                     comprobante,
+                    metodo: metodoPago === 'breb' ? 'BREB' : undefined,
                     ref,
                     aff_token: affToken,
                 });
@@ -240,7 +248,7 @@ export default function Comprar() {
                     setMensajeExito(data.mensaje || 'Tu comprobante fue recibido. Te avisaremos cuando se confirme el pago.');
                     setEnviado(true);
                 } else {
-                    setError(data?.error || 'No se pudo registrar la transferencia.');
+                    setError(data?.error || 'No se pudo registrar el pago.');
                 }
                 return;
             }
@@ -516,11 +524,11 @@ export default function Comprar() {
                                 </button>
                                 <button
                                     type="button"
-                                    disabled
-                                    title="Bre-B todavía no está habilitado por Wompi para esta cuenta"
-                                    className="py-3 rounded-xl text-sm font-bold border-2 border-zinc-200 dark:border-white/10 text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60"
+                                    onClick={() => setMetodoPago('breb')}
+                                    title="Bre-B: transferencia manual desde tu app bancaria (no hay confirmación automática todavía)"
+                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'breb' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
                                 >
-                                    🔜 Bre-B — Próximamente
+                                    🟢 Bre-B
                                 </button>
                             </div>
                         </div>
@@ -572,6 +580,33 @@ export default function Comprar() {
                                     ))}
                                 </select>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Bre-B: sin integración automática (no hay API/webhook público de
+                        comercio electrónico todavía) — el cliente transfiere manualmente
+                        a la llave y sube el comprobante, igual que con transferencia. */}
+                    {!mostrarTransferencia && metodoPago === 'breb' && (
+                        <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm backdrop-blur-lg p-4 flex flex-col items-center gap-3">
+                            <img src={brebQr} alt="QR Bre-B para pagar" className="w-48 h-auto rounded-lg" />
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm">
+                                Llave Bre-B: <span className="font-mono">{BREB_LLAVE}</span>
+                            </p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs text-center">
+                                Escanea el QR o ingresa la llave desde la app de tu banco. El pago no se confirma al instante — sube el comprobante abajo y activamos tu bono en minutos.
+                            </p>
+                        </div>
+                    )}
+
+                    {metodoPago === 'breb' && !mostrarTransferencia && (
+                        <div>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Comprobante de pago (foto o captura)</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setComprobante(e.target.files?.[0] || null)}
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-600 dark:text-zinc-300 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-400 file:text-slate-950 file:font-bold file:cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            />
                         </div>
                     )}
 
@@ -673,14 +708,16 @@ export default function Comprar() {
                         className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform disabled:opacity-60 text-base"
                     >
                         {cargando
-                            ? (mostrarTransferencia ? 'Enviando comprobante...' : 'Generando tu pago...')
+                            ? ((mostrarTransferencia || metodoPago === 'breb') ? 'Enviando comprobante...' : 'Generando tu pago...')
                             : mostrarTransferencia
                                 ? 'Enviar comprobante de transferencia'
-                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
-                                    metodoPago === 'pse' ? ' con PSE'
-                                        : metodoPago === 'bancolombia' ? ' con Botón Bancolombia'
-                                            : ' con Wompi'
-                                )}
+                                : metodoPago === 'breb'
+                                    ? 'Ya pagué, enviar comprobante'
+                                    : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
+                                        metodoPago === 'pse' ? ' con PSE'
+                                            : metodoPago === 'bancolombia' ? ' con Botón Bancolombia'
+                                                : ' con Wompi'
+                                    )}
                     </button>
 
                     <button

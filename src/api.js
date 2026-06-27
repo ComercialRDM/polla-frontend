@@ -58,7 +58,7 @@ export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref,
     });
 }
 
-export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, ref, aff_token }) {
+export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, metodo, ref, aff_token }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('correo', correo);
@@ -66,6 +66,7 @@ export async function crearTransferencia({ nombre, correo, celular, partido_id, 
     formData.append('partido_id', partido_id);
     formData.append('valor', valor);
     formData.append('comprobante', comprobante);
+    if (metodo) formData.append('metodo', metodo);
     if (ref) formData.append('ref', ref);
     if (aff_token) formData.append('aff_token', aff_token);
 
