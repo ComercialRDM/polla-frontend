@@ -11,6 +11,9 @@ import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComp
 import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
 import brebQr from '../assets/breb-qr.png';
+import wompiLogo from '../assets/Wompi_Logo.jpg';
+import pseLogo from '../assets/boton-pse.png';
+import bancolombiaLogo from '../assets/bancolombia-logo.png';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 const AFF_STORAGE_KEY = 'polla_aff_token';
@@ -43,6 +46,25 @@ const CUENTA_TRANSFERENCIA = {
 // manuales desde la app del banco) — se trata igual que la transferencia
 // bancaria: el cliente paga manualmente y sube el comprobante.
 const BREB_LLAVE = '0092669218';
+
+// Wordmark oficial de Bre-B recreado en CSS (degradado horizontal azul →
+// verde eléctrico), según su manual de identidad visual — no hay un archivo
+// de logo suelto, solo la tarjeta completa del QR.
+function LogoBreB({ className = '' }) {
+    return (
+        <span
+            className={`font-black italic tracking-tight ${className}`}
+            style={{
+                backgroundImage: 'linear-gradient(90deg, #00B8E6 0%, #2EE6A6 60%, #00FF85 100%)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+            }}
+        >
+            Bre-B
+        </span>
+    );
+}
 
 export default function Comprar() {
     const [searchParams] = useSearchParams();
@@ -504,31 +526,40 @@ export default function Comprar() {
                                 <button
                                     type="button"
                                     onClick={() => setMetodoPago('wompi')}
-                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'wompi' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                    className={`py-3 px-3 rounded-xl border-2 transition-colors flex items-center justify-center gap-2 ${metodoPago === 'wompi' ? 'border-amber-400 bg-amber-400/10' : 'border-zinc-200 dark:border-white/10'}`}
                                 >
-                                    💳 Tarjeta / Nequi / Daviplata
+                                    <img src={wompiLogo} alt="" className="h-5 w-auto object-contain rounded-sm" />
+                                    <span className={`text-xs font-bold ${metodoPago === 'wompi' ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                        Tarjeta / Nequi / Daviplata
+                                    </span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setMetodoPago('pse')}
-                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'pse' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                    className={`py-3 px-3 rounded-xl border-2 transition-colors flex items-center justify-center gap-2 ${metodoPago === 'pse' ? 'border-amber-400 bg-amber-400/10' : 'border-zinc-200 dark:border-white/10'}`}
                                 >
-                                    🏦 PSE
+                                    <img src={pseLogo} alt="" className="h-6 w-auto object-contain" />
+                                    <span className={`text-sm font-bold ${metodoPago === 'pse' ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                        PSE
+                                    </span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setMetodoPago('bancolombia')}
-                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'bancolombia' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                    className={`py-3 px-3 rounded-xl border-2 transition-colors flex items-center justify-center gap-2 ${metodoPago === 'bancolombia' ? 'border-amber-400 bg-amber-400/10' : 'border-zinc-200 dark:border-white/10'}`}
                                 >
-                                    🏛️ Botón Bancolombia
+                                    <img src={bancolombiaLogo} alt="" className="h-6 w-6 object-contain shrink-0" />
+                                    <span className={`text-sm font-bold ${metodoPago === 'bancolombia' ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                        Botón Bancolombia
+                                    </span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setMetodoPago('breb')}
                                     title="Bre-B: transferencia manual desde tu app bancaria (no hay confirmación automática todavía)"
-                                    className={`py-3 rounded-xl text-sm font-bold border-2 transition-colors ${metodoPago === 'breb' ? 'border-amber-400 bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400'}`}
+                                    className={`py-3 px-3 rounded-xl border-2 transition-colors flex items-center justify-center ${metodoPago === 'breb' ? 'border-amber-400 bg-amber-400/10' : 'border-zinc-200 dark:border-white/10'} bg-black`}
                                 >
-                                    🟢 Bre-B
+                                    <LogoBreB className="text-lg" />
                                 </button>
                             </div>
                         </div>
