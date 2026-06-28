@@ -18,7 +18,6 @@ const IniciarSesion = lazy(() => import('./pages/IniciarSesion'));
 const RecuperarPassword = lazy(() => import('./pages/RecuperarPassword'));
 const Polla = lazy(() => import('./pages/Polla'));
 const Admin = lazy(() => import('./pages/Admin'));
-const RedimirCodigo = lazy(() => import('./pages/RedimirCodigo'));
 const AdminQR = lazy(() => import('./pages/AdminQR'));
 const Terminos = lazy(() => import('./pages/Terminos'));
 const Privacidad = lazy(() => import('./pages/Privacidad'));
@@ -114,7 +113,6 @@ function AppRoutes() {
                     <Route path="/anexo" element={<Anexo />} />
                     <Route path="/resultados" element={<ResultadosFinales />} />
                     <Route path="/dashboardpollardm" element={<Admin />} />
-                    <Route path="/redimircodigordm" element={<RedimirCodigo />} />
                     <Route path="/adminqr" element={<AdminQR />} />
                 </Routes>
             </Suspense>

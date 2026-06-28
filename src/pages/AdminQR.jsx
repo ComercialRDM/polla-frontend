@@ -4,6 +4,8 @@ import { localLogin, localBuscarBono, localEstadisticas, localRedimirBono, local
 import EscanerQR from '../components/EscanerQR';
 
 const STORAGE_KEY = 'polla_adminqr_token';
+const SEDE_STORAGE_KEY = 'polla_adminqr_sede';
+const SEDES = ['Aranjuez', 'Viva', 'Buenavista'];
 
 function formatPesos(v) {
     return '$' + Number(v).toLocaleString('es-CO');
@@ -207,7 +209,7 @@ function PantallaLogin({ onLogin }) {
 }
 
 // ── Tarjeta del bono ────────────────────────────────────────────────────────
-function TarjetaBono({ bono, tokenBono, sesionLocal, onRedimir, onNuevo }) {
+function TarjetaBono({ bono, tokenBono, sesionLocal, sede, onRedimir, onNuevo }) {
     const [monto, setMonto] = useState('');
     const [error, setError] = useState('');
     const [cargando, setCargando] = useState(false);
@@ -221,7 +223,7 @@ function TarjetaBono({ bono, tokenBono, sesionLocal, onRedimir, onNuevo }) {
         setError('');
         setCargando(true);
         try {
-            const data = await localRedimirBono(sesionLocal.token, tokenBono, montoFinal);
+            const data = await localRedimirBono(sesionLocal.token, tokenBono, montoFinal, sede);
             if (data?.success) {
                 setExito(data);
                 setMonto('');
@@ -348,7 +350,11 @@ function TarjetaBono({ bono, tokenBono, sesionLocal, onRedimir, onNuevo }) {
                             <div key={i} className="flex items-center justify-between gap-2 py-2 border-b border-white/5 last:border-0">
                                 <div>
                                     <p className="text-white text-sm font-bold">{formatPesos(r.monto)}</p>
-                                    <p className="text-zinc-500 text-xs">{r.nombre_local || r.local_usuario} · {formatFecha(r.created_at)}</p>
+                                    <p className="text-zinc-500 text-xs">
+                                        {r.sede && <span className="text-[#FCD116] font-semibold">{r.sede}</span>}
+                                        {r.sede && ' · '}
+                                        {r.nombre_local || r.local_usuario} · {formatFecha(r.created_at)}
+                                    </p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-zinc-400 text-xs">{formatPesos(r.saldo_antes)} → {formatPesos(r.saldo_despues)}</p>
@@ -373,6 +379,7 @@ function TarjetaBono({ bono, tokenBono, sesionLocal, onRedimir, onNuevo }) {
 export default function AdminQR() {
     const [searchParams] = useSearchParams();
     const [sesionLocal, setSesionLocal] = useState(null);
+    const [sede, setSede] = useState(() => localStorage.getItem(SEDE_STORAGE_KEY) || '');
     const [tokenBono, setTokenBono] = useState(null);
     const [bono, setBono] = useState(null);
     const [mostrarScanner, setMostrarScanner] = useState(false);
@@ -452,12 +459,18 @@ export default function AdminQR() {
                     saldo_antes: resultado.saldo_antes,
                     saldo_despues: resultado.saldo_despues,
                     created_at: new Date().toISOString(),
+                    sede,
                     nombre_local: sesionLocal.nombreLocal,
                     local_usuario: sesionLocal.usuario,
                 },
                 ...(prev.redenciones || []),
             ],
         } : prev);
+    }
+
+    function handleSede(valor) {
+        setSede(valor);
+        localStorage.setItem(SEDE_STORAGE_KEY, valor);
     }
 
     function handleNuevo() {
@@ -524,6 +537,21 @@ export default function AdminQR() {
                     >
                         Salir
                     </button>
+                </div>
+
+                {/* Sede — obligatoria antes de escanear/redimir, queda guardada para la sesión */}
+                <div className="mb-5">
+                    <label className="block text-zinc-400 text-xs font-semibold uppercase tracking-wide mb-1.5">Sede donde estás atendiendo</label>
+                    <select
+                        value={sede}
+                        onChange={(e) => handleSede(e.target.value)}
+                        className="w-full rounded-xl bg-zinc-900 border border-white/10 px-4 py-3 text-white font-bold focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                    >
+                        <option value="">Selecciona una sede...</option>
+                        {SEDES.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                        ))}
+                    </select>
                 </div>
 
                 {/* Estadísticas rápidas */}
@@ -599,6 +627,7 @@ export default function AdminQR() {
                         bono={bono}
                         tokenBono={tokenBono}
                         sesionLocal={sesionLocal}
+                        sede={sede}
                         onRedimir={handleRedimir}
                         onNuevo={handleNuevo}
                     />
@@ -606,12 +635,13 @@ export default function AdminQR() {
                     <div className="flex flex-col gap-3">
                         {!mostrarScanner ? (
                             <button
-                                onClick={() => { setMostrarScanner(true); setErrorBono(''); }}
-                                className="w-full flex flex-col items-center justify-center gap-3 py-10 rounded-2xl bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-[#FCD116]/50 transition-colors active:scale-95"
+                                onClick={() => { if (!sede) { setErrorBono('Selecciona primero la sede.'); return; } setMostrarScanner(true); setErrorBono(''); }}
+                                disabled={!sede}
+                                className="w-full flex flex-col items-center justify-center gap-3 py-10 rounded-2xl bg-zinc-900 border-2 border-dashed border-zinc-700 hover:border-[#FCD116]/50 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span className="text-5xl">📷</span>
                                 <p className="text-white font-bold">Escanear código QR del bono</p>
-                                <p className="text-zinc-500 text-xs">Apunta la cámara al QR del bono del cliente</p>
+                                <p className="text-zinc-500 text-xs">Apunta la cámara al QR, o sube la foto que te mandaron por WhatsApp</p>
                             </button>
                         ) : (
                             <div className="rounded-2xl bg-zinc-900 border border-white/10 p-4 flex flex-col gap-3">

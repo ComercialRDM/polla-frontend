@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -16,6 +16,7 @@ const SECCIONES = [
     { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
     { id: 'influenciadores', label: '🎖️ Influenciadores' },
     { id: 'localesqr',       label: 'Locales QR' },
+    { id: 'redenciones',     label: '🧾 Redenciones' },
     { id: 'seguridad',       label: '🔐 Seguridad' },
 ];
 
@@ -122,6 +123,17 @@ export default function Admin() {
     const [reporteData,        setReporteData]        = useState(null);
     const [reporteCargando,    setReporteCargando]    = useState(false);
     const [reporteError,       setReporteError]       = useState('');
+
+    // ── Redenciones de bonos por sede ────────────────────────────────────────
+    const [resumenDiaFecha,    setResumenDiaFecha]    = useState(() => new Date().toISOString().slice(0, 10));
+    const [resumenDia,         setResumenDia]         = useState(null);
+    const [resumenDiaCargando, setResumenDiaCargando] = useState(false);
+    const [resumenDiaError,    setResumenDiaError]    = useState('');
+    const [redFechaInicio,     setRedFechaInicio]     = useState('');
+    const [redFechaFin,        setRedFechaFin]        = useState('');
+    const [redData,            setRedData]            = useState(null);
+    const [redCargando,        setRedCargando]        = useState(false);
+    const [redError,           setRedError]           = useState('');
 
     const [seccionActiva, setSeccionActiva] = useState('transacciones');
 
@@ -665,6 +677,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
         if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); cargarAfiliados(); cargarComisiones(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
+        if (seccionActiva === 'redenciones' && token) cargarResumenDia(resumenDiaFecha);
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
         }
@@ -927,6 +940,70 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 filas.map(Object.values),
                 nombre,
                 `Apuestas: ${p.equipo_local} vs ${p.equipo_visitante}`
+            );
+        } finally {
+            setExportando('');
+        }
+    }
+
+    async function cargarResumenDia(fecha) {
+        setResumenDiaCargando(true);
+        setResumenDiaError('');
+        try {
+            const data = await adminRedencionesResumen(token, fecha);
+            if (data?.success) setResumenDia(data);
+            else setResumenDiaError(data?.error || 'Error cargando el resumen del día');
+        } catch {
+            setResumenDiaError('Error de conexión');
+        } finally {
+            setResumenDiaCargando(false);
+        }
+    }
+
+    async function generarReporteRedenciones() {
+        if (!redFechaInicio || !redFechaFin) {
+            setRedError('Selecciona fecha de inicio y fin.');
+            return;
+        }
+        setRedCargando(true);
+        setRedError('');
+        setRedData(null);
+        try {
+            const data = await adminRedencionesExport(token, redFechaInicio, redFechaFin);
+            if (data?.success) setRedData(data.redenciones);
+            else setRedError(data?.error || 'Error generando el reporte');
+        } catch {
+            setRedError('Error de conexión');
+        } finally {
+            setRedCargando(false);
+        }
+    }
+
+    async function exportarRedenciones(formato) {
+        if (!redData || redData.length === 0) return;
+        setExportando(formato);
+        try {
+            const filas = redData.map(r => ({
+                Fecha: new Date(r.fechaHora).toLocaleDateString('es-CO'),
+                Hora: new Date(r.fechaHora).toLocaleTimeString('es-CO'),
+                Sede: r.sede,
+                Cliente: r.nombre,
+                Celular: r.celular,
+                'Monto redimido': r.monto,
+                'Saldo antes': r.saldoAntes,
+                'Saldo después': r.saldoDespues,
+                'Valor del bono': r.valorPagado,
+                'Atendido por': r.atendidoPor,
+                Token: r.tokenAcceso,
+            }));
+            const nombre = `Redenciones_${redFechaInicio}_a_${redFechaFin}`;
+            if (formato === 'csv') exportarCSV(filas, nombre, Object.keys(filas[0]));
+            if (formato === 'excel') await exportarExcel(filas, nombre, 'Redenciones');
+            if (formato === 'pdf') await exportarPDF(
+                Object.keys(filas[0]),
+                filas.map(Object.values),
+                nombre,
+                `Redenciones de bonos: ${redFechaInicio} a ${redFechaFin}`
             );
         } finally {
             setExportando('');
@@ -2473,6 +2550,136 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         )}
                                     </div>
                                 ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                )}
+
+                {/* Redenciones de bonos por sede */}
+                {seccionActiva === 'redenciones' && (
+                <div className="flex flex-col gap-5">
+                    {/* Cierre del día */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                            <h2 className="text-base font-bold text-zinc-900 dark:text-white">🧾 Cierre del día por sede</h2>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="date"
+                                    value={resumenDiaFecha}
+                                    onChange={(e) => { setResumenDiaFecha(e.target.value); cargarResumenDia(e.target.value); }}
+                                    className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                />
+                                <button
+                                    onClick={() => cargarResumenDia(resumenDiaFecha)}
+                                    disabled={resumenDiaCargando}
+                                    className="text-xs text-zinc-500 border border-zinc-300 dark:border-white/10 rounded px-2 py-2 hover:text-zinc-900 dark:hover:text-white disabled:opacity-60"
+                                >
+                                    {resumenDiaCargando ? 'Cargando...' : 'Actualizar'}
+                                </button>
+                            </div>
+                        </div>
+                        {resumenDiaError && <p className="text-red-400 text-sm mb-2">{resumenDiaError}</p>}
+                        {resumenDia && (
+                            resumenDia.porSede.length === 0 ? (
+                                <p className="text-zinc-400 text-sm">No hubo canjes ese día.</p>
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {resumenDia.porSede.map((s) => (
+                                        <div key={s.sede} className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 p-3">
+                                            <p className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase tracking-wide">{s.sede}</p>
+                                            <p className="text-zinc-900 dark:text-white font-black text-lg">{formatoPesos(s.total)}</p>
+                                            <p className="text-zinc-400 text-xs">{s.cantidad} {s.cantidad === 1 ? 'canje' : 'canjes'}</p>
+                                        </div>
+                                    ))}
+                                    <div className="rounded-lg bg-amber-50 dark:bg-amber-400/10 border border-amber-200 dark:border-amber-400/20 p-3">
+                                        <p className="text-amber-700 dark:text-amber-400 text-[10px] uppercase tracking-wide font-bold">Total del día</p>
+                                        <p className="text-zinc-900 dark:text-white font-black text-lg">{formatoPesos(resumenDia.totalGeneral)}</p>
+                                        <p className="text-zinc-400 text-xs">{resumenDia.cantidadGeneral} canjes</p>
+                                    </div>
+                                </div>
+                            )
+                        )}
+                    </div>
+
+                    {/* Auditoría por rango de fechas */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <h2 className="text-base font-bold text-zinc-900 dark:text-white mb-3">📅 Auditoría de canjes por período</h2>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                            Lista detallada de bonos canjeados (cliente, monto, sede y quién atendió) para comparar contra los servicios reclamados en cada sede.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 items-end flex-wrap">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-zinc-500 dark:text-zinc-400">Desde</label>
+                                <input
+                                    type="date"
+                                    value={redFechaInicio}
+                                    onChange={(e) => { setRedFechaInicio(e.target.value); setRedData(null); }}
+                                    className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-zinc-500 dark:text-zinc-400">Hasta</label>
+                                <input
+                                    type="date"
+                                    value={redFechaFin}
+                                    onChange={(e) => { setRedFechaFin(e.target.value); setRedData(null); }}
+                                    className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                                />
+                            </div>
+                            <button
+                                onClick={generarReporteRedenciones}
+                                disabled={redCargando || !redFechaInicio || !redFechaFin}
+                                className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
+                            >
+                                {redCargando ? 'Generando...' : 'Generar reporte'}
+                            </button>
+                        </div>
+                        {redError && <p className="text-red-400 text-sm mt-2">{redError}</p>}
+
+                        {redData && (
+                            <div className="mt-4">
+                                {redData.length > 0 ? (
+                                    <>
+                                        <div className="flex gap-2 mb-3 flex-wrap">
+                                            <span className="text-xs text-zinc-500 dark:text-zinc-400 self-center">Exportar {redData.length} registros:</span>
+                                            <BtnExport label="CSV" activo={exportando === 'csv'} onClick={() => exportarRedenciones('csv')} color="green" />
+                                            <BtnExport label="Excel" activo={exportando === 'excel'} onClick={() => exportarRedenciones('excel')} color="blue" />
+                                            <BtnExport label="PDF" activo={exportando === 'pdf'} onClick={() => exportarRedenciones('pdf')} color="red" />
+                                        </div>
+                                        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                                    <tr>
+                                                        <th className="px-3 py-2">Fecha / Hora</th>
+                                                        <th className="px-3 py-2">Sede</th>
+                                                        <th className="px-3 py-2">Cliente</th>
+                                                        <th className="px-3 py-2">Monto</th>
+                                                        <th className="px-3 py-2">Saldo después</th>
+                                                        <th className="px-3 py-2">Atendido por</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                                    {redData.map((r, i) => (
+                                                        <tr key={i} className="text-zinc-700 dark:text-zinc-200">
+                                                            <td className="px-3 py-2 text-xs whitespace-nowrap">{new Date(r.fechaHora).toLocaleString('es-CO')}</td>
+                                                            <td className="px-3 py-2 font-semibold text-amber-600 dark:text-amber-400">{r.sede}</td>
+                                                            <td className="px-3 py-2">
+                                                                <div className="font-medium">{r.nombre}</div>
+                                                                <div className="text-zinc-500 dark:text-zinc-400 text-xs">{r.celular}</div>
+                                                            </td>
+                                                            <td className="px-3 py-2 font-bold">{formatoPesos(r.monto)}</td>
+                                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{formatoPesos(r.saldoDespues)}</td>
+                                                            <td className="px-3 py-2 text-xs text-zinc-400">{r.atendidoPor}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-zinc-400 text-sm text-center py-3">No hay canjes en este período.</p>
+                                )}
                             </div>
                         )}
                     </div>

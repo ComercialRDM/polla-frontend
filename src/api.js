@@ -321,14 +321,6 @@ export function localBuscarBono(token, tokenAcceso) {
     });
 }
 
-export function localConsumirBono(token, tokenAcceso) {
-    return request('/api/local/bono/consumir', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ token_acceso: tokenAcceso }),
-    });
-}
-
 export function localEstadisticas(token) {
     return request('/api/local/estadisticas', {
         headers: { Authorization: `Bearer ${token}` },
@@ -348,11 +340,25 @@ export function adminApuestasExport(token, partidoId) {
     });
 }
 
-export function localRedimirBono(token, tokenAcceso, monto) {
+export function localRedimirBono(token, tokenAcceso, monto, sede) {
     return request('/api/local/bono/redimir', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ token_acceso: tokenAcceso, monto }),
+        body: JSON.stringify({ token_acceso: tokenAcceso, monto, sede }),
+    });
+}
+
+export function adminRedencionesResumen(token, fecha) {
+    const params = fecha ? `?fecha=${fecha}` : '';
+    return request(`/api/admin/redenciones/resumen${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminRedencionesExport(token, desde, hasta) {
+    const params = new URLSearchParams({ desde, hasta });
+    return request(`/api/admin/redenciones/export?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
     });
 }
 
