@@ -48,11 +48,11 @@ export const SIEMPRE_GANAS = {
 
 export const FASES_PUNTOS = [
     { fase: 'Grupos', exacto: 100, tendencia: 50, cupos: 1 },
-    { fase: 'Dieciseisavos', exacto: 120, tendencia: 60, cupos: 1 },
+    { fase: 'Dieciseisavos', exacto: 200, tendencia: 100, cupos: 1 },
     { fase: 'Octavos de Final', exacto: 200, tendencia: 100, cupos: 1 },
-    { fase: 'Cuartos de Final', exacto: 250, tendencia: 125, cupos: 2 },
-    { fase: 'Semifinal', exacto: 800, tendencia: 400, cupos: 2 },
-    { fase: 'Gran Final', exacto: 2000, tendencia: 1000, cupos: 4 },
+    { fase: 'Cuartos de Final', exacto: 600, tendencia: 300, cupos: 2 },
+    { fase: 'Semifinal', exacto: 600, tendencia: 300, cupos: 2 },
+    { fase: 'Gran Final', exacto: 1000, tendencia: 500, cupos: 4 },
 ];
 
 export const PUNTOS_EXTRA = [

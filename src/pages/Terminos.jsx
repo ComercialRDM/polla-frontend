@@ -195,11 +195,11 @@ export default function Terminos() {
                             <tbody className="divide-y divide-zinc-100 dark:divide-white/5 text-zinc-700 dark:text-zinc-300">
                                 {[
                                     ['Grupos',              '100 pts', '50 pts'],
-                                    ['Dieciseisavos',       '120 pts', '60 pts'],
+                                    ['Dieciseisavos',       '200 pts', '100 pts'],
                                     ['Octavos de Final',    '200 pts', '100 pts'],
-                                    ['Cuartos de Final',    '250 pts', '125 pts'],
-                                    ['Semifinal',           '800 pts', '400 pts'],
-                                    ['Gran Final',         '2.000 pts','1.000 pts'],
+                                    ['Cuartos de Final',    '600 pts', '300 pts'],
+                                    ['Semifinal',           '600 pts', '300 pts'],
+                                    ['Gran Final',         '1.000 pts','500 pts'],
                                 ].map(([fase, exacto, tend]) => (
                                     <tr key={fase}>
                                         <td className="p-2">{fase}</td>

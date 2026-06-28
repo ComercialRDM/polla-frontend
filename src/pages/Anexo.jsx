@@ -55,11 +55,11 @@ export default function Anexo() {
                             <tbody className="divide-y divide-zinc-100 dark:divide-white/5 text-zinc-700 dark:text-zinc-300">
                                 {[
                                     ['Grupos',              '100', '50',    '1'],
-                                    ['Dieciseisavos',       '120', '60',    '1'],
+                                    ['Dieciseisavos',       '200', '100',   '1'],
                                     ['Octavos de Final',    '200', '100',   '1'],
-                                    ['Cuartos de Final',    '250', '125',   '2'],
-                                    ['Semifinal',           '800', '400',   '2'],
-                                    ['Gran Final',         '2.000','1.000', '4'],
+                                    ['Cuartos de Final',    '600', '300',   '2'],
+                                    ['Semifinal',           '600', '300',   '2'],
+                                    ['Gran Final',         '1.000','500',   '4'],
                                 ].map(([fase, exacto, tend, cupos]) => (
                                     <tr key={fase}>
                                         <td className="p-2">{fase}</td>
