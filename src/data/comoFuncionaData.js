@@ -46,11 +46,15 @@ export const SIEMPRE_GANAS = {
     ],
 };
 
+// `claves` = valores reales de la columna partidos.fase en el backend que
+// agrupa cada fila (ver src/config/puntajesFase.js en polla-backend). Se usa
+// para resaltar la fase actual del torneo a partir de los partidos reales,
+// sin tener que actualizar esto a mano según avance el Mundial.
 export const FASES_PUNTOS = [
-    { fase: 'Fase de Grupos', exacto: 100, tendencia: 50, cupos: 1 },
-    { fase: 'Dieciseisavos y Octavos de Final', exacto: 200, tendencia: 100, cupos: 1 },
-    { fase: 'Cuartos de Final, Semifinal y Tercer Puesto', exacto: 600, tendencia: 300, cupos: 2 },
-    { fase: 'Gran Final', exacto: 2000, tendencia: 1000, cupos: 4 },
+    { fase: 'Fase de Grupos', exacto: 100, tendencia: 50, cupos: 1, claves: ['grupos'] },
+    { fase: 'Dieciseisavos y Octavos de Final', exacto: 200, tendencia: 100, cupos: 1, claves: ['dieciseisavos', 'octavos'] },
+    { fase: 'Cuartos de Final, Semifinal y Tercer Puesto', exacto: 600, tendencia: 300, cupos: 2, claves: ['cuartos', 'semifinal'] },
+    { fase: 'Gran Final', exacto: 2000, tendencia: 1000, cupos: 4, claves: ['final'] },
 ];
 
 export const PUNTOS_EXTRA = [

@@ -1,13 +1,39 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Share2, UserPlus, Star } from 'lucide-react';
 import { FASES_PUNTOS, PUNTOS_EXTRA } from '../../data/comoFuncionaData';
+import { obtenerPartidos } from '../../api';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
 
 const ICONOS = { Share2, UserPlus };
 
+// La fase "actual" es la del partido sin cerrar mas proximo (el siguiente en
+// jugarse). Si ya no queda ninguno sin cerrar, el torneo termino: se toma la
+// fase del ultimo partido jugado, para que la Gran Final quede marcada.
+function calcularFaseActual(partidos) {
+    if (!partidos || partidos.length === 0) return null;
+
+    const pendientes = partidos
+        .filter((p) => p.estado !== 'cerrado')
+        .sort((a, b) => new Date(a.fecha_hora_inicio) - new Date(b.fecha_hora_inicio));
+    if (pendientes.length > 0) return pendientes[0].fase;
+
+    const jugados = [...partidos].sort((a, b) => new Date(b.fecha_hora_inicio) - new Date(a.fecha_hora_inicio));
+    return jugados[0]?.fase ?? null;
+}
+
 export default function PuntosFasesSection() {
     const fadeUp = useFadeUp();
     const stagger = useStaggerContainer(0.07);
+    const [faseActual, setFaseActual] = useState(null);
+
+    useEffect(() => {
+        obtenerPartidos()
+            .then((data) => {
+                if (data?.success) setFaseActual(calcularFaseActual(data.partidos));
+            })
+            .catch(() => {});
+    }, []);
 
     return (
         <section id="puntos" className="w-full bg-white dark:bg-zinc-950 px-6 py-24 sm:py-32 print:break-inside-avoid-page">
@@ -32,17 +58,27 @@ export default function PuntosFasesSection() {
                     viewport={VIEWPORT_ONCE}
                     className="flex flex-col gap-3"
                 >
-                    {FASES_PUNTOS.map((f) => (
+                    {FASES_PUNTOS.map((f) => {
+                        const esActual = f.claves?.includes(faseActual);
+                        return (
                         <motion.div
                             key={f.fase}
                             variants={fadeUp}
                             whileHover={{ scale: 1.01 }}
                             transition={{ duration: 0.25 }}
-                            className="cf-card print:break-inside-avoid flex items-center justify-between gap-4 rounded-2xl border border-zinc-100 dark:border-white/10 bg-zinc-50 dark:bg-white/5 px-6 py-5 hover:bg-zinc-100 dark:hover:bg-white/10"
+                            className={`cf-card print:break-inside-avoid flex items-center justify-between gap-4 rounded-2xl border px-6 py-5 hover:bg-zinc-100 dark:hover:bg-white/10 ${esActual ? 'border-amber-400 bg-amber-400/10 dark:bg-amber-400/10' : 'border-zinc-100 dark:border-white/10 bg-zinc-50 dark:bg-white/5'}`}
                         >
-                            <p className="font-bold text-zinc-950 dark:text-white text-base sm:text-lg w-40 sm:w-56 shrink-0">
-                                {f.fase}
-                            </p>
+                            <div className="flex flex-col gap-1.5 w-40 sm:w-56 shrink-0">
+                                {esActual && (
+                                    <span className="inline-flex items-center gap-1 self-start text-[10px] font-black uppercase tracking-wide text-amber-700 dark:text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-full">
+                                        <Star className="w-3 h-3" fill="currentColor" aria-hidden="true" />
+                                        Fase actual
+                                    </span>
+                                )}
+                                <p className="font-bold text-zinc-950 dark:text-white text-base sm:text-lg">
+                                    {f.fase}
+                                </p>
+                            </div>
                             <div className="flex items-center gap-6 sm:gap-10 ml-auto text-right">
                                 <div>
                                     <p className="font-display text-2xl sm:text-3xl text-amber-600 dark:text-amber-400 leading-none">{f.exacto}</p>
@@ -54,7 +90,8 @@ export default function PuntosFasesSection() {
                                 </div>
                             </div>
                         </motion.div>
-                    ))}
+                        );
+                    })}
                 </motion.div>
 
                 <div className="mt-16">
