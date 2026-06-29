@@ -51,14 +51,32 @@ export function votarFlash({ celular, partido_id, local, visitante }) {
     });
 }
 
-export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref, aff_token }) {
+// `atribucion` = el objeto de src/lib/attribution.js getStoredAttribution()
+// (utm_source/medium/campaign/content/term, referrer, landing_page,
+// first_touch_at). Se manda tal cual con nombres snake_case porque asi los
+// espera el backend (ver src/utils/atribucion.js en polla-backend).
+function camposAtribucion(atribucion) {
+    if (!atribucion) return {};
+    return {
+        utm_source: atribucion.utmSource,
+        utm_medium: atribucion.utmMedium,
+        utm_campaign: atribucion.utmCampaign,
+        utm_content: atribucion.utmContent,
+        utm_term: atribucion.utmTerm,
+        referrer: atribucion.referrer,
+        landing_page: atribucion.landingPage,
+        first_touch_at: atribucion.firstTouchAt,
+    };
+}
+
+export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref, aff_token, atribucion }) {
     return request('/api/transacciones/crear-link', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token, ...camposAtribucion(atribucion) }),
     });
 }
 
-export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, metodo, ref, aff_token }) {
+export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, metodo, ref, aff_token, atribucion }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('correo', correo);
@@ -69,6 +87,9 @@ export async function crearTransferencia({ nombre, correo, celular, partido_id, 
     if (metodo) formData.append('metodo', metodo);
     if (ref) formData.append('ref', ref);
     if (aff_token) formData.append('aff_token', aff_token);
+    Object.entries(camposAtribucion(atribucion)).forEach(([clave, valorCampo]) => {
+        if (valorCampo) formData.append(clave, valorCampo);
+    });
 
     const res = await fetch(`${API_BASE}/api/transacciones/crear-transferencia`, {
         method: 'POST',
@@ -93,17 +114,17 @@ export function obtenerBancosPse() {
     return request('/api/transacciones/bancos-pse');
 }
 
-export function crearPSE({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token }) {
+export function crearPSE({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token, atribucion }) {
     return request('/api/transacciones/crear-pse', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token, ...camposAtribucion(atribucion) }),
     });
 }
 
-export function crearBancolombia({ nombre, correo, celular, partido_id, valor, ref, aff_token }) {
+export function crearBancolombia({ nombre, correo, celular, partido_id, valor, ref, aff_token, atribucion }) {
     return request('/api/transacciones/crear-bancolombia', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token, ...camposAtribucion(atribucion) }),
     });
 }
 
@@ -498,6 +519,25 @@ export function registrarClicAfiliado({ codigo_afiliado, utm_source, utm_medium,
     return request('/api/referidos/clic', {
         method: 'POST',
         body: JSON.stringify({ codigo_afiliado, utm_source, utm_medium, utm_campaign }),
+    });
+}
+
+export function adminVentasPorCanal(token, fecha_inicio, fecha_fin) {
+    const params = fecha_inicio && fecha_fin ? `?fecha_inicio=${fecha_inicio}&fecha_fin=${fecha_fin}` : '';
+    return request(`/api/admin/ventas-por-canal${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminVentasPorCampana(token) {
+    return request('/api/admin/ventas-por-campana', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminRankingAmigos(token) {
+    return request('/api/admin/ranking-amigos', {
+        headers: { Authorization: `Bearer ${token}` },
     });
 }
 

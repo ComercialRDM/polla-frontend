@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
 import { obtenerMarcadorPendiente, limpiarMarcadorPendiente } from '../utils/marcadorPendiente';
 import { obtenerSesion } from '../utils/sesion';
+import { trackPurchase } from '../lib/analytics';
 
 const INTENTOS_MAX = 6;
 const INTERVALO_MS = 3000;
@@ -68,6 +69,16 @@ export default function Gracias() {
                 if (cancelado) return;
                 if (data?.acceso) {
                     await confirmarMarcadorPendiente(data);
+                    // purchase: solo aqui, porque data.acceso=true significa que el
+                    // backend ya confirmo estado_pago='APROBADO' para este token (no
+                    // se dispara en 'verificando'/'demorado'). trackPurchase tiene su
+                    // propia guardia anti-duplicado por transactionId (el token).
+                    trackPurchase({
+                        transactionId: token,
+                        value: data.valor_pagado,
+                        currency: 'COP',
+                        items: [{ item_id: String(data.valor_pagado ?? token), item_name: 'Bono Retoucherie', price: data.valor_pagado, quantity: 1 }],
+                    });
                     if (!cancelado) setEstado('aprobado');
                     return;
                 }

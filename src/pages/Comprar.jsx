@@ -8,6 +8,8 @@ import Bandera from '../components/Bandera';
 import { partidosFuturos } from '../utils/partidos';
 import { obtenerSesion, guardarSesion } from '../utils/sesion';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
+import { getStoredAttribution } from '../lib/attribution';
+import { trackViewItem, trackBeginCheckout, trackAddPaymentInfo } from '../lib/analytics';
 import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
 import brebQr from '../assets/breb-qr.png';
@@ -144,6 +146,17 @@ export default function Comprar() {
 
     const partidoSeleccionado = partidos.find((p) => p.id === partidoId) ?? null;
 
+    // view_item: se dispara cada vez que el plan/monto visible cambia a uno
+    // valido (no en cada tecla de un monto personalizado incompleto).
+    useEffect(() => {
+        if (!esOtroMonto && planInfo) {
+            trackViewItem(planInfo);
+        } else if (esOtroMonto && montoCustomNumero >= MONTO_PERSONALIZADO_MIN) {
+            trackViewItem({ valor: montoCustomNumero, saldoBono: saldoBonoCustom, etiqueta: 'personalizado' });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [esOtroMonto, planInfo, montoCustomNumero]);
+
     // La cuenta ya queda creada en el backend desde que se genera la
     // transacción (antes incluso de que el pago se confirme), así que se
     // guarda la sesión de una vez — el comprador no tiene que "registrarse"
@@ -216,11 +229,19 @@ export default function Comprar() {
 
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
         const affToken = localStorage.getItem(AFF_STORAGE_KEY) || '';
+        const atribucion = getStoredAttribution();
+        const planParaEvento = planInfo || { valor: valorAPagar, saldoBono: saldoBonoCustom, etiqueta: 'personalizado' };
+
+        // begin_checkout: el usuario ya lleno el formulario y confirmo que quiere
+        // pagar (este componente combina seleccion de plan + pago en una sola
+        // pantalla, asi que este es el punto real de "inicio de checkout").
+        trackBeginCheckout(planParaEvento, { partidoId });
 
         enviandoRef.current = true;
         setCargando(true);
         try {
             if (!mostrarTransferencia && metodoPago === 'pse') {
+                trackAddPaymentInfo(planParaEvento, { metodoPago: 'pse' });
                 const data = await crearPSE({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
@@ -232,6 +253,7 @@ export default function Comprar() {
                     financial_institution_code: bancoSeleccionado,
                     ref,
                     aff_token: affToken,
+                    atribucion,
                 });
                 if (data?.success && data.redirect_url) {
                     guardarSesionDePago(data);
@@ -243,6 +265,7 @@ export default function Comprar() {
             }
 
             if (!mostrarTransferencia && metodoPago === 'bancolombia') {
+                trackAddPaymentInfo(planParaEvento, { metodoPago: 'bancolombia' });
                 const data = await crearBancolombia({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
@@ -251,6 +274,7 @@ export default function Comprar() {
                     valor: valorAPagar,
                     ref,
                     aff_token: affToken,
+                    atribucion,
                 });
                 if (data?.success && data.redirect_url) {
                     guardarSesionDePago(data);
@@ -267,6 +291,7 @@ export default function Comprar() {
                     setCargando(false);
                     return;
                 }
+                trackAddPaymentInfo(planParaEvento, { metodoPago: metodoPago === 'breb' ? 'breb' : 'transferencia' });
                 const data = await crearTransferencia({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
@@ -277,6 +302,7 @@ export default function Comprar() {
                     metodo: metodoPago === 'breb' ? 'BREB' : undefined,
                     ref,
                     aff_token: affToken,
+                    atribucion,
                 });
                 if (data?.success) {
                     guardarSesionDePago(data);
@@ -288,6 +314,7 @@ export default function Comprar() {
                 return;
             }
 
+            trackAddPaymentInfo(planParaEvento, { metodoPago: 'wompi' });
             const data = await crearLinkPago({
                 nombre: form.nombre.trim(),
                 correo: form.correo.trim(),
@@ -296,6 +323,7 @@ export default function Comprar() {
                 valor: valorAPagar,
                 ref,
                 aff_token: affToken,
+                atribucion,
             });
 
             if (data?.success && data.widget) {

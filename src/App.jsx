@@ -32,6 +32,7 @@ import BottomNav from './components/BottomNav';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
 import { registrarClicAfiliado } from './api';
+import { captureAttributionFromUrl, getStoredAttribution } from './lib/attribution';
 
 const RUTAS_CON_BOTTOM_NAV = [];
 
@@ -79,6 +80,23 @@ function CapturarAfiliado() {
     return null;
 }
 
+// Captura general de atribucion (UTMs + referrer + landing page), corre en
+// CADA navegacion a diferencia de CapturarAfiliado (que solo actua cuando
+// hay ?aff=). Ver src/lib/attribution.js para el modelo first/last touch.
+function CapturarAtribucion() {
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        captureAttributionFromUrl();
+        if (import.meta.env.DEV) {
+            console.log('[atribucion] capturada:', getStoredAttribution());
+            window.__pollaAttribution = getStoredAttribution;
+        }
+    }, [searchParams]);
+
+    return null;
+}
+
 function RutaProtegida({ children }) {
     const sesion = obtenerSesion();
     if (!sesion) return <Navigate to="/registro" replace />;
@@ -93,6 +111,7 @@ function AppRoutes() {
         <>
             <CapturarRef />
             <CapturarAfiliado />
+            <CapturarAtribucion />
             <Suspense fallback={<div className="min-h-screen bg-white dark:bg-zinc-950" />}>
                 <Routes>
                     <Route path="/" element={<Home />} />
