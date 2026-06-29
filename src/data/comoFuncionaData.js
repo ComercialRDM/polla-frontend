@@ -61,16 +61,16 @@ export const PUNTOS_EXTRA = [
     {
         icono: 'Share2',
         titulo: 'Comparte en Instagram',
-        descripcion: 'Comparte tu pronóstico en Stories (máx. 1 vez por partido).',
+        descripcion: 'Inicia sesión en tu cuenta y comparte tu pronóstico en Stories (máx. 1 vez por partido).',
         puntos: '+20 pts',
-        tope: 'Tope: 500 pts',
+        tope: 'Máximo 500 puntos',
     },
     {
         icono: 'UserPlus',
         titulo: 'Invita amigos',
-        descripcion: 'Cuando alguien compra un bono con tu enlace personal.',
+        descripcion: 'Inicia sesión para generar tu enlace personal. Ganas puntos cuando alguien compra un bono con él.',
         puntos: '+20 pts',
-        tope: 'Tope: 500 pts',
+        tope: 'Máximo 500 puntos',
     },
 ];
 

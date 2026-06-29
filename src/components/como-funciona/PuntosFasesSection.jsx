@@ -118,18 +118,20 @@ export default function PuntosFasesSection() {
                                 <motion.div
                                     key={p.titulo}
                                     variants={fadeUp}
-                                    className="cf-card print:break-inside-avoid flex items-center gap-4 rounded-2xl border border-zinc-100 dark:border-white/10 p-5"
+                                    whileHover={{ scale: 1.01 }}
+                                    transition={{ duration: 0.25 }}
+                                    className="cf-card print:break-inside-avoid flex items-center gap-5 rounded-2xl border border-zinc-100 dark:border-white/10 p-6"
                                 >
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-950 dark:bg-[#FCD116] shrink-0">
-                                        <Icono className="w-5 h-5 text-white dark:text-zinc-950" aria-hidden="true" />
+                                    <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-zinc-950 dark:bg-[#FCD116] shrink-0">
+                                        <Icono className="w-7 h-7 text-white dark:text-zinc-950" aria-hidden="true" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-zinc-950 dark:text-white text-sm">{p.titulo}</p>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">{p.descripcion}</p>
+                                        <p className="font-bold text-zinc-950 dark:text-white text-base sm:text-lg">{p.titulo}</p>
+                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">{p.descripcion}</p>
                                     </div>
                                     <div className="ml-auto text-right shrink-0">
-                                        <p className="font-display text-xl text-amber-600 dark:text-amber-400">{p.puntos}</p>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-[10px]">{p.tope}</p>
+                                        <p className="font-display text-3xl sm:text-4xl text-amber-600 dark:text-amber-400 leading-none">{p.puntos}</p>
+                                        <p className="text-zinc-700 dark:text-zinc-300 text-xs font-bold uppercase tracking-wide mt-1.5">{p.tope}</p>
                                     </div>
                                 </motion.div>
                             );
