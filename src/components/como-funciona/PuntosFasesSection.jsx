@@ -1,11 +1,32 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, UserPlus, Star } from 'lucide-react';
+import { UserPlus, Star } from 'lucide-react';
 import { FASES_PUNTOS, PUNTOS_EXTRA } from '../../data/comoFuncionaData';
 import { obtenerPartidos } from '../../api';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
 
-const ICONOS = { Share2, UserPlus };
+// Logos de marca (Instagram/WhatsApp) en SVG propio: lucide-react solo trae
+// iconos genericos de linea, no logos de marca.
+function IconoInstagram(props) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
+            <circle cx="12" cy="12" r="4.2" />
+            <circle cx="17.4" cy="6.6" r="0.6" fill="currentColor" stroke="none" />
+        </svg>
+    );
+}
+
+function IconoWhatsApp(props) {
+    return (
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.99.55 3.85 1.5 5.45L2 22l4.78-1.55a9.9 9.9 0 0 0 5.26 1.5h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.55 17.5 2 12.04 2zm0 18.1a8.17 8.17 0 0 1-4.16-1.14l-.3-.18-3.1 1 1.03-3.02-.2-.31a8.18 8.18 0 0 1-1.27-4.36c0-4.51 3.67-8.17 8.18-8.17 4.51 0 8.17 3.67 8.17 8.17 0 4.51-3.67 8.17-8.17 8.17z" />
+            <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-1.75-.87-2.89-1.56-4.04-3.54-.31-.52.3-.49.87-1.62.1-.2.05-.37-.05-.52-.1-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.22 3.07.15.2 2.06 3.15 4.99 4.29 2.93 1.14 2.93.76 3.45.71.53-.05 1.72-.7 1.96-1.38.24-.67.24-1.25.17-1.37-.07-.13-.27-.2-.57-.35z" />
+        </svg>
+    );
+}
+
+const ICONOS = { Instagram: IconoInstagram, WhatsApp: IconoWhatsApp, UserPlus };
 
 // La fase "actual" es la del partido sin cerrar mas proximo (el siguiente en
 // jugarse). Si ya no queda ninguno sin cerrar, el torneo termino: se toma la
@@ -117,7 +138,7 @@ export default function PuntosFasesSection() {
                         initial="hidden"
                         whileInView="visible"
                         viewport={VIEWPORT_ONCE}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
                     >
                         {PUNTOS_EXTRA.map((p) => {
                             const Icono = ICONOS[p.icono];

@@ -59,9 +59,16 @@ export const FASES_PUNTOS = [
 
 export const PUNTOS_EXTRA = [
     {
-        icono: 'Share2',
+        icono: 'Instagram',
         titulo: 'Comparte en Instagram',
         descripcion: 'Inicia sesión en tu cuenta y comparte tu pronóstico en Stories (máx. 1 vez por partido).',
+        puntos: '+20 pts',
+        tope: 'Máximo 500 puntos',
+    },
+    {
+        icono: 'WhatsApp',
+        titulo: 'Comparte por WhatsApp',
+        descripcion: 'Inicia sesión en tu cuenta y comparte tu pronóstico por WhatsApp (máx. 1 vez por partido).',
         puntos: '+20 pts',
         tope: 'Máximo 500 puntos',
     },
