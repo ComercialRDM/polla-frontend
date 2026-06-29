@@ -105,16 +105,16 @@ export default function PuntosFasesSection() {
                             </div>
                             <div className="flex items-center gap-6 sm:gap-10 ml-auto text-right">
                                 <div>
-                                    <p className="font-display text-2xl sm:text-3xl text-amber-600 dark:text-amber-400 leading-none">{f.exacto}</p>
+                                    <p className="font-display text-2xl sm:text-3xl text-amber-600 dark:text-amber-400 leading-none">
+                                        {f.exacto} <span className="text-xs font-sans font-normal text-zinc-400 dark:text-zinc-500">pts</span>
+                                    </p>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide mt-1">marcador exacto</p>
                                 </div>
                                 <div>
-                                    <p className="font-display text-xl sm:text-2xl text-zinc-700 dark:text-zinc-300 leading-none">{f.tendencia}</p>
+                                    <p className="font-display text-xl sm:text-2xl text-zinc-700 dark:text-zinc-300 leading-none">
+                                        {f.tendencia} <span className="text-xs font-sans font-normal text-zinc-400 dark:text-zinc-500">pts</span>
+                                    </p>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide mt-1">tendencia</p>
-                                </div>
-                                <div>
-                                    <p className="font-display text-xl sm:text-2xl text-zinc-700 dark:text-zinc-300 leading-none">{f.cupos}</p>
-                                    <p className="text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide mt-1">{f.cupos === 1 ? 'cupo' : 'cupos'}</p>
                                 </div>
                             </div>
                         </motion.div>

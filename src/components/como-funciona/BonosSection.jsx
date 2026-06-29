@@ -92,11 +92,8 @@ export default function BonosSection() {
                 </motion.div>
 
                 <p className="text-center text-zinc-400 dark:text-zinc-500 text-xs mt-8">
-                    Cada cupo te deja predecir un partido en Grupos, Dieciseisavos u Octavos. En fases
-                    más avanzadas un partido cuesta más cupos —{' '}
-                    <a href="#puntos" className="underline hover:text-zinc-600 dark:hover:text-zinc-300">
-                        revisa cuántos cupos cuesta cada fase
-                    </a>.
+                    Cada cupo te deja predecir un partido en Grupos, Dieciseisavos u Octavos. En Cuartos,
+                    Semifinal y Tercer Puesto un partido cuesta 2 cupos, y en la Gran Final 4 cupos.
                 </p>
             </div>
         </section>
