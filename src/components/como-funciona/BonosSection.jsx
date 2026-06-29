@@ -28,8 +28,8 @@ export default function BonosSection() {
                     className="text-center text-zinc-500 dark:text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto mb-16 -mt-10"
                 >
                     Cada bono es un crédito real que puedes usar en arreglos, ajustes y transformaciones
-                    de ropa en La Retoucherie de Manuela. Cómpralo, úsalo cuando quieras, y de regalo
-                    participas en la Polla Mundialista.
+                    de ropa en La Retoucherie de Manuela. Cómpralo, úsalo cuando quieras. Bonos válidos
+                    hasta el 1 de marzo de 2027. Y de regalo participas en la Polla Mundialista.
                 </motion.p>
 
                 <motion.div
@@ -90,6 +90,14 @@ export default function BonosSection() {
                         </Link>
                     </motion.div>
                 </motion.div>
+
+                <p className="text-center text-zinc-400 dark:text-zinc-500 text-xs mt-8">
+                    Cada cupo te deja predecir un partido en Grupos, Dieciseisavos u Octavos. En fases
+                    más avanzadas un partido cuesta más cupos —{' '}
+                    <a href="#puntos" className="underline hover:text-zinc-600 dark:hover:text-zinc-300">
+                        revisa cuántos cupos cuesta cada fase
+                    </a>.
+                </p>
             </div>
         </section>
     );

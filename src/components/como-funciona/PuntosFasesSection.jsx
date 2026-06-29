@@ -47,8 +47,11 @@ export default function PuntosFasesSection() {
                 >
                     ¿Cómo ganas puntos?
                 </motion.h2>
-                <p className="text-center text-zinc-500 dark:text-zinc-400 mb-16">
+                <p className="text-center text-zinc-500 dark:text-zinc-400 mb-2">
                     Mientras más avanza el torneo, más valen tus aciertos.
+                </p>
+                <p className="text-center text-zinc-400 dark:text-zinc-500 text-sm mb-16">
+                    Un cupo no siempre equivale a un partido: el costo en cupos sube según la fase.
                 </p>
 
                 <motion.div
@@ -87,6 +90,10 @@ export default function PuntosFasesSection() {
                                 <div>
                                     <p className="font-display text-xl sm:text-2xl text-zinc-700 dark:text-zinc-300 leading-none">{f.tendencia}</p>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide mt-1">tendencia</p>
+                                </div>
+                                <div>
+                                    <p className="font-display text-xl sm:text-2xl text-zinc-700 dark:text-zinc-300 leading-none">{f.cupos}</p>
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-wide mt-1">{f.cupos === 1 ? 'cupo' : 'cupos'}</p>
                                 </div>
                             </div>
                         </motion.div>
