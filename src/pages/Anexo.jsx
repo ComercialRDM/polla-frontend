@@ -59,7 +59,7 @@ export default function Anexo() {
                                     ['Octavos de Final',    '200', '100',   '1'],
                                     ['Cuartos de Final',    '600', '300',   '2'],
                                     ['Semifinal',           '600', '300',   '2'],
-                                    ['Gran Final',         '1.000','500',   '4'],
+                                    ['Gran Final',         '2.000','1.000', '4'],
                                 ].map(([fase, exacto, tend, cupos]) => (
                                     <tr key={fase}>
                                         <td className="p-2">{fase}</td>

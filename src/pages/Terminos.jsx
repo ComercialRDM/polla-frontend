@@ -199,7 +199,7 @@ export default function Terminos() {
                                     ['Octavos de Final',    '200 pts', '100 pts'],
                                     ['Cuartos de Final',    '600 pts', '300 pts'],
                                     ['Semifinal',           '600 pts', '300 pts'],
-                                    ['Gran Final',         '1.000 pts','500 pts'],
+                                    ['Gran Final',         '2.000 pts','1.000 pts'],
                                 ].map(([fase, exacto, tend]) => (
                                     <tr key={fase}>
                                         <td className="p-2">{fase}</td>
