@@ -3,6 +3,7 @@ import { ShieldCheck, Banknote, Clock, MapPin } from 'lucide-react';
 import { INFO_IMPORTANTE } from '../../data/comoFuncionaData';
 import TrustBadges from '../TrustBadges';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
+import CTAComprarBono from './CTAComprarBono';
 
 const ICONOS = { ShieldCheck, Banknote, Clock, MapPin };
 
@@ -53,6 +54,8 @@ export default function InfoImportanteSection() {
                 <div className="mt-10 flex justify-center">
                     <TrustBadges />
                 </div>
+
+                <CTAComprarBono microcopy="Pago 100% seguro · Tu saldo no vence hasta marzo de 2027." className="mt-12" />
             </div>
         </section>
     );

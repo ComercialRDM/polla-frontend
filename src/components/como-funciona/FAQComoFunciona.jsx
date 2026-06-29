@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { FAQ_COMO_FUNCIONA } from '../../data/comoFuncionaData';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
+import CTAComprarBono from './CTAComprarBono';
 
 export default function FAQComoFunciona() {
     const fadeUp = useFadeUp();
@@ -40,6 +41,8 @@ export default function FAQComoFunciona() {
                         </motion.details>
                     ))}
                 </motion.div>
+
+                <CTAComprarBono microcopy="¿Todo claro? Asegura tus cupos antes del próximo partido." className="mt-12" />
             </div>
         </section>
     );

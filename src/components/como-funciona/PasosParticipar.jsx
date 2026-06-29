@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, Goal, Trophy, Scissors, Gift, TrendingUp } from 'lucide-react';
 import { PASOS_PARTICIPAR, SIEMPRE_GANAS } from '../../data/comoFuncionaData';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
+import CTAComprarBono from './CTAComprarBono';
 
 const ICONOS = { ShoppingCart, Goal, Trophy, Scissors, Gift, TrendingUp };
 
@@ -85,6 +86,8 @@ export default function PasosParticipar() {
                         })}
                     </div>
                 </motion.div>
+
+                <CTAComprarBono microcopy="Tu bono ya es tuyo, ganes o no la Polla." className="mt-16" />
             </div>
         </section>
     );

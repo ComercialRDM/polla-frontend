@@ -26,7 +26,7 @@ export default function CTAFinalComoFunciona() {
                     to="/comprar"
                     className="inline-flex items-center justify-center rounded-full bg-[#FCD116] text-zinc-950 font-bold text-base px-10 py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
-                    Comprar Bono
+                    Comprar Bono Digital
                 </Link>
             </motion.div>
         </motion.section>

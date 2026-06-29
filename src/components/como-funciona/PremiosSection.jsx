@@ -6,6 +6,7 @@ import gafasImg from '../../assets/premios/gafas.webp';
 import { PREMIOS_PRINCIPALES, BONO_COLOMBIA, PREMIOS_FLASH } from '../../data/comoFuncionaData';
 import { formatoPesos } from '../../config/planes';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
+import CTAComprarBono from './CTAComprarBono';
 
 const PREMIOS_FLASH_IMAGENES = [
     { imagen: camisetaImg, titulo: 'Camiseta Oficial' },
@@ -104,6 +105,8 @@ export default function PremiosSection() {
                 <p className="text-center text-zinc-500 dark:text-zinc-400 text-xs mt-8">
                     Premios entregados en Gift Cards · No se entrega dinero en efectivo
                 </p>
+
+                <CTAComprarBono microcopy="Compra tu bono y entra a la repartición de hasta $5.000.000." className="mt-12" />
             </div>
         </section>
     );

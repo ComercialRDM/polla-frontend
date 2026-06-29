@@ -9,6 +9,7 @@ import BonosSection from '../components/como-funciona/BonosSection';
 import InfoImportanteSection from '../components/como-funciona/InfoImportanteSection';
 import FAQComoFunciona from '../components/como-funciona/FAQComoFunciona';
 import CTAFinalComoFunciona from '../components/como-funciona/CTAFinalComoFunciona';
+import CTAFijoMovil from '../components/como-funciona/CTAFijoMovil';
 import Footer from '../components/Footer';
 
 export default function ComoFunciona() {
@@ -75,6 +76,7 @@ export default function ComoFunciona() {
             <div className="flex justify-center bg-zinc-100 dark:bg-zinc-950 print:bg-white">
                 <Footer />
             </div>
+            <CTAFijoMovil />
         </div>
     );
 }

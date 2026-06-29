@@ -106,6 +106,9 @@ function RutaProtegida({ children }) {
 function AppRoutes() {
     const location = useLocation();
     const mostrarBottomNav = RUTAS_CON_BOTTOM_NAV.includes(location.pathname);
+    // /como-funciona tiene su propio boton fijo de compra en movil (CTAFijoMovil);
+    // se desplaza el de WhatsApp hacia arriba para que no se encimen.
+    const conCTAFijo = location.pathname === '/como-funciona';
 
     return (
         <>
@@ -135,7 +138,7 @@ function AppRoutes() {
                     <Route path="/adminqr" element={<AdminQR />} />
                 </Routes>
             </Suspense>
-            <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} />
+            <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />
             <ThemeToggle />
             {mostrarBottomNav && <BottomNav />}
         </>
