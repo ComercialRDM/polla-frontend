@@ -6,20 +6,53 @@ import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPar
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
-const SECCIONES = [
-    { id: 'inicio',          label: '🏠 Inicio' },
-    { id: 'transacciones',   label: 'Transacciones' },
-    { id: 'usuarios',        label: '👥 Usuarios' },
-    { id: 'pronosticos',     label: 'Pronósticos' },
-    { id: 'simulador',       label: 'Simulador' },
-    { id: 'partidos',        label: 'Partidos' },
-    { id: 'ranking',         label: '🏆 Ranking' },
-    { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
-    { id: 'influenciadores', label: '🎖️ Influenciadores' },
-    { id: 'localesqr',       label: 'Locales QR' },
-    { id: 'redenciones',     label: '🧾 Redenciones' },
-    { id: 'seguridad',       label: '🔐 Seguridad' },
+const GRUPOS_NAV = [
+    {
+        id: 'overview', label: null,
+        color: 'amber',
+        secciones: [
+            { id: 'inicio', label: '🏠 Inicio' },
+        ],
+    },
+    {
+        id: 'clientes', label: 'Clientes',
+        color: 'blue',
+        secciones: [
+            { id: 'transacciones',  label: '💳 Transacciones' },
+            { id: 'usuarios',       label: '👥 Usuarios' },
+            { id: 'pronosticos',    label: '⚽ Pronósticos' },
+            { id: 'redenciones',    label: '🧾 Redenciones' },
+        ],
+    },
+    {
+        id: 'marketing', label: 'Marketing',
+        color: 'purple',
+        secciones: [
+            { id: 'influenciadores', label: '🎖️ Influenciadores' },
+            { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
+            { id: 'simulador',       label: '📊 Simulador' },
+        ],
+    },
+    {
+        id: 'torneo', label: 'Torneo',
+        color: 'green',
+        secciones: [
+            { id: 'partidos',  label: '⚽ Partidos' },
+            { id: 'ranking',   label: '🏆 Ranking' },
+            { id: 'localesqr', label: '📍 Locales QR' },
+        ],
+    },
+    {
+        id: 'sistema', label: 'Sistema',
+        color: 'red',
+        secciones: [
+            { id: 'seguridad', label: '🔐 Seguridad' },
+        ],
+    },
 ];
+
+// Flat list para compatibilidad con el resto del código
+const SECCIONES = GRUPOS_NAV.flatMap((g) => g.secciones);
 
 const TOKEN_STORAGE_KEY = 'polla_admin_token';
 
@@ -1212,20 +1245,64 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     </button>
                 </div>
 
-                {/* Menú de secciones */}
-                <div className="flex gap-2 mb-6 flex-wrap">
-                    {SECCIONES.map((s) => (
-                        <button
-                            key={s.id}
-                            onClick={() => setSeccionActiva(s.id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
-                                seccionActiva === s.id ? 'bg-amber-400 text-zinc-950' : 'bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-white/10'
-                            }`}
-                        >
-                            {s.label}
-                        </button>
-                    ))}
-                </div>
+                {/* Menú de secciones agrupado */}
+                {(() => {
+                    const DOT = {
+                        amber:  'bg-amber-400',
+                        blue:   'bg-blue-500',
+                        purple: 'bg-purple-500',
+                        green:  'bg-emerald-500',
+                        red:    'bg-red-500',
+                    };
+                    const RING = {
+                        amber:  'ring-amber-400',
+                        blue:   'ring-blue-500',
+                        purple: 'ring-purple-500',
+                        green:  'ring-emerald-500',
+                        red:    'ring-red-500',
+                    };
+                    const grupoActivo = GRUPOS_NAV.find((g) => g.secciones.some((s) => s.id === seccionActiva));
+                    return (
+                        <div className="mb-6">
+                            <div className="flex items-stretch gap-1.5 flex-wrap">
+                                {GRUPOS_NAV.map((grupo, gi) => {
+                                    const esteGrupoActivo = grupoActivo?.id === grupo.id;
+                                    return (
+                                        <div key={grupo.id} className={`flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all ${esteGrupoActivo ? `border-transparent ring-2 ${RING[grupo.color]}` : 'border-zinc-200 dark:border-white/10'}`}>
+                                            {/* Etiqueta lateral del grupo */}
+                                            {grupo.label && (
+                                                <div className={`flex items-center justify-center px-2 ${DOT[grupo.color]} bg-opacity-15`} style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400 leading-none whitespace-nowrap">
+                                                        {grupo.label}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {/* Tabs del grupo */}
+                                            <div className="flex items-stretch">
+                                                {grupo.secciones.map((s, si) => {
+                                                    const activa = seccionActiva === s.id;
+                                                    return (
+                                                        <button
+                                                            key={s.id}
+                                                            onClick={() => setSeccionActiva(s.id)}
+                                                            className={`px-3 py-2 text-xs font-bold transition-colors whitespace-nowrap ${si > 0 ? 'border-l border-zinc-200 dark:border-white/10' : ''} ${
+                                                                activa
+                                                                    ? `bg-amber-400 text-zinc-950`
+                                                                    : 'bg-zinc-50 dark:bg-white/5 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10'
+                                                            }`}
+                                                        >
+                                                            {s.label}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* ── Inicio ── */}
                 {seccionActiva === 'inicio' && (
