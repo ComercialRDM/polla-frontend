@@ -53,7 +53,7 @@ export default function HeroComoFunciona() {
                 </motion.p>
 
                 <motion.a
-                    href="#participar"
+                    href="#premios"
                     initial={{ opacity: 0, y: reduce ? 0 : 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -66,7 +66,7 @@ export default function HeroComoFunciona() {
             </motion.div>
 
             <a
-                href="#participar"
+                href="#premios"
                 aria-hidden="true"
                 tabIndex={-1}
                 className="absolute bottom-8 left-1/2 -translate-x-1/2 text-zinc-400 dark:text-zinc-600 text-2xl animate-bounce motion-reduce:animate-none print:hidden"
