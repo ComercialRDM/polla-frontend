@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos } from '../api';
+import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico } from '../api';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
@@ -18,6 +18,12 @@ const FOTO_REMINDER_DIAS = 7;
 function fotoReminderDismissed() {
     const ts = localStorage.getItem(FOTO_REMINDER_KEY);
     return ts && Date.now() - Number(ts) < FOTO_REMINDER_DIAS * 24 * 60 * 60 * 1000;
+}
+const DEMO_REMINDER_KEY = 'polla_demografico_recordatorio_at';
+const DEMO_REMINDER_DIAS = 30;
+function demoReminderDismissed() {
+    const ts = localStorage.getItem(DEMO_REMINDER_KEY);
+    return ts && Date.now() - Number(ts) < DEMO_REMINDER_DIAS * 24 * 60 * 60 * 1000;
 }
 
 function calcularRestante(fechaInicio) {
@@ -67,6 +73,12 @@ export default function Polla() {
     const [nuevoGrupoPartido, setNuevoGrupoPartido] = useState('');
     const [errorGrupo, setErrorGrupo] = useState('');
     const [mostrarFormGrupo, setMostrarFormGrupo] = useState(false);
+    const [mostrarDemoBanner, setMostrarDemoBanner] = useState(false);
+    const [demoFecha, setDemoFecha] = useState('');
+    const [demoSexo, setDemoSexo] = useState('');
+    const [guardandoDemo, setGuardandoDemo] = useState(false);
+    const [demoGuardado, setDemoGuardado] = useState(false);
+    const [errorDemo, setErrorDemo] = useState('');
 
     useEffect(() => {
         if (!token) {
@@ -108,6 +120,12 @@ export default function Polla() {
         return () => clearTimeout(timer);
     }, [info]);
 
+    useEffect(() => {
+        if (!info || info.fecha_nacimiento || demoReminderDismissed()) return;
+        const timer = setTimeout(() => setMostrarDemoBanner(true), 8000);
+        return () => clearTimeout(timer);
+    }, [info]);
+
     async function handleSubirFoto(e) {
         const archivo = e.target.files?.[0];
         if (!archivo) return;
@@ -128,6 +146,34 @@ export default function Polla() {
     function dismissFotoReminder() {
         localStorage.setItem(FOTO_REMINDER_KEY, String(Date.now()));
         setMostrarFotoReminder(false);
+    }
+
+    function dismissDemoBanner() {
+        localStorage.setItem(DEMO_REMINDER_KEY, String(Date.now()));
+        setMostrarDemoBanner(false);
+    }
+
+    async function handleGuardarDemo(e) {
+        e.preventDefault();
+        if (!demoFecha && !demoSexo) {
+            setErrorDemo('Completa al menos un campo');
+            return;
+        }
+        setGuardandoDemo(true);
+        setErrorDemo('');
+        try {
+            const payload = { token_acceso: token };
+            if (demoFecha) payload.fecha_nacimiento = demoFecha;
+            if (demoSexo)  payload.sexo = demoSexo;
+            await actualizarPerfilDemografico(payload);
+            setDemoGuardado(true);
+            setInfo((prev) => prev ? { ...prev, fecha_nacimiento: demoFecha || prev.fecha_nacimiento, sexo: demoSexo || prev.sexo } : prev);
+            setTimeout(() => { setMostrarDemoBanner(false); setDemoGuardado(false); }, 2500);
+        } catch (err) {
+            setErrorDemo(err.message || 'Error al guardar');
+        } finally {
+            setGuardandoDemo(false);
+        }
     }
 
     // Guarda el token en localStorage para que /grupo/:token pueda identificar al usuario
@@ -655,6 +701,70 @@ export default function Polla() {
                 {/* Ranking en vivo del próximo partido */}
                 {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
             </div>
+
+            {/* Banner datos demográficos — todos los usuarios sin fecha de nacimiento */}
+            {mostrarDemoBanner && (
+                <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 bg-white dark:bg-zinc-800 border border-violet-400/50 rounded-xl shadow-xl p-4">
+                    <button
+                        onClick={dismissDemoBanner}
+                        className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-600 text-lg leading-none"
+                    >
+                        ×
+                    </button>
+                    {demoGuardado ? (
+                        <p className="text-sm text-green-600 dark:text-green-400 font-bold py-2">✅ ¡Datos guardados!</p>
+                    ) : (
+                        <>
+                            <p className="text-sm font-bold text-zinc-900 dark:text-white mb-0.5">⚡ Completa tu perfil</p>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                                Necesitamos estos datos para los <strong>premios flash</strong>. Solo toma 10 segundos.
+                            </p>
+                            <form onSubmit={handleGuardarDemo} className="space-y-3">
+                                <div>
+                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Fecha de nacimiento</label>
+                                    <input
+                                        type="date"
+                                        value={demoFecha}
+                                        onChange={(e) => setDemoFecha(e.target.value)}
+                                        max={new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000).toISOString().split('T')[0]}
+                                        className="w-full bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Género</label>
+                                    <div className="flex flex-col gap-1">
+                                        {[
+                                            { value: 'masculino', label: 'Masculino' },
+                                            { value: 'femenino', label: 'Femenino' },
+                                            { value: 'prefiero_no_decirlo', label: 'Prefiero no decirlo' },
+                                        ].map((op) => (
+                                            <label key={op.value} className="flex items-center gap-2 cursor-pointer text-xs text-zinc-700 dark:text-zinc-300">
+                                                <input
+                                                    type="radio"
+                                                    name="sexo_demo"
+                                                    value={op.value}
+                                                    checked={demoSexo === op.value}
+                                                    onChange={() => setDemoSexo(op.value)}
+                                                    className="accent-violet-500"
+                                                />
+                                                {op.label}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                {errorDemo && <p className="text-xs text-red-500">{errorDemo}</p>}
+                                <button
+                                    type="submit"
+                                    disabled={guardandoDemo}
+                                    className="w-full py-2 rounded-lg text-sm font-bold bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white"
+                                >
+                                    {guardandoDemo ? 'Guardando...' : 'Guardar'}
+                                </button>
+                            </form>
+                        </>
+                    )}
+                </div>
+            )}
 
             {/* Banner foto de perfil — solo influencers sin foto */}
             {mostrarFotoReminder && (

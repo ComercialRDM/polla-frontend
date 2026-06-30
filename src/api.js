@@ -721,4 +721,34 @@ export function unirseGrupo(token_grupo, token_acceso) {
     });
 }
 
+export function actualizarPerfilDemografico({ token_acceso, fecha_nacimiento, sexo }) {
+    return request('/api/polla/perfil-demografico', {
+        method: 'PATCH',
+        body: JSON.stringify({ token_acceso, fecha_nacimiento, sexo }),
+    });
+}
+
+export function adminDemograficos(token) {
+    return request('/api/admin/demograficos', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function adminMarketingResumen(token) {
+    return request('/api/admin/marketing/resumen', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function adminMarketingAgregarGasto(token, { tipo, descripcion, monto, fecha }) {
+    return request('/api/admin/marketing/gastos', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tipo, descripcion, monto, fecha }),
+    });
+}
+
+export function adminMarketingEliminarGasto(token, id) {
+    return request(`/api/admin/marketing/gastos/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export { API_BASE };

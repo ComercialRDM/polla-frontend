@@ -2,14 +2,15 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
 const SECCIONES = [
+    { id: 'inicio',          label: '🏠 Inicio' },
     { id: 'transacciones',   label: 'Transacciones' },
     { id: 'usuarios',        label: '👥 Usuarios' },
-    { id: 'apuestas',        label: 'Apuestas' },
+    { id: 'pronosticos',     label: 'Pronósticos' },
     { id: 'simulador',       label: 'Simulador' },
     { id: 'partidos',        label: 'Partidos' },
     { id: 'ranking',         label: '🏆 Ranking' },
@@ -138,7 +139,21 @@ export default function Admin() {
     const [redCargando,        setRedCargando]        = useState(false);
     const [redError,           setRedError]           = useState('');
 
-    const [seccionActiva, setSeccionActiva] = useState('transacciones');
+    const [seccionActiva, setSeccionActiva] = useState('inicio');
+
+    // ── Inicio: demografía ────────────────────────────────────────────────────
+    const [demograficos,        setDemograficos]        = useState(null);
+    const [demoCargando,        setDemoCargando]        = useState(false);
+
+    // ── Inicio: bolsa de marketing ────────────────────────────────────────────
+    const [marketing,           setMarketing]           = useState(null);
+    const [mktCargando,         setMktCargando]         = useState(false);
+    const [mktError,            setMktError]            = useState('');
+    const [mktTipo,             setMktTipo]             = useState('pauta_ads');
+    const [mktDesc,             setMktDesc]             = useState('');
+    const [mktMonto,            setMktMonto]            = useState('');
+    const [mktFecha,            setMktFecha]            = useState(() => new Date().toISOString().slice(0, 10));
+    const [mktGuardando,        setMktGuardando]        = useState(false);
 
     const [metricasSimulador, setMetricasSimulador] = useState(null);
     const [errorSimulador, setErrorSimulador] = useState('');
@@ -184,6 +199,44 @@ export default function Admin() {
         } catch (err) {
             // silencioso
         }
+    }
+
+    async function cargarDemograficos() {
+        setDemoCargando(true);
+        try {
+            const d = await adminDemograficos(token);
+            if (d?.success) setDemograficos(d);
+        } catch { /* silencioso */ } finally { setDemoCargando(false); }
+    }
+
+    async function cargarMarketing() {
+        setMktCargando(true);
+        setMktError('');
+        try {
+            const d = await adminMarketingResumen(token);
+            if (d?.success) setMarketing(d);
+        } catch (err) { setMktError(err.message || 'Error'); } finally { setMktCargando(false); }
+    }
+
+    async function handleAgregarGasto(e) {
+        e.preventDefault();
+        if (!mktMonto || Number(mktMonto) <= 0) { setMktError('El monto debe ser mayor a 0'); return; }
+        setMktGuardando(true);
+        setMktError('');
+        try {
+            await adminMarketingAgregarGasto(token, { tipo: mktTipo, descripcion: mktDesc || undefined, monto: Number(mktMonto), fecha: mktFecha });
+            setMktMonto('');
+            setMktDesc('');
+            await cargarMarketing();
+        } catch (err) { setMktError(err.message || 'Error'); } finally { setMktGuardando(false); }
+    }
+
+    async function handleEliminarGasto(id) {
+        if (!window.confirm('¿Eliminar este gasto?')) return;
+        try {
+            await adminMarketingEliminarGasto(token, id);
+            await cargarMarketing();
+        } catch { /* silencioso */ }
     }
 
     async function cargarUsuarios() {
@@ -695,6 +748,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
     }, []);
 
     useEffect(() => {
+        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); }
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
@@ -947,7 +1001,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
             const data = await adminApuestasExport(token, apPartidoId);
             if (!data?.success) { setApError(data?.error || 'Error exportando'); return; }
             const p = data.partido;
-            const nombre = `Apuestas_${p.equipo_local}_vs_${p.equipo_visitante}`.replace(/\s+/g, '_');
+            const nombre = `Pronosticos_${p.equipo_local}_vs_${p.equipo_visitante}`.replace(/\s+/g, '_');
             const filas = data.apuestas.map(a => ({
                 Nombre:       a.nombre,
                 Celular:      a.celular,
@@ -957,12 +1011,12 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 Puntos:       a.puntos ?? '-',
             }));
             if (formato === 'csv') exportarCSV(filas, nombre, Object.keys(filas[0]));
-            if (formato === 'excel') await exportarExcel(filas, nombre, 'Apuestas');
+            if (formato === 'excel') await exportarExcel(filas, nombre, 'Pronósticos');
             if (formato === 'pdf') await exportarPDF(
                 Object.keys(filas[0]),
                 filas.map(Object.values),
                 nombre,
-                `Apuestas: ${p.equipo_local} vs ${p.equipo_visitante}`
+                `Pronósticos: ${p.equipo_local} vs ${p.equipo_visitante}`
             );
         } finally {
             setExportando('');
@@ -1156,8 +1210,205 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     ))}
                 </div>
 
-                {/* ── Apuestas ── */}
-                {seccionActiva === 'apuestas' && (
+                {/* ── Inicio ── */}
+                {seccionActiva === 'inicio' && (
+                <div className="space-y-8">
+
+                    {/* Bolsa de Marketing */}
+                    <div>
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">💰 Bolsa de Marketing</h2>
+                        {mktCargando ? (
+                            <p className="text-sm text-zinc-400">Cargando...</p>
+                        ) : marketing ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Resumen */}
+                                <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-5 border border-zinc-200 dark:border-white/10 space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-zinc-500 dark:text-zinc-400">Ingresos totales</span>
+                                        <span className="font-bold text-zinc-800 dark:text-white">{formatoPesos(marketing.ingresosTotales)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm border-t border-zinc-200 dark:border-white/10 pt-3">
+                                        <span className="text-zinc-500 dark:text-zinc-400">Bolsa 5% de ingresos</span>
+                                        <span className="font-bold text-amber-500">{formatoPesos(marketing.bolsa)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm text-red-500 dark:text-red-400">
+                                        <span>− Bonos influencers (automático)</span>
+                                        <span className="font-semibold">{formatoPesos(marketing.bonosInfluencers)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm text-red-500 dark:text-red-400">
+                                        <span>− Otros bonos (manual)</span>
+                                        <span className="font-semibold">{formatoPesos(marketing.bonoManual)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm text-red-500 dark:text-red-400">
+                                        <span>− Pauta publicitaria (manual)</span>
+                                        <span className="font-semibold">{formatoPesos(marketing.pautaAds)}</span>
+                                    </div>
+                                    <div className={`flex justify-between text-base font-black border-t border-zinc-200 dark:border-white/10 pt-3 ${marketing.disponible >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                        <span>= Disponible</span>
+                                        <span>{formatoPesos(marketing.disponible)}</span>
+                                    </div>
+                                    {/* Barra de uso */}
+                                    <div className="mt-2">
+                                        <div className="h-2 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                            {marketing.bolsa > 0 && (
+                                                <div
+                                                    className="h-full bg-red-500 rounded-full transition-all"
+                                                    style={{ width: `${Math.min(100, ((marketing.bonosInfluencers + marketing.bonoManual + marketing.pautaAds) / marketing.bolsa) * 100).toFixed(1)}%` }}
+                                                />
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-zinc-400 mt-1 text-right">
+                                            {marketing.bolsa > 0 ? `${Math.min(100, Math.round(((marketing.bonosInfluencers + marketing.bonoManual + marketing.pautaAds) / marketing.bolsa) * 100))}% usado` : '0% usado'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Formulario + lista gastos manuales */}
+                                <div className="space-y-4">
+                                    <form onSubmit={handleAgregarGasto} className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/10 space-y-3">
+                                        <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200">Registrar gasto manual</p>
+                                        <select
+                                            value={mktTipo}
+                                            onChange={(e) => setMktTipo(e.target.value)}
+                                            className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-2 text-sm"
+                                        >
+                                            <option value="pauta_ads">Pauta publicitaria</option>
+                                            <option value="bono_manual">Otro bono manual</option>
+                                        </select>
+                                        <input
+                                            type="text"
+                                            placeholder="Descripción (ej. Meta Ads junio)"
+                                            value={mktDesc}
+                                            onChange={(e) => setMktDesc(e.target.value)}
+                                            className="w-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-2 text-sm"
+                                        />
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="number"
+                                                placeholder="Monto $"
+                                                value={mktMonto}
+                                                onChange={(e) => setMktMonto(e.target.value)}
+                                                min="1"
+                                                className="flex-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-2 text-sm"
+                                            />
+                                            <input
+                                                type="date"
+                                                value={mktFecha}
+                                                onChange={(e) => setMktFecha(e.target.value)}
+                                                className="flex-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-2 text-sm"
+                                            />
+                                        </div>
+                                        {mktError && <p className="text-xs text-red-500">{mktError}</p>}
+                                        <button
+                                            type="submit"
+                                            disabled={mktGuardando}
+                                            className="w-full py-2 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 font-bold rounded-lg text-sm"
+                                        >
+                                            {mktGuardando ? 'Guardando...' : 'Agregar gasto'}
+                                        </button>
+                                    </form>
+
+                                    {marketing.gastos.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Gastos registrados</p>
+                                            {marketing.gastos.map((g) => (
+                                                <div key={g.id} className="flex items-center gap-2 bg-zinc-50 dark:bg-white/5 rounded-lg px-3 py-2 border border-zinc-200 dark:border-white/10">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 truncate">{g.descripcion || (g.tipo === 'pauta_ads' ? 'Pauta' : 'Bono manual')}</p>
+                                                        <p className="text-xs text-zinc-400">{g.fecha} · {formatoPesos(g.monto)}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleEliminarGasto(g.id)}
+                                                        className="text-red-400 hover:text-red-600 text-xs flex-shrink-0"
+                                                        title="Eliminar"
+                                                    >✕</button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-zinc-400">Sin datos de marketing</p>
+                        )}
+                    </div>
+
+                    {/* Demografía de compradores */}
+                    <div>
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">👥 Perfil del comprador</h2>
+                        {demoCargando ? (
+                            <p className="text-sm text-zinc-400">Cargando...</p>
+                        ) : demograficos ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Género */}
+                                <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-5 border border-zinc-200 dark:border-white/10">
+                                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-3">Género</p>
+                                    <p className="text-xs text-zinc-400 mb-4">
+                                        {demograficos.totales.con_sexo} de {demograficos.totales.total_compradores} compradores con dato ({demograficos.totales.total_compradores > 0 ? Math.round((demograficos.totales.con_sexo / demograficos.totales.total_compradores) * 100) : 0}%)
+                                    </p>
+                                    {demograficos.genero.length === 0 ? (
+                                        <p className="text-xs text-zinc-400">Sin datos aún</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {demograficos.genero.map((g) => {
+                                                const total = demograficos.genero.reduce((s, x) => s + x.total, 0);
+                                                const pct = total > 0 ? Math.round((g.total / total) * 100) : 0;
+                                                const colores = { masculino: 'bg-blue-500', femenino: 'bg-pink-500', prefiero_no_decirlo: 'bg-zinc-400', sin_dato: 'bg-zinc-300' };
+                                                const etiquetas = { masculino: 'Masculino', femenino: 'Femenino', prefiero_no_decirlo: 'No especificado', sin_dato: 'Sin dato' };
+                                                return (
+                                                    <div key={g.sexo}>
+                                                        <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-300 mb-1">
+                                                            <span>{etiquetas[g.sexo] || g.sexo}</span>
+                                                            <span className="font-bold">{g.total} ({pct}%)</span>
+                                                        </div>
+                                                        <div className="h-2.5 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                                            <div className={`h-full rounded-full ${colores[g.sexo] || 'bg-zinc-500'}`} style={{ width: `${pct}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Rangos de edad (Meta) */}
+                                <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-5 border border-zinc-200 dark:border-white/10">
+                                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-3">Rango de edad (Meta)</p>
+                                    <p className="text-xs text-zinc-400 mb-4">
+                                        {demograficos.totales.con_edad} de {demograficos.totales.total_compradores} compradores con dato ({demograficos.totales.total_compradores > 0 ? Math.round((demograficos.totales.con_edad / demograficos.totales.total_compradores) * 100) : 0}%)
+                                    </p>
+                                    {demograficos.edades.length === 0 ? (
+                                        <p className="text-xs text-zinc-400">Sin datos aún</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {demograficos.edades.map((e) => {
+                                                const maxEdad = Math.max(...demograficos.edades.map((x) => x.total));
+                                                const pct = maxEdad > 0 ? Math.round((e.total / maxEdad) * 100) : 0;
+                                                return (
+                                                    <div key={e.rango}>
+                                                        <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-300 mb-1">
+                                                            <span className="font-mono">{e.rango}</span>
+                                                            <span className="font-bold">{e.total}</span>
+                                                        </div>
+                                                        <div className="h-2.5 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-zinc-400">Sin datos demográficos</p>
+                        )}
+                    </div>
+                </div>
+                )}
+
+                {/* ── Pronósticos ── */}
+                {seccionActiva === 'pronosticos' && (
                 <div>
                     {/* Controles */}
                     <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -1196,7 +1447,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     <>
                         {/* Métricas del partido */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                            <Metrica titulo="Total apuestas" valor={apData.total} />
+                            <Metrica titulo="Total pronósticos" valor={apData.total} />
                             <Metrica titulo="Partido" valor={`${apData.partido.equipo_local} vs ${apData.partido.equipo_visitante}`} />
                             <Metrica titulo="Estado" valor={apData.partido.estado} />
                             <Metrica titulo="Resultado real" valor={
@@ -1229,7 +1480,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
 
                         {/* Export buttons */}
                         <div className="flex gap-2 mb-3 flex-wrap items-center">
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">Exportar {apData.total} apuestas:</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">Exportar {apData.total} pronósticos:</span>
                             <BtnExport label="CSV" activo={exportando === 'csv'} onClick={() => exportarApuestas('csv')} color="green" />
                             <BtnExport label="Excel" activo={exportando === 'excel'} onClick={() => exportarApuestas('excel')} color="blue" />
                             <BtnExport label="PDF" activo={exportando === 'pdf'} onClick={() => exportarApuestas('pdf')} color="red" />
