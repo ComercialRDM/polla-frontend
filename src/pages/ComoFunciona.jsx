@@ -65,8 +65,8 @@ export default function ComoFunciona() {
         <div ref={rootRef} className="como-funciona-page min-h-screen w-full bg-white dark:bg-zinc-950">
             <main>
                 <HeroComoFunciona />
-                <PasosParticipar />
                 <PremiosSection />
+                <PasosParticipar />
                 <PuntosFasesSection />
                 <BonosSection />
                 <InfoImportanteSection />

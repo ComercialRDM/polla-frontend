@@ -66,13 +66,6 @@ export const PUNTOS_EXTRA = [
         tope: 'Máximo 500 puntos',
     },
     {
-        icono: 'WhatsApp',
-        titulo: 'Comparte por WhatsApp',
-        descripcion: 'Inicia sesión en tu cuenta y comparte tu pronóstico por WhatsApp (máx. 1 vez por partido).',
-        puntos: '+20 pts',
-        tope: 'Máximo 500 puntos',
-    },
-    {
         icono: 'UserPlus',
         titulo: 'Invita amigos',
         descripcion: 'Inicia sesión para generar tu enlace personal. Ganas puntos cuando alguien compra un bono con él.',

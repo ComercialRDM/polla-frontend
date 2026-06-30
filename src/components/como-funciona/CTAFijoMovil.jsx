@@ -22,9 +22,9 @@ export default function CTAFijoMovil() {
         <div className="sm:hidden print:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pt-3 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-200 dark:border-white/10" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
             <Link
                 to="/comprar"
-                className="block w-full text-center rounded-full bg-zinc-950 dark:bg-[#FCD116] text-white dark:text-zinc-950 font-bold text-base py-3.5 shadow-lg shadow-zinc-950/20"
+                className="block w-full text-center rounded-full bg-[#FCD116] text-zinc-950 font-bold text-base py-3.5 shadow-lg shadow-amber-400/30"
             >
-                Comprar Bono Digital
+                ¡Quiero Participar!
             </Link>
         </div>
     );

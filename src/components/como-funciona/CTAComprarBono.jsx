@@ -10,9 +10,9 @@ export default function CTAComprarBono({ microcopy, className = '' }) {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Link
                     to="/comprar"
-                    className="inline-flex items-center justify-center rounded-full bg-zinc-950 dark:bg-[#FCD116] text-white dark:text-zinc-950 font-bold text-base px-9 py-4 shadow-lg shadow-zinc-950/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116]"
+                    className="inline-flex items-center justify-center rounded-full bg-[#FCD116] text-zinc-950 font-bold text-base px-9 py-4 shadow-lg shadow-amber-400/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116]"
                 >
-                    Comprar Bono Digital
+                    ¡Quiero Participar!
                 </Link>
             </motion.div>
             {microcopy && (
