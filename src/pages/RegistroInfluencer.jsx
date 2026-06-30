@@ -94,11 +94,25 @@ export default function RegistroInfluencer() {
                 </p>
 
                 {enviado ? (
-                    <div className="rounded-xl border border-green-400/40 bg-green-50 dark:bg-green-900/20 px-4 py-5 text-center">
-                        <p className="text-2xl mb-2">✅</p>
-                        <p className="text-green-800 dark:text-green-300 font-bold mb-1">¡Listo, {nombre.trim()}!</p>
-                        <p className="text-green-700 dark:text-green-400 text-sm">
-                            Recibimos tu registro. Muy pronto te enviaremos tu Bono Especial por correo y WhatsApp para que empieces a participar.
+                    <div className="flex flex-col gap-4">
+                        <div className="rounded-xl border border-green-400/40 bg-green-50 dark:bg-green-900/20 px-4 py-5 text-center">
+                            <p className="text-2xl mb-2">✅</p>
+                            <p className="text-green-800 dark:text-green-300 font-bold mb-2">¡Listo, {nombre.trim()}!</p>
+                            <p className="text-green-700 dark:text-green-400 text-sm">
+                                Recibimos tu registro. Para que podamos enviarte tu Bono Especial por WhatsApp,
+                                completa el <strong>Paso 2</strong>: escríbenos un saludo al WhatsApp del negocio.
+                            </p>
+                        </div>
+                        <a
+                            href={`https://wa.me/573103963708?text=${encodeURIComponent(`Hola, soy ${nombre.trim()}, acabo de registrarme como creador de contenido en la Polla Mundialista de La Retoucherie 🇨🇴⚽`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-4 rounded-full font-black text-white text-center bg-[#25D366] shadow-lg active:scale-95 transition-transform text-lg"
+                        >
+                            💬 Paso 2: Escríbenos al WhatsApp
+                        </a>
+                        <p className="text-zinc-400 dark:text-zinc-500 text-xs text-center">
+                            Este paso es necesario para que WhatsApp nos permita enviarte el bono directamente. Solo envía el mensaje que ya viene escrito.
                         </p>
                     </div>
                 ) : (
