@@ -120,10 +120,11 @@ function AppRoutes() {
             <CapturarAtribucion />
             <Suspense fallback={<div className="min-h-screen bg-white dark:bg-zinc-950" />}>
                 <Routes>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<ComoFunciona />} />
+                    <Route path="/landing" element={<Home />} />
+                    <Route path="/como-funciona" element={<Navigate to="/" replace />} />
                     <Route path="/premios" element={<Premios />} />
                     <Route path="/como-participo" element={<ComoParticipo />} />
-                    <Route path="/como-funciona" element={<ComoFunciona />} />
                     <Route path="/influencers" element={<RegistroInfluencer />} />
                     <Route path="/nosotros" element={<Nosotros />} />
                     <Route path="/comprar" element={<Comprar />} />

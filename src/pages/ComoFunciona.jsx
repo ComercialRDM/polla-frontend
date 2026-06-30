@@ -54,10 +54,10 @@ export default function ComoFunciona() {
     );
 
     useSeo({
-        title: '¿Cómo funciona la Polla Mundialista? - La Retoucherie de Manuela',
+        title: 'Polla Mundialista 2026 - Gana hasta $5.000.000 | La Retoucherie de Manuela',
         description:
-            'Entiende en 2 minutos cómo comprar tu bono, pronosticar los partidos del Mundial 2026 y ganar premios de hasta $5.000.000 COP con la Polla Mundialista de La Retoucherie.',
-        path: '/como-funciona',
+            'Pronostica los partidos del Mundial 2026 y gana hasta $5.000.000 COP en premios. Compra tu bono desde $50.000 y participa desde cualquier ciudad de Colombia.',
+        path: '/',
         jsonLd,
     });
 
