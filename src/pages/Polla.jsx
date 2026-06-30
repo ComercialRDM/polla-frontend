@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
-import { formatoPesos } from '../config/planes';
+import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
+import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
 import RankingEnVivo from '../components/RankingEnVivo';
 import RankingInfluencers from '../components/RankingInfluencers';
@@ -49,6 +50,7 @@ export default function Polla() {
     const [errorPorPartido, setErrorPorPartido] = useState({});
     const [mensajeCopiado, setMensajeCopiado] = useState(false);
     const [partidosVisibles, setPartidosVisibles] = useState(3);
+    const [encolados, setEncolados] = useState({});
 
     useEffect(() => {
         if (!token) {
@@ -63,6 +65,16 @@ export default function Polla() {
                     setError('No encontramos un bono activo asociado a este link.');
                 } else {
                     setInfo(data);
+                    // Si ya había predicciones encoladas por falta de cupos (de una
+                    // visita anterior), se reflejan en la UI sin que el usuario tenga
+                    // que volver a marcarlas.
+                    const idsPartidos = new Set(data.partidos.map((p) => p.partido_id));
+                    const pendientes = obtenerMarcadoresPendientes().filter((m) => idsPartidos.has(m.partido_id));
+                    if (pendientes.length > 0) {
+                        const inicial = {};
+                        pendientes.forEach((m) => { inicial[m.partido_id] = true; });
+                        setEncolados(inicial);
+                    }
                 }
             })
             .catch(() => setError('Error de conexión con el servidor.'))
@@ -79,6 +91,16 @@ export default function Polla() {
         return info.partidos.find((p) => calcularRestante(p.fecha_hora_inicio) > 0) || info.partidos[0];
     }, [info]);
 
+    const idsEncolados = Object.keys(encolados).filter((id) => encolados[id]).map(Number);
+    const cantidadEncolados = idsEncolados.length;
+    const { cupos: cuposEncolados, monto: montoEncolados } = useMemo(() => {
+        if (!info?.partidos?.length || idsEncolados.length === 0) return { cupos: 0, monto: 0 };
+        const predicciones = idsEncolados.map((id) => ({ partido_id: id }));
+        const partidosComoFase = info.partidos.map((p) => ({ id: p.partido_id, fase: p.fase }));
+        return calcularMontoPorPredicciones(predicciones, partidosComoFase);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [info, cantidadEncolados]);
+
     function actualizarMarcador(partidoId, campo, valor) {
         const valorLimpio = valor.replace(/[^0-9]/g, '').slice(0, 2);
         setMarcadores((prev) => ({
@@ -94,6 +116,16 @@ export default function Polla() {
 
         if (m.local === '' || m.local === undefined || m.visitante === '' || m.visitante === undefined) {
             setErrorPorPartido((prev) => ({ ...prev, [partido.partido_id]: 'Completa el marcador.' }));
+            return;
+        }
+
+        // Sin cupos suficientes: se encola la predicción (igual que en la lista
+        // pública de "Próximos partidos") en vez de intentar votar de una y
+        // fallar — el usuario puede comprar más cupos cuando quiera y se
+        // confirma sola en /gracias.
+        if (info.cupos_disponibles < (partido.cupos_costo || 1)) {
+            agregarMarcadorPendiente({ partido_id: partido.partido_id, local: Number(m.local), visitante: Number(m.visitante) });
+            setEncolados((prev) => ({ ...prev, [partido.partido_id]: true }));
             return;
         }
 
@@ -194,6 +226,24 @@ export default function Polla() {
                     )}
                 </div>
 
+                {/* Predicciones guardadas sin cupos suficientes todavía */}
+                {cantidadEncolados > 0 && (
+                    <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-6 text-center">
+                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">
+                            🔥 Tienes {cantidadEncolados} {cantidadEncolados === 1 ? 'predicción guardada' : 'predicciones guardadas'} sin cupos
+                        </p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
+                            Compra {cuposEncolados} {cuposEncolados === 1 ? 'cupo' : 'cupos'} más para confirmarlas todas.
+                        </p>
+                        <Link
+                            to="/comprar"
+                            className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]"
+                        >
+                            Comprar {formatoPesos(montoEncolados)}
+                        </Link>
+                    </div>
+                )}
+
                 {/* Ranking solo entre creadores de contenido (Bono Especial) */}
                 {info.es_especial && <RankingInfluencers token={token} />}
 
@@ -268,15 +318,6 @@ export default function Polla() {
                                     </div>
                                 ) : cerrado ? (
                                     <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
-                                ) : info.cupos_disponibles < (p.cupos_costo || 1) ? (
-                                    <div className="text-center">
-                                        <p className="text-zinc-400 text-sm mb-2">
-                                            Este partido requiere {p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'} — tienes {info.cupos_disponibles}.
-                                        </p>
-                                        <Link to="/comprar" className="text-amber-400 underline text-sm font-bold">
-                                            Recargar cupos
-                                        </Link>
-                                    </div>
                                 ) : (
                                     <>
                                         <div className="flex items-center justify-between gap-2">
@@ -303,17 +344,33 @@ export default function Polla() {
                                             </div>
                                         </div>
 
+                                        {info.cupos_disponibles < (p.cupos_costo || 1) && !encolados[p.partido_id] && (
+                                            <p className="text-amber-400 text-xs text-center mt-2">
+                                                Te faltan cupos para este partido ({p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'} — tienes {info.cupos_disponibles}). Puedes guardar tu predicción igual y comprar más cupos después.
+                                            </p>
+                                        )}
+
                                         {errorPorPartido[p.partido_id] && (
                                             <p className="text-red-400 text-sm text-center mt-3">{errorPorPartido[p.partido_id]}</p>
                                         )}
 
-                                        <button
-                                            onClick={() => handleSubmit(p)}
-                                            disabled={enviandoId === p.partido_id}
-                                            className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                                        >
-                                            {enviandoId === p.partido_id ? 'Guardando...' : `Guardar pronóstico (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`}
-                                        </button>
+                                        {encolados[p.partido_id] ? (
+                                            <div className="w-full mt-4 py-3 rounded-xl font-bold text-center bg-amber-400/15 text-amber-600 dark:text-amber-400 text-sm">
+                                                ✓ Predicción guardada — <Link to="/comprar" className="underline">compra cupos para confirmarla</Link>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleSubmit(p)}
+                                                disabled={enviandoId === p.partido_id}
+                                                className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                                            >
+                                                {enviandoId === p.partido_id
+                                                    ? 'Guardando...'
+                                                    : info.cupos_disponibles < (p.cupos_costo || 1)
+                                                        ? `Guardar predicción (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`
+                                                        : `Guardar pronóstico (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`}
+                                            </button>
+                                        )}
 
                                         {mensajeExitoId === p.partido_id && (
                                             <CompartirPronostico

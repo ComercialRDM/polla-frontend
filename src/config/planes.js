@@ -32,3 +32,24 @@ export function calcularSaldoBono(valor) {
 export function formatoPesos(valor) {
     return `$${Number(valor).toLocaleString('es-CO')}`;
 }
+
+// Espejo exacto de COSTO_CUPO_FASE en polla-backend/src/routes/polla.js — debe
+// coincidir siempre, porque acá solo se usa para PREVISUALIZAR el monto antes
+// de pagar; el cobro real de cupos lo valida el backend en POST /polla/votar.
+export const COSTO_CUPO_FASE = {
+    grupos: 1, dieciseisavos: 1, octavos: 1,
+    cuartos: 2, semifinal: 2, final: 4,
+};
+
+// Suma el costo en cupos de cada predicción pendiente (según la fase de su
+// partido) y lo convierte al monto personalizado equivalente, respetando el
+// mínimo de "Otro monto" ya existente.
+export function calcularMontoPorPredicciones(predicciones, partidos) {
+    const cupos = predicciones.reduce((acc, pred) => {
+        const partido = partidos.find((p) => p.id === pred.partido_id);
+        const costo = COSTO_CUPO_FASE[partido?.fase] ?? 1;
+        return acc + costo;
+    }, 0);
+    const monto = Math.max(cupos * CUPO_VALOR_PERSONALIZADO, MONTO_PERSONALIZADO_MIN);
+    return { cupos, monto };
+}

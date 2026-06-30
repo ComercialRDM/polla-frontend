@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { obtenerPartidos } from '../api';
 import { partidosFuturos } from '../utils/partidos';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
-import { guardarMarcadorPendiente } from '../utils/marcadorPendiente';
+import { agregarMarcadorPendiente } from '../utils/marcadorPendiente';
 import Bandera from './Bandera';
 import CountdownPartido from './CountdownPartido';
 import ComoFunciona from './ComoFunciona';
@@ -68,7 +68,7 @@ export default function HeroPrediccion() {
         }
 
         guardarDatosComprador(form);
-        guardarMarcadorPendiente({ partido_id: partido.id, local: Number(local), visitante: Number(visitante) });
+        agregarMarcadorPendiente({ partido_id: partido.id, local: Number(local), visitante: Number(visitante) });
         navigate(`/comprar?partido=${partido.id}`);
     }
 

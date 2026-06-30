@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { PLANES, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, MULTIPLO_PERSONALIZADO, CUPO_VALOR_PERSONALIZADO, calcularCupos, calcularSaldoBono, formatoPesos } from '../config/planes';
+import { PLANES, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, MULTIPLO_PERSONALIZADO, CUPO_VALOR_PERSONALIZADO, calcularCupos, calcularSaldoBono, calcularMontoPorPredicciones, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, crearTransferencia, obtenerBancosPse, crearPSE, crearBancolombia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
 import Bandera from '../components/Bandera';
 import { partidosFuturos } from '../utils/partidos';
+import { obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import { obtenerSesion, guardarSesion } from '../utils/sesion';
 import { guardarDatosComprador, obtenerDatosComprador } from '../utils/datosComprador';
 import { getStoredAttribution } from '../lib/attribution';
@@ -75,6 +76,11 @@ export default function Comprar() {
     const planUrlValido = PLANES.some((p) => p.valor === planDesdeUrl) ? planDesdeUrl : null;
     const partidoDesdeUrl = Number(searchParams.get('partido')) || null;
 
+    // Predicciones hechas antes de pagar (Hero o la lista de "Próximos
+    // partidos" en Home) — si hay varias, se usan para preseleccionar el
+    // monto personalizado más abajo en vez del plan por defecto.
+    const [pendientes] = useState(() => obtenerMarcadoresPendientes());
+
     const [selectValor, setSelectValor] = useState(() =>
         String(planUrlValido ?? PLAN_DEFAULT)
     );
@@ -139,6 +145,15 @@ export default function Comprar() {
                     setPartidos(lista);
                     const coincide = partidoDesdeUrl && lista.some((p) => p.id === partidoDesdeUrl);
                     setPartidoId(coincide ? partidoDesdeUrl : (lista[0]?.id ?? null));
+
+                    // Si predijo varios partidos antes de pagar, el monto se calcula
+                    // según esas predicciones en vez de usar el plan por defecto
+                    // (a menos que llegó con un ?plan= explícito en la URL).
+                    if (pendientes.length > 0 && !planUrlValido) {
+                        const { monto } = calcularMontoPorPredicciones(pendientes, lista);
+                        setSelectValor(VALOR_OTRO);
+                        setMontoCustom(String(monto));
+                    }
                 }
             })
             .catch(() => setError('No se pudo cargar la información del partido.'));
@@ -423,6 +438,28 @@ export default function Comprar() {
                 <div className="mb-4">
                     <CuposRestantes />
                 </div>
+
+                {pendientes.length > 0 && (
+                    <div className="mb-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3">
+                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1.5">
+                            🔥 Ya predijiste {pendientes.length} {pendientes.length === 1 ? 'partido' : 'partidos'}
+                        </p>
+                        <ul className="text-zinc-600 dark:text-zinc-300 text-xs flex flex-col gap-0.5 mb-1.5">
+                            {pendientes.map((pred) => {
+                                const partido = partidos.find((p) => p.id === pred.partido_id);
+                                if (!partido) return null;
+                                return (
+                                    <li key={pred.partido_id}>
+                                        {partido.equipo_local} {pred.local} - {pred.visitante} {partido.equipo_visitante}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                            Por eso preseleccionamos el monto que cubre esos cupos — puedes cambiarlo si quieres.
+                        </p>
+                    </div>
+                )}
 
                 {/* ── Selector de plan ── */}
                 <div className="mb-3">

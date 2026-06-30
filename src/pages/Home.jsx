@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { obtenerSesion, cerrarSesion } from '../utils/sesion';
 import HeroPrediccion from '../components/HeroPrediccion';
+import ProximosPartidos from '../components/ProximosPartidos';
 import PlanesBono from '../components/PlanesBono';
 import CuposRestantes from '../components/CuposRestantes';
 import ResumenPublico from '../components/ResumenPublico';
@@ -83,6 +84,7 @@ export default function Home() {
                     </div>
 
                     <HeroPrediccion />
+                    <ProximosPartidos limite={10} titulo="⚽ Próximos 10 partidos" />
                 </>
             )}
 

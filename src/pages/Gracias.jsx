@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { obtenerInfoPolla, votar } from '../api';
-import { obtenerMarcadorPendiente, limpiarMarcadorPendiente } from '../utils/marcadorPendiente';
+import { obtenerMarcadoresPendientes, quitarMarcadorPendiente } from '../utils/marcadorPendiente';
 import { obtenerSesion } from '../utils/sesion';
 import { trackPurchase } from '../lib/analytics';
 
@@ -17,7 +17,7 @@ export default function Gracias() {
     // backend (si no hay token, no hay nada que verificar y se asume éxito,
     // igual que antes).
     const [estado, setEstado] = useState(token ? 'verificando' : 'aprobado');
-    const [marcadorConfirmado, setMarcadorConfirmado] = useState(null);
+    const [marcadoresConfirmados, setMarcadoresConfirmados] = useState([]);
     // La cuenta y la sesión ya quedaron creadas desde Comprar.jsx al generar el
     // pago (antes incluso de que se confirme) — si existe, no hay que pedirle
     // que se registre, solo lo mandamos a su dashboard.
@@ -28,39 +28,56 @@ export default function Gracias() {
         let cancelado = false;
         let intentos = 0;
 
-        // Si el usuario predijo un marcador en el Hero antes de pagar (guardado
-        // en marcadorPendiente.js), apenas se confirma el pago se envía solo,
-        // reutilizando el mismo endpoint de voto pagado que usa el flujo manual
-        // — sin pedirle al usuario ninguna acción extra.
-        async function confirmarMarcadorPendiente(data) {
-            const pendiente = obtenerMarcadorPendiente();
-            if (!pendiente) return;
+        // Si el usuario predijo uno o varios marcadores antes de pagar (Hero o la
+        // lista de "Próximos partidos" en Home, guardados en marcadorPendiente.js),
+        // apenas se confirma el pago se envían solos, uno por uno, reutilizando el
+        // mismo endpoint de voto pagado que usa el flujo manual — sin pedirle al
+        // usuario ninguna acción extra. Los cupos disponibles se van descontando
+        // localmente a medida que cada uno se confirma, para no exceder el plan
+        // que realmente compró.
+        async function confirmarMarcadoresPendientes(data) {
+            const pendientes = obtenerMarcadoresPendientes();
+            if (pendientes.length === 0) return;
 
-            const partidoInfo = data.partidos?.find((p) => p.partido_id === pendiente.partido_id);
-            if (!partidoInfo || partidoInfo.ya_pronosticado) {
-                limpiarMarcadorPendiente();
-                return;
-            }
-            if (data.cupos_disponibles < partidoInfo.cupos_costo) {
-                // No hay cupos suficientes para este partido con el plan comprado;
-                // se deja el marcador pendiente para que lo registre manualmente.
-                return;
-            }
+            let cuposRestantes = data.cupos_disponibles;
+            const confirmados = [];
 
-            try {
-                const resultado = await votar({
-                    token_acceso: token,
-                    partido_id: pendiente.partido_id,
-                    local: pendiente.local,
-                    visitante: pendiente.visitante,
-                });
-                if (resultado?.success) {
-                    limpiarMarcadorPendiente();
-                    setMarcadorConfirmado({ local: pendiente.local, visitante: pendiente.visitante });
+            for (const pendiente of pendientes) {
+                const partidoInfo = data.partidos?.find((p) => p.partido_id === pendiente.partido_id);
+                if (!partidoInfo || partidoInfo.ya_pronosticado) {
+                    quitarMarcadorPendiente(pendiente.partido_id);
+                    continue;
                 }
-            } catch {
-                // se deja el marcador pendiente, no se bloquea la pantalla de éxito
+                if (cuposRestantes < partidoInfo.cupos_costo) {
+                    // No hay cupos suficientes para este partido con el plan comprado;
+                    // se deja pendiente para que lo registre manualmente.
+                    continue;
+                }
+
+                try {
+                    const resultado = await votar({
+                        token_acceso: token,
+                        partido_id: pendiente.partido_id,
+                        local: pendiente.local,
+                        visitante: pendiente.visitante,
+                    });
+                    if (resultado?.success) {
+                        quitarMarcadorPendiente(pendiente.partido_id);
+                        cuposRestantes -= partidoInfo.cupos_costo;
+                        confirmados.push({
+                            partido_id: pendiente.partido_id,
+                            equipo_local: partidoInfo.equipo_local,
+                            equipo_visitante: partidoInfo.equipo_visitante,
+                            local: pendiente.local,
+                            visitante: pendiente.visitante,
+                        });
+                    }
+                } catch {
+                    // se deja el marcador pendiente, no se bloquea la pantalla de éxito
+                }
             }
+
+            if (confirmados.length > 0) setMarcadoresConfirmados(confirmados);
         }
 
         async function verificar() {
@@ -68,7 +85,7 @@ export default function Gracias() {
                 const data = await obtenerInfoPolla(token);
                 if (cancelado) return;
                 if (data?.acceso) {
-                    await confirmarMarcadorPendiente(data);
+                    await confirmarMarcadoresPendientes(data);
                     // purchase: solo aqui, porque data.acceso=true significa que el
                     // backend ya confirmo estado_pago='APROBADO' para este token (no
                     // se dispara en 'verificando'/'demorado'). trackPurchase tiene su
@@ -141,14 +158,18 @@ export default function Gracias() {
                             Tu Bono Digital fue procesado correctamente. Ya eres parte de la Polla Mundialista de La Retoucherie.
                         </p>
 
-                        {marcadorConfirmado && (
+                        {marcadoresConfirmados.length > 0 && (
                             <div className="w-full rounded-2xl border-2 border-green-400 bg-green-50 dark:bg-green-900/15 px-5 py-4 mb-4 text-center">
-                                <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">
-                                    ✓ Marcador registrado
+                                <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wider mb-2">
+                                    ✓ {marcadoresConfirmados.length === 1 ? 'Marcador registrado' : `${marcadoresConfirmados.length} marcadores registrados`}
                                 </p>
-                                <p className="text-4xl font-black text-zinc-900 dark:text-white tracking-tight">
-                                    {marcadorConfirmado.local} - {marcadorConfirmado.visitante}
-                                </p>
+                                <div className="flex flex-col gap-1.5">
+                                    {marcadoresConfirmados.map((m) => (
+                                        <p key={m.partido_id} className="text-zinc-900 dark:text-white font-bold text-sm">
+                                            {m.equipo_local} <span className="text-2xl font-black tracking-tight">{m.local} - {m.visitante}</span> {m.equipo_visitante}
+                                        </p>
+                                    ))}
+                                </div>
                             </div>
                         )}
 
