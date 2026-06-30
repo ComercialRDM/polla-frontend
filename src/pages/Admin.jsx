@@ -959,7 +959,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 setApData(data);
                 setApPage(page);
             } else {
-                setApError(data?.error || 'Error cargando apuestas');
+                setApError(data?.error || 'Error cargando pronósticos');
             }
         } catch {
             setApError('Error de conexión');
@@ -1559,7 +1559,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         className="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 disabled:opacity-40"
                                     >‹</button>
                                     <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                                        Página {apPage} de {totalPags} · {apData.total} apuestas
+                                        Página {apPage} de {totalPags} · {apData.total} pronósticos
                                     </span>
                                     <button
                                         onClick={() => cargarApuestas(apPartidoId, apPage + 1, apBusqueda)}
@@ -1578,10 +1578,10 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     )}
 
                     {!apData && !apCargando && apPartidoId && (
-                        <p className="text-zinc-400 text-sm text-center py-8">Haz clic en "Cargar" para ver las apuestas.</p>
+                        <p className="text-zinc-400 text-sm text-center py-8">Haz clic en "Cargar" para ver los pronósticos.</p>
                     )}
                     {!apPartidoId && (
-                        <p className="text-zinc-400 text-sm text-center py-8">Selecciona un partido para ver las apuestas.</p>
+                        <p className="text-zinc-400 text-sm text-center py-8">Selecciona un partido para ver los pronósticos.</p>
                     )}
                 </div>
                 )}
