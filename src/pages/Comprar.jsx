@@ -471,9 +471,9 @@ export default function Comprar() {
                                             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-black bg-[#FCD116] text-zinc-950 px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐ Popular</span>
                                         )}
                                         <p className="font-black text-zinc-900 dark:text-white text-sm leading-tight">{formatoPesos(plan.valor)}</p>
-                                        <p className="text-[10px] text-zinc-400 mt-0.5">Bono</p>
+                                        <p className="text-[10px] text-zinc-400 mt-0.5">¡Saldo extra gratis!</p>
                                         <p className="font-bold text-amber-500 text-sm leading-tight">{formatoPesos(plan.saldoBono)}</p>
-                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{plan.etiqueta}</p>
+                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{plan.etiqueta} en la polla</p>
                                     </button>
                                 );
                             })}
@@ -529,12 +529,12 @@ export default function Comprar() {
                                 <div>
                                     <p className="text-zinc-900 dark:text-white font-black text-lg leading-tight">{formatoPesos(planInfo.valor)}</p>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                                        Bono <span className="font-bold text-zinc-700 dark:text-zinc-300">{formatoPesos(planInfo.saldoBono)}</span> en servicios
+                                        Recibes gratis <span className="font-bold text-amber-500">{formatoPesos(planInfo.saldoBono)}</span> en servicios
                                     </p>
                                 </div>
                                 <div className="text-center shrink-0">
                                     <p className="text-amber-500 font-black text-2xl leading-none">{planInfo.intentos}</p>
-                                    <p className="text-zinc-500 text-[10px] uppercase font-bold">{planInfo.intentos === 1 ? 'cupo' : 'cupos'}</p>
+                                    <p className="text-zinc-500 text-[10px] uppercase font-bold">{planInfo.intentos === 1 ? 'cupo' : 'cupos'} polla</p>
                                 </div>
                             </div>
                         )}
@@ -559,6 +559,7 @@ export default function Comprar() {
                                 value={form.nombre}
                                 onChange={handleChange}
                                 placeholder="Ej: Manuela Pérez"
+                                autoComplete="name"
                                 className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-sm focus:outline-none"
                             />
                         </div>
@@ -571,6 +572,7 @@ export default function Comprar() {
                                 value={form.correo}
                                 onChange={handleChange}
                                 placeholder="tucorreo@email.com"
+                                autoComplete="email"
                                 className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-sm focus:outline-none"
                             />
                         </div>
@@ -585,6 +587,8 @@ export default function Comprar() {
                                     value={form.celular}
                                     onChange={handleChange}
                                     placeholder="3001234567"
+                                    autoComplete="tel-national"
+                                    inputMode="numeric"
                                     className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-sm focus:outline-none"
                                 />
                             </div>
