@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -47,6 +47,13 @@ const GRUPOS_NAV = [
         color: 'red',
         secciones: [
             { id: 'seguridad', label: '🔐 Seguridad' },
+        ],
+    },
+    {
+        id: 'growth', label: 'Growth',
+        color: 'teal',
+        secciones: [
+            { id: 'checklist', label: '📋 Growth Checklist' },
         ],
     },
 ];
@@ -191,6 +198,23 @@ export default function Admin() {
     const [mktFecha,            setMktFecha]            = useState(() => new Date().toISOString().slice(0, 10));
     const [mktGuardando,        setMktGuardando]        = useState(false);
 
+    // ── Growth Checklist ──────────────────────────────────────────────────────
+    const [clFecha,          setClFecha]          = useState(() => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' }));
+    const [clCategorias,     setClCategorias]     = useState([]);
+    const [clResumen,        setClResumen]        = useState(null);
+    const [clMatriz,         setClMatriz]         = useState(null);
+    const [clVista,          setClVista]          = useState('lista'); // 'lista' | 'matriz'
+    const [clCatAbierta,     setClCatAbierta]     = useState({});
+    const [clStandup,        setClStandup]        = useState('');
+    const [clStandupMeta,    setClStandupMeta]    = useState(null);
+    const [clCierre,         setClCierre]         = useState('');
+    const [clCierreMeta,     setClCierreMeta]     = useState(null);
+    const [clEnviando,       setClEnviando]       = useState('');
+    const [clGestionAbierta, setClGestionAbierta] = useState(false);
+    const [clNuevaCat,       setClNuevaCat]       = useState({ nombre: '', color: '#f59e0b' });
+    const [clNuevaAct,       setClNuevaAct]       = useState({ categoria_id: '', titulo: '', prioridad: 'normal', obligatoria: false });
+    const [clCargando,       setClCargando]       = useState(false);
+
     const [metricasSimulador, setMetricasSimulador] = useState(null);
     const [errorSimulador, setErrorSimulador] = useState('');
     const [precioSimulado, setPrecioSimulado] = useState(PRECIO_REFERENCIA);
@@ -249,6 +273,70 @@ export default function Admin() {
             const d = await adminVentasPorCanal(token);
             if (d?.success) setInicioCanales(d.canales || []);
         } catch { /* silencioso */ }
+    }
+
+    async function cargarChecklist(fecha) {
+        const f = fecha || clFecha;
+        setClCargando(true);
+        try {
+            const [cats, resumen, standup, cierre] = await Promise.all([
+                checklistCategorias(token, f),
+                checklistResumenDia(token, f),
+                checklistGetNota(token, f, 'standup'),
+                checklistGetNota(token, f, 'cierre'),
+            ]);
+            if (cats?.success) setClCategorias(cats.categorias);
+            if (resumen?.success) setClResumen(resumen);
+            if (standup?.success) setClStandup(standup.nota?.contenido || '');
+            if (standup?.success) setClStandupMeta(standup.nota);
+            if (cierre?.success) setClCierre(cierre.nota?.contenido || '');
+            if (cierre?.success) setClCierreMeta(cierre.nota);
+        } catch { /* silencioso */ }
+        setClCargando(false);
+    }
+
+    async function cargarChecklistMatriz() {
+        try {
+            const d = await checklistMatriz(token, 7);
+            if (d?.success) setClMatriz(d);
+        } catch { /* silencioso */ }
+    }
+
+    async function handleClCheck(actividadId, completada, nota) {
+        await checklistMarcarCheck(token, { actividad_id: actividadId, fecha: clFecha, completada, nota: nota ?? null });
+        setClCategorias((prev) => prev.map((cat) => ({
+            ...cat,
+            actividades: cat.actividades.map((a) =>
+                a.id === actividadId ? { ...a, completada, nota: nota ?? a.nota } : a
+            ),
+        })));
+        const d = await checklistResumenDia(token, clFecha);
+        if (d?.success) setClResumen(d);
+    }
+
+    async function handleClNota(tipo, enviar) {
+        setClEnviando(tipo + (enviar ? '_enviar' : '_guardar'));
+        const contenido = tipo === 'standup' ? clStandup : clCierre;
+        try {
+            const d = await checklistGuardarNota(token, { fecha: clFecha, tipo, contenido, enviar });
+            if (d?.success) {
+                if (tipo === 'standup') setClStandupMeta((m) => ({ ...m, enviado_en: d.enviado_en, contenido }));
+                else setClCierreMeta((m) => ({ ...m, enviado_en: d.enviado_en, contenido }));
+            }
+        } catch { /* silencioso */ }
+        setClEnviando('');
+    }
+
+    async function handleClCrearCategoria() {
+        if (!clNuevaCat.nombre.trim()) return;
+        const d = await checklistCrearCategoria(token, clNuevaCat);
+        if (d?.success) { setClNuevaCat({ nombre: '', color: '#f59e0b' }); cargarChecklist(); }
+    }
+
+    async function handleClCrearActividad() {
+        if (!clNuevaAct.categoria_id || !clNuevaAct.titulo.trim()) return;
+        const d = await checklistCrearActividad(token, clNuevaAct);
+        if (d?.success) { setClNuevaAct({ categoria_id: '', titulo: '', prioridad: 'normal', obligatoria: false }); cargarChecklist(); }
     }
 
     async function cargarDemograficos() {
@@ -805,6 +893,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); cargarAfiliados(); cargarComisiones(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'redenciones' && token) cargarResumenDia(resumenDiaFecha);
+        if (seccionActiva === 'checklist' && token) { cargarChecklist(); cargarChecklistMatriz(); }
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
         }
@@ -1253,6 +1342,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                         purple: 'bg-purple-500',
                         green:  'bg-emerald-500',
                         red:    'bg-red-500',
+                        teal:   'bg-teal-500',
                     };
                     const RING = {
                         amber:  'ring-amber-400',
@@ -1260,6 +1350,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                         purple: 'ring-purple-500',
                         green:  'ring-emerald-500',
                         red:    'ring-red-500',
+                        teal:   'ring-teal-500',
                     };
                     const grupoActivo = GRUPOS_NAV.find((g) => g.secciones.some((s) => s.id === seccionActiva));
                     return (
@@ -3261,6 +3352,333 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                     <p className="text-zinc-400 text-sm text-center py-3">No hay canjes en este período.</p>
                                 )}
                             </div>
+                        )}
+                    </div>
+                </div>
+                )}
+
+                {/* ── Growth Checklist ── */}
+                {seccionActiva === 'checklist' && (
+                <div className="space-y-8">
+
+                    {/* Selector de fecha */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <h1 className="text-xl font-black text-zinc-900 dark:text-white">📋 Growth Checklist</h1>
+                        <input
+                            type="date"
+                            value={clFecha}
+                            onChange={(e) => { setClFecha(e.target.value); cargarChecklist(e.target.value); }}
+                            className="rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+                        />
+                        {clCargando && <span className="text-xs text-zinc-400 animate-pulse">Cargando...</span>}
+                    </div>
+
+                    {/* A. Standup del día */}
+                    <div className="rounded-2xl border border-teal-200 dark:border-teal-800 bg-teal-50/50 dark:bg-teal-950/20 p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="font-bold text-teal-700 dark:text-teal-300 text-sm uppercase tracking-wide">☀️ Standup del día</p>
+                            {clStandupMeta?.enviado_en && (
+                                <span className="text-xs text-teal-600 dark:text-teal-400">✓ Enviado {new Date(clStandupMeta.enviado_en).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
+                            )}
+                        </div>
+                        <textarea
+                            rows={6}
+                            value={clStandup}
+                            onChange={(e) => setClStandup(e.target.value)}
+                            placeholder={`🎯 Prioridades de hoy:\n1. \n2. \n3. \n\n🔥 Foco principal:\n\n🚧 Bloqueos:\n\n💰 Objetivo comercial del día:`}
+                            className="w-full rounded-xl border border-teal-200 dark:border-teal-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-teal-400 resize-none font-mono"
+                        />
+                        <div className="flex gap-2 mt-3">
+                            <button
+                                onClick={() => handleClNota('standup', false)}
+                                disabled={!clStandup.trim() || clEnviando.startsWith('standup')}
+                                className="px-4 py-2 rounded-lg text-sm font-bold border border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40 disabled:opacity-40 transition-colors"
+                            >
+                                {clEnviando === 'standup_guardar' ? 'Guardando...' : 'Guardar borrador'}
+                            </button>
+                            <button
+                                onClick={() => handleClNota('standup', true)}
+                                disabled={!clStandup.trim() || clEnviando.startsWith('standup')}
+                                className="px-4 py-2 rounded-lg text-sm font-bold bg-teal-500 text-white hover:bg-teal-600 disabled:opacity-40 transition-colors"
+                            >
+                                {clEnviando === 'standup_enviar' ? 'Enviando...' : '📧 Enviar standup'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* B. KPIs del día */}
+                    {clResumen && (
+                    <div>
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">📊 KPIs del día · {clFecha}</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {[
+                                { label: 'Avance del día', valor: `${clResumen.pct}%`, sub: `${clResumen.completadas}/${clResumen.total} tareas`, color: clResumen.pct >= 70 ? 'text-green-600 dark:text-green-400' : clResumen.pct >= 40 ? 'text-amber-500' : 'text-red-500' },
+                                { label: 'Completadas', valor: clResumen.completadas, sub: 'tareas hechas hoy', color: 'text-green-600 dark:text-green-400' },
+                                { label: 'Pendientes', valor: clResumen.pendientes, sub: 'tareas por hacer', color: 'text-amber-500' },
+                                { label: 'Bloqueadas', valor: clResumen.bloqueadas, sub: 'con nota "bloqueo"', color: 'text-red-500' },
+                                { label: 'Categorías activas', valor: clResumen.categoriasTrabajadas, sub: `de ${clResumen.porCategoria?.length || 0} totales`, color: 'text-blue-600 dark:text-blue-400' },
+                                { label: 'Mejor categoría', valor: clResumen.mejorCategoria?.nombre || '—', sub: `${clResumen.mejorCategoria ? Math.round((clResumen.mejorCategoria.completadas / (clResumen.mejorCategoria.total || 1)) * 100) : 0}% completado`, color: 'text-purple-600 dark:text-purple-400' },
+                                { label: 'Ingresos del día', valor: formatoPesos(clResumen.ingresosHoy || 0), sub: 'transacciones aprobadas', color: 'text-teal-600 dark:text-teal-400' },
+                                { label: '% Completado', valor: `${clResumen.pct}%`, sub: 'progreso general', color: clResumen.pct >= 80 ? 'text-green-600' : 'text-zinc-500' },
+                            ].map((k) => (
+                                <div key={k.label} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-white/5 p-3">
+                                    <p className="text-[10px] text-zinc-400 uppercase tracking-wide mb-1">{k.label}</p>
+                                    <p className={`text-xl font-black leading-none ${k.color}`}>{k.valor}</p>
+                                    <p className="text-[10px] text-zinc-400 mt-1">{k.sub}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    )}
+
+                    {/* C. Checklist — Toggle vista */}
+                    <div>
+                        <div className="flex items-center justify-between mb-4">
+                            <p className="font-bold text-zinc-900 dark:text-white">✅ Actividades</p>
+                            <div className="flex rounded-lg overflow-hidden border border-zinc-200 dark:border-white/10">
+                                {['lista', 'matriz'].map((v) => (
+                                    <button key={v} onClick={() => setClVista(v)}
+                                        className={`px-3 py-1.5 text-xs font-bold transition-colors ${clVista === v ? 'bg-teal-500 text-white' : 'bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5'}`}>
+                                        {v === 'lista' ? '☰ Lista' : '⊞ Días'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Vista lista — accordion por categoría */}
+                        {clVista === 'lista' && (
+                        <div className="space-y-2">
+                            {clCategorias.map((cat) => {
+                                const total = cat.actividades.length;
+                                const hechas = cat.actividades.filter((a) => a.completada).length;
+                                const pct = total > 0 ? Math.round((hechas / total) * 100) : 0;
+                                const abierta = clCatAbierta[cat.id];
+                                return (
+                                    <div key={cat.id} className="rounded-xl border border-zinc-200 dark:border-white/10 overflow-hidden">
+                                        {/* Header de categoría */}
+                                        <button
+                                            onClick={() => setClCatAbierta((p) => ({ ...p, [cat.id]: !p[cat.id] }))}
+                                            className="w-full flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors text-left"
+                                        >
+                                            <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: cat.color }} />
+                                            <span className="font-bold text-sm text-zinc-900 dark:text-white flex-1">{cat.nombre}</span>
+                                            <span className="text-xs text-zinc-400">{hechas}/{total}</span>
+                                            <div className="w-16 h-1.5 bg-zinc-100 dark:bg-white/10 rounded-full overflow-hidden">
+                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: cat.color }} />
+                                            </div>
+                                            <span className="text-xs font-bold w-8 text-right" style={{ color: cat.color }}>{pct}%</span>
+                                            <span className="text-zinc-400 text-xs">{abierta ? '▲' : '▼'}</span>
+                                        </button>
+                                        {/* Actividades */}
+                                        {abierta && (
+                                        <div className="divide-y divide-zinc-100 dark:divide-white/5">
+                                            {cat.actividades.map((act) => (
+                                                <div key={act.id} className="flex items-start gap-3 px-4 py-2.5 bg-zinc-50/50 dark:bg-white/[0.02] hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!act.completada}
+                                                        onChange={(e) => handleClCheck(act.id, e.target.checked, act.nota)}
+                                                        className="mt-0.5 h-4 w-4 rounded accent-teal-500 flex-shrink-0 cursor-pointer"
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={`text-sm ${act.completada ? 'line-through text-zinc-400' : 'text-zinc-800 dark:text-zinc-100'}`}>{act.titulo}</p>
+                                                        {act.descripcion && <p className="text-xs text-zinc-400 mt-0.5">{act.descripcion}</p>}
+                                                        {act.impacto_esperado && <p className="text-xs text-purple-500 mt-0.5">💡 {act.impacto_esperado}</p>}
+                                                    </div>
+                                                    {act.obligatoria && <span className="text-[9px] font-black text-red-500 uppercase bg-red-50 dark:bg-red-950/30 px-1.5 py-0.5 rounded flex-shrink-0">OBLIGATORIA</span>}
+                                                    {act.prioridad === 'alta' && !act.obligatoria && <span className="text-[9px] font-black text-amber-500 uppercase flex-shrink-0">🔥</span>}
+                                                </div>
+                                            ))}
+                                            {cat.actividades.length === 0 && (
+                                                <p className="text-xs text-zinc-400 px-4 py-3">Sin actividades activas en esta categoría.</p>
+                                            )}
+                                        </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        )}
+
+                        {/* Vista matriz — actividades × días */}
+                        {clVista === 'matriz' && clMatriz && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left px-3 py-2 text-zinc-500 font-bold bg-zinc-50 dark:bg-white/5 border-b border-zinc-200 dark:border-white/10 min-w-[180px]">Actividad</th>
+                                        {clMatriz.fechas.map((f) => (
+                                            <th key={f} className={`px-2 py-2 text-center font-bold border-b border-zinc-200 dark:border-white/10 whitespace-nowrap ${f === clFecha ? 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400' : 'bg-zinc-50 dark:bg-white/5 text-zinc-500'}`}>
+                                                {new Date(f + 'T12:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {clMatriz.actividades.map((act) => (
+                                        <tr key={act.id} className="border-b border-zinc-100 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/5">
+                                            <td className="px-3 py-2">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: act.color }} />
+                                                    <span className="text-zinc-700 dark:text-zinc-300">{act.titulo}</span>
+                                                </div>
+                                            </td>
+                                            {clMatriz.fechas.map((f) => {
+                                                const check = clMatriz.checks[act.id]?.[f];
+                                                const esHoy = f === clFecha;
+                                                return (
+                                                    <td key={f} className={`text-center px-2 py-2 ${esHoy ? 'bg-teal-50/50 dark:bg-teal-950/20' : ''}`}>
+                                                        {esHoy ? (
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={!!check?.completada}
+                                                                onChange={(e) => handleClCheck(act.id, e.target.checked, check?.nota)}
+                                                                className="h-4 w-4 rounded accent-teal-500 cursor-pointer"
+                                                            />
+                                                        ) : (
+                                                            <span className={`text-base ${check?.completada ? 'text-green-500' : 'text-zinc-200 dark:text-zinc-700'}`}>
+                                                                {check?.completada ? '✓' : '○'}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        )}
+                    </div>
+
+                    {/* D. Cierre del día */}
+                    <div className="rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-950/20 p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="font-bold text-indigo-700 dark:text-indigo-300 text-sm uppercase tracking-wide">🌙 Cierre del día</p>
+                            {clCierreMeta?.enviado_en && (
+                                <span className="text-xs text-indigo-600 dark:text-indigo-400">✓ Enviado {new Date(clCierreMeta.enviado_en).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
+                            )}
+                        </div>
+                        <textarea
+                            rows={6}
+                            value={clCierre}
+                            onChange={(e) => setClCierre(e.target.value)}
+                            placeholder={`✅ Qué sí se logró hoy:\n\n❌ Qué no se logró:\n\n🚧 Bloqueos encontrados:\n\n💡 Aprendizajes:\n\n🎯 Prioridades para mañana:\n1. \n2. `}
+                            className="w-full rounded-xl border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none font-mono"
+                        />
+                        <div className="flex gap-2 mt-3">
+                            <button
+                                onClick={() => handleClNota('cierre', false)}
+                                disabled={!clCierre.trim() || clEnviando.startsWith('cierre')}
+                                className="px-4 py-2 rounded-lg text-sm font-bold border border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 disabled:opacity-40 transition-colors"
+                            >
+                                {clEnviando === 'cierre_guardar' ? 'Guardando...' : 'Guardar borrador'}
+                            </button>
+                            <button
+                                onClick={() => handleClNota('cierre', true)}
+                                disabled={!clCierre.trim() || clEnviando.startsWith('cierre')}
+                                className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-40 transition-colors"
+                            >
+                                {clEnviando === 'cierre_enviar' ? 'Enviando...' : '📧 Enviar cierre'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Gestión de categorías y actividades (colapsable) */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 overflow-hidden">
+                        <button
+                            onClick={() => setClGestionAbierta((v) => !v)}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-zinc-50 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors text-left"
+                        >
+                            <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">⚙️ Gestión de categorías y actividades</span>
+                            <span className="text-zinc-400 text-xs">{clGestionAbierta ? '▲ Ocultar' : '▼ Mostrar'}</span>
+                        </button>
+                        {clGestionAbierta && (
+                        <div className="p-4 space-y-6 bg-white dark:bg-zinc-950">
+                            {/* Nueva categoría */}
+                            <div>
+                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2">Nueva categoría</p>
+                                <div className="flex gap-2 flex-wrap">
+                                    <input
+                                        type="text" placeholder="Nombre"
+                                        value={clNuevaCat.nombre}
+                                        onChange={(e) => setClNuevaCat((p) => ({ ...p, nombre: e.target.value }))}
+                                        className="flex-1 min-w-[150px] rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                    />
+                                    <input
+                                        type="color"
+                                        value={clNuevaCat.color}
+                                        onChange={(e) => setClNuevaCat((p) => ({ ...p, color: e.target.value }))}
+                                        className="h-9 w-12 rounded-lg border border-zinc-200 dark:border-white/10 cursor-pointer"
+                                    />
+                                    <button onClick={handleClCrearCategoria}
+                                        className="px-4 py-2 rounded-lg bg-teal-500 text-white text-sm font-bold hover:bg-teal-600 disabled:opacity-40"
+                                        disabled={!clNuevaCat.nombre.trim()}>
+                                        + Agregar
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Nueva actividad */}
+                            <div>
+                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2">Nueva actividad</p>
+                                <div className="flex gap-2 flex-wrap">
+                                    <select
+                                        value={clNuevaAct.categoria_id}
+                                        onChange={(e) => setClNuevaAct((p) => ({ ...p, categoria_id: e.target.value }))}
+                                        className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                    >
+                                        <option value="">Categoría...</option>
+                                        {clCategorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                    </select>
+                                    <input
+                                        type="text" placeholder="Título de la actividad"
+                                        value={clNuevaAct.titulo}
+                                        onChange={(e) => setClNuevaAct((p) => ({ ...p, titulo: e.target.value }))}
+                                        className="flex-1 min-w-[180px] rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+                                    />
+                                    <select
+                                        value={clNuevaAct.prioridad}
+                                        onChange={(e) => setClNuevaAct((p) => ({ ...p, prioridad: e.target.value }))}
+                                        className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none"
+                                    >
+                                        <option value="normal">Normal</option>
+                                        <option value="alta">Alta 🔥</option>
+                                        <option value="baja">Baja</option>
+                                    </select>
+                                    <label className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-300">
+                                        <input type="checkbox" checked={clNuevaAct.obligatoria} onChange={(e) => setClNuevaAct((p) => ({ ...p, obligatoria: e.target.checked }))} className="accent-teal-500" />
+                                        Obligatoria
+                                    </label>
+                                    <button onClick={handleClCrearActividad}
+                                        className="px-4 py-2 rounded-lg bg-teal-500 text-white text-sm font-bold hover:bg-teal-600 disabled:opacity-40"
+                                        disabled={!clNuevaAct.categoria_id || !clNuevaAct.titulo.trim()}>
+                                        + Agregar
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Archivar actividades */}
+                            <div>
+                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2">Actividades activas (clic para archivar)</p>
+                                <div className="space-y-1 max-h-64 overflow-y-auto">
+                                    {clCategorias.flatMap((cat) => cat.actividades.map((act) => (
+                                        <div key={act.id} className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-50 dark:hover:bg-white/5">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: cat.color }} />
+                                                <span className="text-xs text-zinc-600 dark:text-zinc-300 truncate">{cat.nombre} → {act.titulo}</span>
+                                            </div>
+                                            <button
+                                                onClick={async () => { await checklistEditarActividad(token, act.id, { activa: false }); cargarChecklist(); }}
+                                                className="text-[10px] text-red-400 hover:text-red-600 flex-shrink-0 font-bold"
+                                            >
+                                                Archivar
+                                            </button>
+                                        </div>
+                                    )))}
+                                </div>
+                            </div>
+                        </div>
                         )}
                     </div>
                 </div>

@@ -751,4 +751,65 @@ export function adminMarketingEliminarGasto(token, id) {
     });
 }
 
+// ── Growth Checklist ──────────────────────────────────────────────────────────
+export function checklistCategorias(token, fecha) {
+    const q = fecha ? `?fecha=${fecha}` : '';
+    return request(`/api/admin/checklist/categorias${q}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export function checklistMatriz(token, dias = 7) {
+    return request(`/api/admin/checklist/matriz?dias=${dias}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export function checklistResumenDia(token, fecha) {
+    const q = fecha ? `?fecha=${fecha}` : '';
+    return request(`/api/admin/checklist/resumen-dia${q}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export function checklistMarcarCheck(token, { actividad_id, fecha, completada, nota, valor_ejecutado }) {
+    return request('/api/admin/checklist/check', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actividad_id, fecha, completada, nota, valor_ejecutado }),
+    });
+}
+export function checklistGetNota(token, fecha, tipo) {
+    return request(`/api/admin/checklist/nota?fecha=${fecha}&tipo=${tipo}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export function checklistGuardarNota(token, { fecha, tipo, contenido, enviar }) {
+    return request('/api/admin/checklist/nota', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha, tipo, contenido, enviar }),
+    });
+}
+export function checklistCrearCategoria(token, datos) {
+    return request('/api/admin/checklist/categorias', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+    });
+}
+export function checklistEditarCategoria(token, id, datos) {
+    return request(`/api/admin/checklist/categorias/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+    });
+}
+export function checklistCrearActividad(token, datos) {
+    return request('/api/admin/checklist/actividades', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+    });
+}
+export function checklistEditarActividad(token, id, datos) {
+    return request(`/api/admin/checklist/actividades/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+    });
+}
+export function checklistHistorial(token, tipo, limit = 7) {
+    return request(`/api/admin/checklist/historial?tipo=${tipo}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+
 export { API_BASE };
