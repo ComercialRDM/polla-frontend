@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -74,6 +74,8 @@ export default function Admin() {
     const [resultadoEspeciales, setResultadoEspeciales] = useState(null);
     const [invitandoId, setInvitandoId]       = useState(null);
     const [resultadoInvitar, setResultadoInvitar] = useState(null);
+    const [reenviadoBonoId, setReenviadoBonoId] = useState(null);
+    const [resultadoReenviarBono, setResultadoReenviarBono] = useState(null);
     const [rankingEspeciales, setRankingEspeciales] = useState([]);
     const [cargandoRankingEspeciales, setCargandoRankingEspeciales] = useState(false);
 
@@ -538,12 +540,30 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
             const data = await adminInvitarEspecial(token, id);
             setResultadoInvitar({ id, ...data });
             if (data?.success) {
-                setEspeciales((prev) => prev.map((e) => (e.transaccion_id === id ? { ...e, invitacion_enviada: true } : e)));
+                const ahora = new Date().toISOString();
+                setEspeciales((prev) => prev.map((e) => (e.transaccion_id === id ? { ...e, invitacion_enviada: true, whatsapp_invitacion_at: ahora } : e)));
             }
         } catch (err) {
             setResultadoInvitar({ id, success: false, error: err.message });
         } finally {
             setInvitandoId(null);
+        }
+    }
+
+    async function handleReenviarBono(id) {
+        setReenviadoBonoId(id);
+        setResultadoReenviarBono(null);
+        try {
+            const data = await adminReenviarBono(token, id);
+            setResultadoReenviarBono({ id, ...data });
+            if (data?.success) {
+                const ahora = new Date().toISOString();
+                setEspeciales((prev) => prev.map((e) => (e.transaccion_id === id ? { ...e, whatsapp_bono_at: ahora } : e)));
+            }
+        } catch (err) {
+            setResultadoReenviarBono({ id, success: false, error: err.message });
+        } finally {
+            setReenviadoBonoId(null);
         }
     }
 
@@ -2239,25 +2259,43 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                             <td className="px-3 py-2 font-bold text-amber-600 dark:text-amber-400">${Number(e.saldo_bono).toLocaleString('es-CO')}</td>
                                             <td className="px-3 py-2 text-zinc-600 dark:text-zinc-300">{e.intentos_usados}/{e.intentos_totales}</td>
                                             <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{new Date(e.fecha_creacion).toLocaleDateString('es-CO')}</td>
-                                            <td className="px-3 py-2 flex gap-1.5">
-                                                <a
-                                                    href={`${API_BASE}/api/polla/bono/${e.token_acceso}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="px-2 py-1 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300 whitespace-nowrap"
-                                                >
-                                                    🖼️ Descargar bono
-                                                </a>
-                                                <button
-                                                    onClick={() => handleInvitar(e.transaccion_id)}
-                                                    disabled={invitandoId === e.transaccion_id}
-                                                    className="px-2 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
-                                                >
-                                                    {invitandoId === e.transaccion_id ? 'Enviando...' : '📲 Enviar invitación'}
-                                                </button>
-                                                {e.invitacion_enviada && (
-                                                    <span className="text-green-600 dark:text-green-400 font-bold text-xs whitespace-nowrap self-center">✅ Enviado</span>
-                                                )}
+                                            <td className="px-3 py-2">
+                                                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                                                    <a
+                                                        href={`${API_BASE}/api/polla/bono/${e.token_acceso}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-amber-400 text-zinc-950 hover:bg-amber-300 whitespace-nowrap"
+                                                    >
+                                                        🖼️ Descargar bono
+                                                    </a>
+                                                    <button
+                                                        onClick={() => handleInvitar(e.transaccion_id)}
+                                                        disabled={invitandoId === e.transaccion_id}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-green-600 text-white hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
+                                                    >
+                                                        {invitandoId === e.transaccion_id ? 'Enviando...' : '📲 Enviar invitación'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleReenviarBono(e.transaccion_id)}
+                                                        disabled={reenviadoBonoId === e.transaccion_id}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 whitespace-nowrap"
+                                                    >
+                                                        {reenviadoBonoId === e.transaccion_id ? 'Enviando...' : '🎫 Reenviar bono WA'}
+                                                    </button>
+                                                </div>
+                                                <div className="flex flex-col gap-0.5">
+                                                    {e.whatsapp_bono_at && (
+                                                        <span className="text-xs text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                                            🎫 Bono: {new Date(e.whatsapp_bono_at).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    )}
+                                                    {e.whatsapp_invitacion_at && (
+                                                        <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
+                                                            📲 Invitación: {new Date(e.whatsapp_invitacion_at).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -2269,6 +2307,11 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     {resultadoInvitar && (
                         <div className={`mt-3 rounded-lg p-3 text-xs ${resultadoInvitar.success ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'}`}>
                             {resultadoInvitar.success ? '✅ Invitación enviada correctamente' : `❌ ${resultadoInvitar.error}`}
+                        </div>
+                    )}
+                    {resultadoReenviarBono && (
+                        <div className={`mt-2 rounded-lg p-3 text-xs ${resultadoReenviarBono.success ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'}`}>
+                            {resultadoReenviarBono.success ? '✅ Bono reenviado por WhatsApp correctamente' : `❌ ${resultadoReenviarBono.error}`}
                         </div>
                     )}
 

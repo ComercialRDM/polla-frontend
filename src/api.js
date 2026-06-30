@@ -463,6 +463,13 @@ export function adminInvitarEspecial(token, id) {
     });
 }
 
+export function adminReenviarBono(token, id) {
+    return request(`/api/admin/especiales/${id}/reenviar-bono`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export async function registrarInfluencer({ nombre, correo, celular, red_contenido, foto, autoriza_foto }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
