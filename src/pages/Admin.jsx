@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -22,6 +22,7 @@ const GRUPOS_NAV = [
             { id: 'usuarios',       label: '👥 Usuarios' },
             { id: 'pronosticos',    label: '⚽ Pronósticos' },
             { id: 'redenciones',    label: '🧾 Redenciones' },
+            { id: 'regalos',        label: '🎁 Regalos' },
         ],
     },
     {
@@ -227,6 +228,62 @@ export default function Admin() {
     const [apCargando, setApCargando]     = useState(false);
     const [apError, setApError]           = useState('');
     const [exportando, setExportando]     = useState('');
+
+    // ── Regalos de bonos ──────────────────────────────────────────────────────
+    const [regalosEstado,       setRegalosEstado]       = useState('PENDIENTE');
+    const [regalos,             setRegalos]             = useState([]);
+    const [regalosCargando,     setRegalosCargando]     = useState(false);
+    const [rechazandoRegaloId,  setRechazandoRegaloId]  = useState(null);
+    const [motivoRechazo,       setMotivoRechazo]       = useState('');
+    const [aprobandoRegaloId,   setAprobandoRegaloId]   = useState(null);
+    const [regalosError,        setRegalosError]        = useState('');
+    const [regalosMsg,          setRegalosMsg]          = useState('');
+    const [regalosDesde,        setRegalosDesde]        = useState('');
+    const [regalosHasta,        setRegalosHasta]        = useState('');
+    const [regalosDescargando,  setRegalosDescargando]  = useState('');
+
+    async function cargarRegalos(estado) {
+        setRegalosCargando(true);
+        setRegalosError('');
+        setRegalosMsg('');
+        try {
+            const d = await adminListarRegalos(token, estado || regalosEstado);
+            if (d?.success) setRegalos(d.regalos);
+            else setRegalosError(d?.error || 'Error al cargar solicitudes');
+        } catch { setRegalosError('Error de conexión'); }
+        finally { setRegalosCargando(false); }
+    }
+
+    async function aprobarRegalo(id) {
+        setAprobandoRegaloId(id);
+        setRegalosMsg('');
+        setRegalosError('');
+        try {
+            const d = await adminAprobarRegalo(token, id);
+            if (d?.success) { setRegalosMsg('Regalo aprobado y bono enviado al receptor.'); cargarRegalos(regalosEstado); }
+            else setRegalosError(d?.error || 'Error al aprobar');
+        } catch { setRegalosError('Error de conexión'); }
+        finally { setAprobandoRegaloId(null); }
+    }
+
+    async function rechazarRegalo(id) {
+        setRechazandoRegaloId(null);
+        setRegalosMsg('');
+        setRegalosError('');
+        try {
+            const d = await adminRechazarRegalo(token, id, motivoRechazo);
+            if (d?.success) { setRegalosMsg('Solicitud rechazada.'); setMotivoRechazo(''); cargarRegalos(regalosEstado); }
+            else setRegalosError(d?.error || 'Error al rechazar');
+        } catch { setRegalosError('Error de conexión'); }
+    }
+
+    async function descargarReporteRegalos(formato) {
+        setRegalosDescargando(formato);
+        try {
+            await adminDescargarReporteRegalos(token, { desde: regalosDesde, hasta: regalosHasta, formato });
+        } catch (e) { setRegalosError('Error al generar el reporte'); }
+        finally { setRegalosDescargando(''); }
+    }
 
     async function cargarDatos(tok) {
         setCargando(true);
@@ -893,6 +950,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); cargarAfiliados(); cargarComisiones(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'redenciones' && token) cargarResumenDia(resumenDiaFecha);
+        if (seccionActiva === 'regalos' && token) cargarRegalos('PENDIENTE');
         if (seccionActiva === 'checklist' && token) { cargarChecklist(); cargarChecklistMatriz(); }
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -3354,6 +3412,179 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             </div>
                         )}
                     </div>
+                </div>
+                )}
+
+                {/* ── Regalos de bonos ── */}
+                {seccionActiva === 'regalos' && (
+                <div className="flex flex-col gap-6">
+
+                    {/* Mensajes globales */}
+                    {regalosMsg && <p className="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 text-sm font-semibold">{regalosMsg}</p>}
+                    {regalosError && <p className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 px-4 py-3 text-sm">{regalosError}</p>}
+
+                    {/* Filtros de estado */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+                            <h2 className="text-base font-bold text-zinc-900 dark:text-white">🎁 Solicitudes de regalo de bono</h2>
+                            <div className="flex gap-2">
+                                {['PENDIENTE', 'APROBADO', 'RECHAZADO'].map((est) => (
+                                    <button
+                                        key={est}
+                                        onClick={() => { setRegalosEstado(est); setRegalos([]); cargarRegalos(est); }}
+                                        className={`text-xs px-3 py-1.5 rounded-lg font-semibold border transition-colors ${regalosEstado === est
+                                            ? 'bg-amber-400 text-zinc-900 border-amber-400'
+                                            : 'border-zinc-300 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:border-amber-300'}`}
+                                    >
+                                        {est === 'PENDIENTE' ? '⏳ Pendiente' : est === 'APROBADO' ? '✅ Aprobado' : '❌ Rechazado'}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => cargarRegalos(regalosEstado)}
+                                    disabled={regalosCargando}
+                                    className="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white disabled:opacity-50 transition-colors"
+                                >
+                                    {regalosCargando ? 'Cargando...' : '↺'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {regalosCargando && <p className="text-zinc-400 text-sm text-center py-6 animate-pulse">Cargando solicitudes...</p>}
+
+                        {!regalosCargando && regalos.length === 0 && (
+                            <p className="text-zinc-400 text-sm text-center py-6">No hay solicitudes en estado {regalosEstado}.</p>
+                        )}
+
+                        {!regalosCargando && regalos.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            {regalos.map((r) => (
+                            <div key={r.id} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-4">
+                                <div className="flex flex-wrap gap-4 justify-between">
+                                    {/* Donante */}
+                                    <div>
+                                        <p className="text-[10px] text-zinc-400 uppercase tracking-wide mb-0.5">Donante</p>
+                                        <p className="font-semibold text-zinc-900 dark:text-white text-sm">{r.donante_nombre}</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{r.donante_celular}</p>
+                                    </div>
+                                    {/* Receptor */}
+                                    <div>
+                                        <p className="text-[10px] text-zinc-400 uppercase tracking-wide mb-0.5">Receptor</p>
+                                        <p className="font-semibold text-zinc-900 dark:text-white text-sm">{r.receptor_nombre}</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">CC {r.receptor_cedula} · {r.receptor_celular}</p>
+                                        {r.receptor_correo && <p className="text-xs text-zinc-400">{r.receptor_correo}</p>}
+                                    </div>
+                                    {/* Bono */}
+                                    <div>
+                                        <p className="text-[10px] text-zinc-400 uppercase tracking-wide mb-0.5">Bono</p>
+                                        <p className="font-black text-amber-500 text-lg leading-none">{formatoPesos(r.saldo_bono)}</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{r.intentos_totales} cupos</p>
+                                    </div>
+                                    {/* Fecha */}
+                                    <div>
+                                        <p className="text-[10px] text-zinc-400 uppercase tracking-wide mb-0.5">Solicitado</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-300">{new Date(r.creado_en).toLocaleString('es-CO')}</p>
+                                        {r.estado === 'APROBADO' && r.aprobado_en && (
+                                            <p className="text-xs text-green-600 dark:text-green-400">Aprobado {new Date(r.aprobado_en).toLocaleString('es-CO')}</p>
+                                        )}
+                                        {r.estado === 'RECHAZADO' && r.motivo_rechazo && (
+                                            <p className="text-xs text-red-500">Motivo: {r.motivo_rechazo}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Acciones (solo PENDIENTE) */}
+                                {r.estado === 'PENDIENTE' && (
+                                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-white/5">
+                                    {rechazandoRegaloId === r.id ? (
+                                        <div className="flex gap-2 flex-wrap items-end">
+                                            <input
+                                                value={motivoRechazo}
+                                                onChange={(e) => setMotivoRechazo(e.target.value)}
+                                                placeholder="Motivo del rechazo (opcional)"
+                                                className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-900 dark:text-white min-w-[200px]"
+                                            />
+                                            <button
+                                                onClick={() => rechazarRegalo(r.id)}
+                                                className="text-xs px-3 py-1.5 rounded-lg font-bold bg-red-500 text-white hover:bg-red-600"
+                                            >
+                                                Confirmar rechazo
+                                            </button>
+                                            <button
+                                                onClick={() => { setRechazandoRegaloId(null); setMotivoRechazo(''); }}
+                                                className="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-white/10 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => aprobarRegalo(r.id)}
+                                                disabled={aprobandoRegaloId === r.id}
+                                                className="text-xs px-4 py-1.5 rounded-lg font-bold bg-green-500 text-white hover:bg-green-600 disabled:opacity-50"
+                                            >
+                                                {aprobandoRegaloId === r.id ? 'Aprobando...' : '✅ Aprobar'}
+                                            </button>
+                                            <button
+                                                onClick={() => setRechazandoRegaloId(r.id)}
+                                                className="text-xs px-4 py-1.5 rounded-lg font-semibold border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                            >
+                                                ❌ Rechazar
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                )}
+                            </div>
+                            ))}
+                        </div>
+                        )}
+                    </div>
+
+                    {/* Reporte de auditoría */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <h2 className="text-base font-bold text-zinc-900 dark:text-white mb-3">📥 Reporte de regalos</h2>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+                            Descarga un informe completo de todas las solicitudes de regalo con datos del donante, receptor, valor, estado y fechas — útil para auditoría interna.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-3 items-end flex-wrap">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-zinc-500 dark:text-zinc-400">Desde</label>
+                                <input
+                                    type="date"
+                                    value={regalosDesde}
+                                    onChange={(e) => setRegalosDesde(e.target.value)}
+                                    className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs text-zinc-500 dark:text-zinc-400">Hasta</label>
+                                <input
+                                    type="date"
+                                    value={regalosHasta}
+                                    onChange={(e) => setRegalosHasta(e.target.value)}
+                                    className="rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 text-sm"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => descargarReporteRegalos('csv')}
+                                    disabled={!!regalosDescargando}
+                                    className="text-xs px-4 py-2 rounded-lg font-bold bg-amber-400 text-zinc-900 hover:bg-amber-300 disabled:opacity-50 transition-colors"
+                                >
+                                    {regalosDescargando === 'csv' ? 'Descargando...' : '📄 CSV'}
+                                </button>
+                                <button
+                                    onClick={() => descargarReporteRegalos('excel')}
+                                    disabled={!!regalosDescargando}
+                                    className="text-xs px-4 py-2 rounded-lg font-bold bg-green-600 text-white hover:bg-green-500 disabled:opacity-50 transition-colors"
+                                >
+                                    {regalosDescargando === 'excel' ? 'Descargando...' : '📊 Excel'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 )}
 

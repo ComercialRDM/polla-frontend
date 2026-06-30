@@ -812,4 +812,42 @@ export function checklistHistorial(token, tipo, limit = 7) {
     return request(`/api/admin/checklist/historial?tipo=${tipo}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
 }
 
+// ── Regalo de Bono ────────────────────────────────────────────────────────────
+export function solicitarRegalo(token_acceso, datos) {
+    return request('/api/polla/regalo/solicitar', {
+        method: 'POST',
+        body: JSON.stringify({ token_acceso, ...datos }),
+    });
+}
+export function misSolicitudesRegalo(token_acceso) {
+    return request(`/api/polla/regalo/mis-solicitudes?token_acceso=${encodeURIComponent(token_acceso)}`);
+}
+export function adminListarRegalos(token, estado = 'PENDIENTE') {
+    return request(`/api/admin/regalos?estado=${estado}`, { headers: { Authorization: `Bearer ${token}` } });
+}
+export function adminAprobarRegalo(token, id) {
+    return request(`/api/admin/regalos/${id}/aprobar`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+}
+export function adminRechazarRegalo(token, id, motivo = '') {
+    return request(`/api/admin/regalos/${id}/rechazar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ motivo }),
+    });
+}
+export async function adminDescargarReporteRegalos(token, { desde, hasta, formato }) {
+    const params = new URLSearchParams({ formato, ...(desde && { desde }), ...(hasta && { hasta }) });
+    const res = await fetch(`${API_BASE}/api/admin/regalos/reporte?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('Error al generar el reporte');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `regalos-bonos-${Date.now()}.${formato === 'excel' ? 'xlsx' : 'csv'}`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 export { API_BASE };

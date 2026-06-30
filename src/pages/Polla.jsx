@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico } from '../api';
+import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, solicitarRegalo, misSolicitudesRegalo } from '../api';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
@@ -73,6 +73,15 @@ export default function Polla() {
     const [nuevoGrupoPartido, setNuevoGrupoPartido] = useState('');
     const [errorGrupo, setErrorGrupo] = useState('');
     const [mostrarFormGrupo, setMostrarFormGrupo] = useState(false);
+    // Regalo de bono
+    const [mostrarModalRegalo, setMostrarModalRegalo] = useState(false);
+    const [regaloForm, setRegaloForm] = useState({ receptor_nombre: '', receptor_cedula: '', receptor_celular: '', receptor_correo: '' });
+    const [regaloAcepta, setRegaloAcepta] = useState(false);
+    const [regaloEnviando, setRegaloEnviando] = useState(false);
+    const [regaloMensaje, setRegaloMensaje] = useState('');
+    const [regaloError, setRegaloError] = useState('');
+    const [misSolicitudes, setMisSolicitudes] = useState([]);
+
     const [mostrarDemoBanner, setMostrarDemoBanner] = useState(false);
     const [demoFecha, setDemoFecha] = useState('');
     const [demoSexo, setDemoSexo] = useState('');
@@ -107,6 +116,8 @@ export default function Polla() {
             })
             .catch(() => setError('Error de conexión con el servidor.'))
             .finally(() => setCargando(false));
+
+        misSolicitudesRegalo(token).then((d) => { if (d?.success) setMisSolicitudes(d.solicitudes); }).catch(() => {});
     }, [token]);
 
     useEffect(() => {
@@ -146,6 +157,33 @@ export default function Polla() {
     function dismissFotoReminder() {
         localStorage.setItem(FOTO_REMINDER_KEY, String(Date.now()));
         setMostrarFotoReminder(false);
+    }
+
+    async function handleEnviarRegalo(e) {
+        e.preventDefault();
+        setRegaloError('');
+        if (!regaloForm.receptor_nombre.trim() || !regaloForm.receptor_cedula.trim() || !regaloForm.receptor_celular.trim()) {
+            setRegaloError('Nombre, cédula y celular del receptor son obligatorios');
+            return;
+        }
+        if (!regaloAcepta) { setRegaloError('Debes aceptar los términos'); return; }
+        setRegaloEnviando(true);
+        try {
+            const res = await solicitarRegalo(token, {
+                ...regaloForm,
+                receptor_celular: `+57${regaloForm.receptor_celular.replace(/[^0-9]/g, '')}`,
+                acepta_terminos: true,
+            });
+            if (res?.success) {
+                setRegaloMensaje('✅ Solicitud enviada. Nuestro equipo la revisará y te confirmaremos.');
+                setRegaloForm({ receptor_nombre: '', receptor_cedula: '', receptor_celular: '', receptor_correo: '' });
+                setRegaloAcepta(false);
+                misSolicitudesRegalo(token).then((d) => { if (d?.success) setMisSolicitudes(d.solicitudes); }).catch(() => {});
+            } else {
+                setRegaloError(res?.error || 'Error al enviar la solicitud');
+            }
+        } catch { setRegaloError('Error de conexión'); }
+        finally { setRegaloEnviando(false); }
     }
 
     function dismissDemoBanner() {
@@ -700,7 +738,81 @@ export default function Polla() {
 
                 {/* Ranking en vivo del próximo partido */}
                 {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
+
+                {/* ── Regalo de Bono (discreto) ── */}
+                <div className="mt-8 mb-2 text-center">
+                    {misSolicitudes.length > 0 && (
+                        <div className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+                            {misSolicitudes.map((s) => (
+                                <p key={s.id}>
+                                    🎁 Regalo a {s.receptor_nombre}:{' '}
+                                    <span className={s.estado === 'APROBADO' ? 'text-green-500' : s.estado === 'RECHAZADO' ? 'text-red-400' : 'text-amber-400'}>
+                                        {s.estado === 'APROBADO' ? 'Aprobado' : s.estado === 'RECHAZADO' ? `Rechazado${s.motivo_rechazo ? ` — ${s.motivo_rechazo}` : ''}` : 'Pendiente de revisión'}
+                                    </span>
+                                </p>
+                            ))}
+                        </div>
+                    )}
+                    <button
+                        onClick={() => { setMostrarModalRegalo(true); setRegaloMensaje(''); setRegaloError(''); }}
+                        className="text-xs text-zinc-400 dark:text-zinc-500 underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                    >
+                        ¿Quieres regalar tu bono? Solicítalo aquí
+                    </button>
+                </div>
             </div>
+
+            {/* ── Modal Regalo ── */}
+            {mostrarModalRegalo && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 px-4 pb-4 sm:pb-0">
+                    <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-5 relative">
+                        <button
+                            onClick={() => setMostrarModalRegalo(false)}
+                            className="absolute top-3 right-4 text-zinc-400 hover:text-zinc-700 text-xl leading-none"
+                        >×</button>
+                        <h2 className="font-bold text-zinc-900 dark:text-white text-base mb-1">🎁 Regalar mi Bono</h2>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-4">
+                            Si no puedes reclamar tu bono en Barranquilla, puedes regalarlo a alguien que sí pueda.
+                            El equipo lo revisará y te confirmará en 24 h.
+                        </p>
+                        {regaloMensaje ? (
+                            <p className="text-green-600 dark:text-green-400 text-sm font-bold text-center py-4">{regaloMensaje}</p>
+                        ) : (
+                            <form onSubmit={handleEnviarRegalo} className="flex flex-col gap-3">
+                                <div>
+                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Nombre completo del receptor *</label>
+                                    <input value={regaloForm.receptor_nombre} onChange={e => setRegaloForm(f => ({...f, receptor_nombre: e.target.value}))} placeholder="Nombre completo" className="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Cédula del receptor *</label>
+                                    <input value={regaloForm.receptor_cedula} onChange={e => setRegaloForm(f => ({...f, receptor_cedula: e.target.value}))} placeholder="Número de cédula" inputMode="numeric" className="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Celular del receptor *</label>
+                                    <div className="flex gap-1">
+                                        <span className="rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800 px-2 py-2 text-sm text-zinc-500 dark:text-zinc-400">+57</span>
+                                        <input value={regaloForm.receptor_celular} onChange={e => setRegaloForm(f => ({...f, receptor_celular: e.target.value}))} placeholder="3001234567" inputMode="tel" className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-white" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Correo del receptor (opcional)</label>
+                                    <input value={regaloForm.receptor_correo} onChange={e => setRegaloForm(f => ({...f, receptor_correo: e.target.value}))} placeholder="correo@ejemplo.com" type="email" className="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-white" />
+                                </div>
+                                <label className="flex items-start gap-2 cursor-pointer">
+                                    <input type="checkbox" checked={regaloAcepta} onChange={e => setRegaloAcepta(e.target.checked)} className="mt-0.5 accent-amber-400 shrink-0" />
+                                    <span className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                        Autorizo el regalo de este bono, entiendo que no es canjeable por dinero y renuncio a cualquier reclamo posterior a La Retoucherie de Manuela por este bono.
+                                    </span>
+                                </label>
+                                {regaloError && <p className="text-red-500 text-xs">{regaloError}</p>}
+                                <button type="submit" disabled={regaloEnviando} className="w-full py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 transition-colors">
+                                    {regaloEnviando ? 'Enviando...' : 'Enviar solicitud'}
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Banner datos demográficos — todos los usuarios sin fecha de nacimiento */}
             {mostrarDemoBanner && (
