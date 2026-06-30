@@ -76,6 +76,7 @@ export default function Admin() {
     const [resultadoInvitar, setResultadoInvitar] = useState(null);
     const [reenviadoBonoId, setReenviadoBonoId] = useState(null);
     const [resultadoReenviarBono, setResultadoReenviarBono] = useState(null);
+    const [erroresPorFila, setErroresPorFila] = useState({});
     const [rankingEspeciales, setRankingEspeciales] = useState([]);
     const [cargandoRankingEspeciales, setCargandoRankingEspeciales] = useState(false);
 
@@ -535,16 +536,17 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
 
     async function handleInvitar(id) {
         setInvitandoId(id);
-        setResultadoInvitar(null);
+        setErroresPorFila((prev) => ({ ...prev, [id]: { ...prev[id], invitacion: null } }));
         try {
             const data = await adminInvitarEspecial(token, id);
-            setResultadoInvitar({ id, ...data });
             if (data?.success) {
                 const ahora = new Date().toISOString();
                 setEspeciales((prev) => prev.map((e) => (e.transaccion_id === id ? { ...e, invitacion_enviada: true, whatsapp_invitacion_at: ahora } : e)));
+            } else {
+                setErroresPorFila((prev) => ({ ...prev, [id]: { ...prev[id], invitacion: data?.error || 'Error al enviar' } }));
             }
         } catch (err) {
-            setResultadoInvitar({ id, success: false, error: err.message });
+            setErroresPorFila((prev) => ({ ...prev, [id]: { ...prev[id], invitacion: err.message } }));
         } finally {
             setInvitandoId(null);
         }
@@ -552,16 +554,17 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
 
     async function handleReenviarBono(id) {
         setReenviadoBonoId(id);
-        setResultadoReenviarBono(null);
+        setErroresPorFila((prev) => ({ ...prev, [id]: { ...prev[id], bono: null } }));
         try {
             const data = await adminReenviarBono(token, id);
-            setResultadoReenviarBono({ id, ...data });
             if (data?.success) {
                 const ahora = new Date().toISOString();
                 setEspeciales((prev) => prev.map((e) => (e.transaccion_id === id ? { ...e, whatsapp_bono_at: ahora } : e)));
+            } else {
+                setErroresPorFila((prev) => ({ ...prev, [id]: { ...prev[id], bono: data?.error || 'Error al enviar' } }));
             }
         } catch (err) {
-            setResultadoReenviarBono({ id, success: false, error: err.message });
+            setErroresPorFila((prev) => ({ ...prev, [id]: { ...prev[id], bono: err.message } }));
         } finally {
             setReenviadoBonoId(null);
         }
@@ -2290,9 +2293,19 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                             🎫 Bono: {new Date(e.whatsapp_bono_at).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                     )}
+                                                    {erroresPorFila[e.transaccion_id]?.bono && (
+                                                        <span className="text-xs text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                            ❌ Bono: {erroresPorFila[e.transaccion_id].bono}
+                                                        </span>
+                                                    )}
                                                     {e.whatsapp_invitacion_at && (
                                                         <span className="text-xs text-green-600 dark:text-green-400 whitespace-nowrap">
                                                             📲 Invitación: {new Date(e.whatsapp_invitacion_at).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    )}
+                                                    {erroresPorFila[e.transaccion_id]?.invitacion && (
+                                                        <span className="text-xs text-red-600 dark:text-red-400 whitespace-nowrap">
+                                                            ❌ Invitación: {erroresPorFila[e.transaccion_id].invitacion}
                                                         </span>
                                                     )}
                                                 </div>
