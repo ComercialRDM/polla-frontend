@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { obtenerInfoPolla, votar } from '../api';
+import { obtenerInfoPolla, votar, subirFotoPerfil } from '../api';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
@@ -13,6 +13,12 @@ import { cerrarSesion } from '../utils/sesion';
 import PozoPremios from '../components/PozoPremios';
 
 const UNA_HORA_MS = 60 * 60 * 1000;
+const FOTO_REMINDER_KEY = 'polla_foto_recordatorio_at';
+const FOTO_REMINDER_DIAS = 7;
+function fotoReminderDismissed() {
+    const ts = localStorage.getItem(FOTO_REMINDER_KEY);
+    return ts && Date.now() - Number(ts) < FOTO_REMINDER_DIAS * 24 * 60 * 60 * 1000;
+}
 
 function calcularRestante(fechaInicio) {
     const ahora = new Date();
@@ -51,6 +57,10 @@ export default function Polla() {
     const [mensajeCopiado, setMensajeCopiado] = useState(false);
     const [partidosVisibles, setPartidosVisibles] = useState(3);
     const [encolados, setEncolados] = useState({});
+    const [mostrarFotoReminder, setMostrarFotoReminder] = useState(false);
+    const [subiendoFoto, setSubiendoFoto] = useState(false);
+    const [fotoSubidaOk, setFotoSubidaOk] = useState(false);
+    const [errorFoto, setErrorFoto] = useState('');
 
     useEffect(() => {
         if (!token) {
@@ -85,6 +95,33 @@ export default function Polla() {
         const intervalo = setInterval(() => setAhora(Date.now()), 1000);
         return () => clearInterval(intervalo);
     }, []);
+
+    useEffect(() => {
+        if (!info?.es_especial || info?.tiene_foto || fotoReminderDismissed()) return;
+        const timer = setTimeout(() => setMostrarFotoReminder(true), 5000);
+        return () => clearTimeout(timer);
+    }, [info]);
+
+    async function handleSubirFoto(e) {
+        const archivo = e.target.files?.[0];
+        if (!archivo) return;
+        setSubiendoFoto(true);
+        setErrorFoto('');
+        try {
+            await subirFotoPerfil(token, archivo);
+            setFotoSubidaOk(true);
+            setTimeout(() => setMostrarFotoReminder(false), 2000);
+        } catch (err) {
+            setErrorFoto(err.message);
+        } finally {
+            setSubiendoFoto(false);
+        }
+    }
+
+    function dismissFotoReminder() {
+        localStorage.setItem(FOTO_REMINDER_KEY, String(Date.now()));
+        setMostrarFotoReminder(false);
+    }
 
     const partidoDestacado = useMemo(() => {
         if (!info?.partidos?.length) return null;
@@ -455,6 +492,37 @@ export default function Polla() {
                 {/* Ranking en vivo del próximo partido */}
                 {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
             </div>
+
+            {/* Banner foto de perfil — solo influencers sin foto */}
+            {mostrarFotoReminder && (
+                <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 bg-white dark:bg-zinc-800 border border-amber-400/50 rounded-xl shadow-xl p-4">
+                    <button
+                        onClick={dismissFotoReminder}
+                        className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-600 text-lg leading-none"
+                    >
+                        ×
+                    </button>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-white mb-1">📸 Agrega tu foto de perfil</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                        Aparece en el ranking de creadores de contenido con tu foto.
+                    </p>
+                    {fotoSubidaOk ? (
+                        <p className="text-xs text-green-600 dark:text-green-400 font-bold">✅ ¡Foto guardada!</p>
+                    ) : (
+                        <label className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-sm font-bold cursor-pointer ${subiendoFoto ? 'bg-zinc-200 text-zinc-400' : 'bg-amber-400 text-zinc-950 hover:bg-amber-300'}`}>
+                            {subiendoFoto ? 'Subiendo...' : '📸 Seleccionar foto'}
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={handleSubirFoto}
+                                className="hidden"
+                                disabled={subiendoFoto}
+                            />
+                        </label>
+                    )}
+                    {errorFoto && <p className="text-xs text-red-500 mt-2">{errorFoto}</p>}
+                </div>
+            )}
         </div>
     );
 }

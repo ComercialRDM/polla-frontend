@@ -470,6 +470,16 @@ export function adminReenviarBono(token, id) {
     });
 }
 
+export async function subirFotoPerfil(tokenAcceso, foto) {
+    const formData = new FormData();
+    formData.append('token_acceso', tokenAcceso);
+    formData.append('foto', foto);
+    const res = await fetch(`${API_BASE}/api/polla/foto-perfil`, { method: 'POST', body: formData });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || `Error ${res.status}`);
+    return data;
+}
+
 export async function registrarInfluencer({ nombre, correo, celular, red_contenido, foto, autoriza_foto }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
