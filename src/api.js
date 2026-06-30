@@ -9,10 +9,18 @@ function authHeader() {
 
 async function request(path, options = {}) {
     const { headers, ...rest } = options;
-    const res = await fetch(`${API_BASE}${path}`, {
-        ...rest,
-        headers: { 'Content-Type': 'application/json', ...(headers || {}) },
-    });
+    let res;
+    try {
+        res = await fetch(`${API_BASE}${path}`, {
+            ...rest,
+            headers: { 'Content-Type': 'application/json', ...(headers || {}) },
+        });
+    } catch {
+        window.dispatchEvent(new CustomEvent('backend:down'));
+        throw new Error('Sin conexión con el servidor');
+    }
+
+    window.dispatchEvent(new CustomEvent('backend:up'));
 
     let data = null;
     try {

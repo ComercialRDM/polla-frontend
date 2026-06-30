@@ -31,6 +31,7 @@ import BotonWhatsApp from './components/BotonWhatsApp';
 import ThemeToggle from './components/ThemeToggle';
 import BottomNav from './components/BottomNav';
 import CookieBanner from './components/CookieBanner';
+import BackendDown from './components/BackendDown';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
 import { registrarClicAfiliado } from './api';
@@ -151,6 +152,15 @@ function AppRoutes() {
 
 export default function App() {
     const [mostrarSplash, setMostrarSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
+    const [backendCaido, setBackendCaido] = useState(false);
+
+    useEffect(() => {
+        const abajo = () => setBackendCaido(true);
+        const arriba = () => setBackendCaido(false);
+        window.addEventListener('backend:down', abajo);
+        window.addEventListener('backend:up', arriba);
+        return () => { window.removeEventListener('backend:down', abajo); window.removeEventListener('backend:up', arriba); };
+    }, []);
 
     function cerrarSplash() {
         sessionStorage.setItem(SPLASH_KEY, '1');
@@ -170,6 +180,7 @@ export default function App() {
             <BrowserRouter>
                 <AppRoutes />
             </BrowserRouter>
+            {backendCaido && <BackendDown />}
         </ThemeProvider>
     );
 }
