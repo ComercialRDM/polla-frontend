@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { obtenerInfoPolla, votar, subirFotoPerfil } from '../api';
+import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos } from '../api';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
@@ -61,6 +61,12 @@ export default function Polla() {
     const [subiendoFoto, setSubiendoFoto] = useState(false);
     const [fotoSubidaOk, setFotoSubidaOk] = useState(false);
     const [errorFoto, setErrorFoto] = useState('');
+    const [misGrupos, setMisGrupos] = useState(null);
+    const [creandoGrupo, setCreandoGrupo] = useState(false);
+    const [nuevoGrupoNombre, setNuevoGrupoNombre] = useState('');
+    const [nuevoGrupoPartido, setNuevoGrupoPartido] = useState('');
+    const [errorGrupo, setErrorGrupo] = useState('');
+    const [mostrarFormGrupo, setMostrarFormGrupo] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -121,6 +127,46 @@ export default function Polla() {
     function dismissFotoReminder() {
         localStorage.setItem(FOTO_REMINDER_KEY, String(Date.now()));
         setMostrarFotoReminder(false);
+    }
+
+    // Guarda el token en localStorage para que /grupo/:token pueda identificar al usuario
+    useEffect(() => {
+        if (token) localStorage.setItem('polla_token_acceso', token);
+    }, [token]);
+
+    // Carga los grupos del usuario una vez que info está disponible
+    useEffect(() => {
+        if (!token || !info) return;
+        obtenerMisGrupos(token)
+            .then((d) => { if (d?.success) setMisGrupos(d.grupos); })
+            .catch(() => {});
+    }, [token, info]);
+
+    async function handleCrearGrupo(e) {
+        e.preventDefault();
+        if (!nuevoGrupoNombre.trim() || !nuevoGrupoPartido) {
+            setErrorGrupo('Completa el nombre y el partido');
+            return;
+        }
+        setCreandoGrupo(true);
+        setErrorGrupo('');
+        try {
+            const res = await crearGrupo({ token_acceso: token, nombre: nuevoGrupoNombre.trim(), partido_id: Number(nuevoGrupoPartido) });
+            if (res?.success) {
+                setMostrarFormGrupo(false);
+                setNuevoGrupoNombre('');
+                setNuevoGrupoPartido('');
+                // Refrescar lista de grupos
+                const d = await obtenerMisGrupos(token);
+                if (d?.success) setMisGrupos(d.grupos);
+            } else {
+                setErrorGrupo(res?.error || 'No se pudo crear el grupo');
+            }
+        } catch {
+            setErrorGrupo('Error de conexión');
+        } finally {
+            setCreandoGrupo(false);
+        }
     }
 
     const partidoDestacado = useMemo(() => {
@@ -286,6 +332,83 @@ export default function Polla() {
 
                 {/* Pozo de premios en tiempo real */}
                 <PozoPremios compact />
+
+                {/* Mi Grupo */}
+                {misGrupos !== null && (
+                    <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 p-4 mb-2">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm">🏆 Mi grupo</p>
+                            <button
+                                onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }}
+                                className="text-xs text-amber-500 hover:text-amber-400 font-semibold"
+                            >
+                                {mostrarFormGrupo ? 'Cancelar' : '+ Crear grupo'}
+                            </button>
+                        </div>
+
+                        {mostrarFormGrupo && (
+                            <form onSubmit={handleCrearGrupo} className="flex flex-col gap-2 mb-3">
+                                <input
+                                    type="text"
+                                    value={nuevoGrupoNombre}
+                                    onChange={(e) => setNuevoGrupoNombre(e.target.value)}
+                                    placeholder="Nombre del grupo (ej: Familia García)"
+                                    maxLength={100}
+                                    className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                                />
+                                <select
+                                    value={nuevoGrupoPartido}
+                                    onChange={(e) => setNuevoGrupoPartido(e.target.value)}
+                                    className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                                >
+                                    <option value="">Selecciona el partido del grupo</option>
+                                    {info.partidos.filter((p) => p.estado_partido === 'activo').map((p) => (
+                                        <option key={p.partido_id} value={p.partido_id}>
+                                            {p.equipo_local} vs {p.equipo_visitante}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errorGrupo && <p className="text-red-400 text-xs">{errorGrupo}</p>}
+                                <button
+                                    type="submit"
+                                    disabled={creandoGrupo}
+                                    className="w-full py-2.5 rounded-xl font-black text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 disabled:opacity-60"
+                                >
+                                    {creandoGrupo ? 'Creando...' : 'Crear grupo'}
+                                </button>
+                            </form>
+                        )}
+
+                        {misGrupos.length === 0 && !mostrarFormGrupo && (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs text-center py-2">
+                                No estás en ningún grupo aún. ¡Crea uno y compártelo con tus amigos!
+                            </p>
+                        )}
+
+                        {misGrupos.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                                {misGrupos.map((g) => (
+                                    <Link
+                                        key={g.token_grupo}
+                                        to={`/grupo/${g.token_grupo}`}
+                                        className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 dark:bg-zinc-800/50 px-3 py-2.5 hover:bg-amber-400/5 transition-colors"
+                                    >
+                                        <div>
+                                            <p className="text-zinc-900 dark:text-white font-bold text-sm">
+                                                {g.nombre}
+                                                {g.es_admin && <span className="ml-1 text-xs text-amber-400 font-normal">(admin)</span>}
+                                            </p>
+                                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                                                {g.equipo_local} vs {g.equipo_visitante} · {g.total_miembros}/{g.max_miembros}
+                                            </p>
+                                        </div>
+                                        <span className="text-amber-400 text-sm">→</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Tarjetas de pronóstico por partido */}
                 <p className="text-zinc-900 dark:text-white font-bold text-base mb-3 mt-6">Partidos disponibles para predecir</p>

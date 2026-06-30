@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { obtenerInfoPolla, votar } from '../api';
+import { obtenerInfoPolla, votar, unirseGrupo } from '../api';
 import { obtenerMarcadoresPendientes, quitarMarcadorPendiente } from '../utils/marcadorPendiente';
 import { obtenerSesion } from '../utils/sesion';
 import { trackPurchase } from '../lib/analytics';
@@ -85,6 +85,20 @@ export default function Gracias() {
                 const data = await obtenerInfoPolla(token);
                 if (cancelado) return;
                 if (data?.acceso) {
+                    // Guardar el token_acceso en localStorage para que /grupo/:token identifique al usuario
+                    if (token) localStorage.setItem('polla_token_acceso', token);
+
+                    // Auto-unirse al grupo si venía de una invitación
+                    const grupoPendiente = localStorage.getItem('polla_grupo_pendiente');
+                    if (grupoPendiente && token) {
+                        try {
+                            await unirseGrupo(grupoPendiente, token);
+                            localStorage.removeItem('polla_grupo_pendiente');
+                        } catch {
+                            // silencioso — el usuario puede unirse manualmente desde /grupo/:token
+                        }
+                    }
+
                     await confirmarMarcadoresPendientes(data);
                     // purchase: solo aqui, porque data.acceso=true significa que el
                     // backend ya confirmo estado_pago='APROBADO' para este token (no

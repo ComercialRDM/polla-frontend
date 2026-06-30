@@ -76,6 +76,12 @@ export default function Comprar() {
     const planUrlValido = PLANES.some((p) => p.valor === planDesdeUrl) ? planDesdeUrl : null;
     const partidoDesdeUrl = Number(searchParams.get('partido')) || null;
 
+    // Si viene de una invitación a un grupo, guardar el token para auto-unirse tras el pago
+    useEffect(() => {
+        const grupoToken = searchParams.get('grupo');
+        if (grupoToken) localStorage.setItem('polla_grupo_pendiente', grupoToken);
+    }, [searchParams]);
+
     // Predicciones hechas antes de pagar (Hero o la lista de "Próximos
     // partidos" en Home) — si hay varias, se usan para preseleccionar el
     // monto personalizado más abajo en vez del plan por defecto.

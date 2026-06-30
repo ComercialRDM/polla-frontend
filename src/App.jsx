@@ -25,6 +25,7 @@ const Anexo = lazy(() => import('./pages/Anexo'));
 const ResultadosFinales = lazy(() => import('./pages/ResultadosFinales'));
 const ComoFunciona = lazy(() => import('./pages/ComoFunciona'));
 const RegistroInfluencer = lazy(() => import('./pages/RegistroInfluencer'));
+const Grupo = lazy(() => import('./pages/Grupo'));
 
 import BotonWhatsApp from './components/BotonWhatsApp';
 import ThemeToggle from './components/ThemeToggle';
@@ -136,6 +137,7 @@ function AppRoutes() {
                     <Route path="/resultados" element={<ResultadosFinales />} />
                     <Route path="/dashboardpollardm" element={<Admin />} />
                     <Route path="/adminqr" element={<AdminQR />} />
+                    <Route path="/grupo/:token" element={<Grupo />} />
                 </Routes>
             </Suspense>
             <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />

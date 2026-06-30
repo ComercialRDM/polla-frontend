@@ -698,4 +698,27 @@ export function registrarCompartida(token_acceso, partido_id) {
     });
 }
 
+export function crearGrupo({ token_acceso, nombre, partido_id }) {
+    return request('/api/grupo', {
+        method: 'POST',
+        body: JSON.stringify({ token_acceso, nombre, partido_id }),
+    });
+}
+
+export function obtenerMisGrupos(token_acceso) {
+    return request(`/api/grupo/mio?token_acceso=${encodeURIComponent(token_acceso)}`);
+}
+
+export function obtenerGrupo(token_grupo, token_acceso) {
+    const q = token_acceso ? `?token_acceso=${encodeURIComponent(token_acceso)}` : '';
+    return request(`/api/grupo/${token_grupo}${q}`);
+}
+
+export function unirseGrupo(token_grupo, token_acceso) {
+    return request(`/api/grupo/${token_grupo}/unirse`, {
+        method: 'POST',
+        body: JSON.stringify({ token_acceso }),
+    });
+}
+
 export { API_BASE };
