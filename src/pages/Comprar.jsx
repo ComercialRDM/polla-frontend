@@ -471,7 +471,7 @@ export default function Comprar() {
                                             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-black bg-[#FCD116] text-zinc-950 px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐ Popular</span>
                                         )}
                                         <p className="font-black text-zinc-900 dark:text-white text-sm leading-tight">{formatoPesos(plan.valor)}</p>
-                                        <p className="text-[10px] text-zinc-400 mt-0.5">¡Saldo extra gratis!</p>
+                                        <p className="text-[10px] text-zinc-400 mt-0.5">y recibes</p>
                                         <p className="font-bold text-amber-500 text-sm leading-tight">{formatoPesos(plan.saldoBono)}</p>
                                         <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{plan.etiqueta} en la polla</p>
                                     </button>
@@ -529,7 +529,7 @@ export default function Comprar() {
                                 <div>
                                     <p className="text-zinc-900 dark:text-white font-black text-lg leading-tight">{formatoPesos(planInfo.valor)}</p>
                                     <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                                        Recibes gratis <span className="font-bold text-amber-500">{formatoPesos(planInfo.saldoBono)}</span> en servicios
+                                        Recibes <span className="font-bold text-amber-500">{formatoPesos(planInfo.saldoBono)}</span> en servicios
                                     </p>
                                 </div>
                                 <div className="text-center shrink-0">
