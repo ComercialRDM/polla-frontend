@@ -95,6 +95,14 @@ export default function Home() {
             <div className="w-full max-w-md px-4 mt-3">
                 <CuposRestantes />
             </div>
+            <div className="w-full max-w-md px-4 mt-2">
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs text-center">
+                    📍 El crédito en servicios se redime en locales de <strong className="text-zinc-700 dark:text-zinc-300">Barranquilla</strong>.
+                    También puedes{' '}
+                    <strong className="text-zinc-700 dark:text-zinc-300">regalarlo</strong> a alguien en la ciudad.
+                    Los premios en efectivo aplican desde cualquier lugar del país.
+                </p>
+            </div>
 
             {/* ── PRUEBA SOCIAL ── */}
             <Divisor />

@@ -467,6 +467,17 @@ export default function Comprar() {
                     </div>
                 )}
 
+                {/* ── Aviso geográfico ── */}
+                <div className="mb-4 rounded-xl border border-blue-400/40 bg-blue-400/10 px-4 py-3">
+                    <p className="text-zinc-700 dark:text-zinc-200 text-xs leading-relaxed">
+                        <span className="font-bold">📍 Redención en Barranquilla:</span>{' '}
+                        El crédito en servicios de La Retoucherie se aplica exclusivamente en nuestros locales de Barranquilla.
+                        Puedes comprarlo para ti si resides o visitas la ciudad con frecuencia, o{' '}
+                        <span className="font-semibold">regalárselo a alguien en Barranquilla</span>.
+                        Los premios en efectivo aplican para participantes de cualquier ciudad.
+                    </p>
+                </div>
+
                 {/* ── Selector de plan ── */}
                 <div className="mb-3">
                     <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">

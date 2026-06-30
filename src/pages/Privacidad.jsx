@@ -84,6 +84,19 @@ export default function Privacidad() {
                         <Link to="/terminos" className="text-amber-500 dark:text-amber-400 underline">Términos y Condiciones</Link> de la
                         Actividad.
                     </p>
+
+                    <h2 className="text-zinc-900 dark:text-white font-bold text-base mt-2">7. Cookies y almacenamiento local</h2>
+                    <p>
+                        El Sitio utiliza cookies técnicas y de sesión necesarias para su funcionamiento, así como
+                        almacenamiento local del navegador (<em>localStorage</em>) para guardar preferencias del
+                        Participante (idioma, tema visual, datos del formulario de compra). Adicionalmente, utilizamos
+                        herramientas de analítica de terceros (Google Analytics, Sentry) que pueden recopilar datos
+                        agregados sobre el comportamiento de navegación con el fin de mejorar la experiencia del Sitio.
+                        Ninguna de estas herramientas es utilizada para identificar individualmente a los visitantes ni
+                        para fines publicitarios propios o de terceros. El Participante puede deshabilitar las cookies
+                        de analítica desde la configuración de su navegador sin que esto afecte el acceso a las
+                        funcionalidades principales del Sitio.
+                    </p>
                 </div>
             </div>
         </div>

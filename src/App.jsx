@@ -30,6 +30,7 @@ const Grupo = lazy(() => import('./pages/Grupo'));
 import BotonWhatsApp from './components/BotonWhatsApp';
 import ThemeToggle from './components/ThemeToggle';
 import BottomNav from './components/BottomNav';
+import CookieBanner from './components/CookieBanner';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
 import { registrarClicAfiliado } from './api';
@@ -143,6 +144,7 @@ function AppRoutes() {
             <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />
             <ThemeToggle />
             {mostrarBottomNav && <BottomNav />}
+            <CookieBanner />
         </>
     );
 }
