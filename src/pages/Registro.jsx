@@ -163,6 +163,7 @@ export default function Registro() {
 
     async function handleGoogleCredential(credential) {
         setError('');
+        if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
         setEnviando(true);
         try {
             const data = await loginConGoogle(credential);
@@ -190,6 +191,7 @@ export default function Registro() {
     async function handleEnviarCodigoTelefono(e) {
         e.preventDefault();
         setError('');
+        if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
         if (!celularTelefono.trim() || celularTelefono.trim().length < 7) {
             setError('Ingresa un número de celular válido.');
             return;
@@ -249,6 +251,7 @@ export default function Registro() {
     function handleContinuarCorreo(e) {
         e.preventDefault();
         setError('');
+        if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
         if (!correo.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) {
             setError('Ingresa un correo electrónico válido.');
             return;
@@ -275,7 +278,6 @@ export default function Registro() {
 
         if (!celular.trim() || celular.trim().length < 7) { setError('Ingresa un número de celular válido.'); return; }
         if (!mayorDeEdad) { setError('Debes confirmar que eres mayor de 18 años de edad.'); return; }
-        if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
 
         setPaso(3);
     }
@@ -365,6 +367,17 @@ export default function Registro() {
                         </p>
                     ) : (
                         <div className="flex flex-col gap-3">
+                            <label className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400 text-xs px-1">
+                                <input type="checkbox" checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)}
+                                    className="mt-0.5 accent-amber-400" />
+                                <span>
+                                    Acepto los{' '}
+                                    <Link to="/terminos" target="_blank" className="text-amber-500 dark:text-amber-400 underline">Términos y Condiciones</Link>{' '}
+                                    y la{' '}
+                                    <Link to="/privacidad" target="_blank" className="text-amber-500 dark:text-amber-400 underline">Política de Privacidad y Tratamiento de Datos Personales</Link>.
+                                </span>
+                            </label>
+
                             <GoogleButton onCredential={handleGoogleCredential} />
 
                             {!mostrarFormTelefono ? (
@@ -483,17 +496,6 @@ export default function Registro() {
                             <input type="checkbox" checked={mayorDeEdad} onChange={(e) => setMayorDeEdad(e.target.checked)}
                                 className="accent-amber-400 w-4 h-4" />
                             Confirmo que soy mayor de 18 años de edad
-                        </label>
-
-                        <label className="flex items-start gap-2 text-zinc-500 dark:text-zinc-400 text-xs">
-                            <input type="checkbox" checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)}
-                                className="mt-0.5 accent-amber-400" />
-                            <span>
-                                Acepto los{' '}
-                                <Link to="/terminos" target="_blank" className="text-amber-500 dark:text-amber-400 underline">Términos y Condiciones</Link>{' '}
-                                y la{' '}
-                                <Link to="/privacidad" target="_blank" className="text-amber-500 dark:text-amber-400 underline">Política de Privacidad y Tratamiento de Datos Personales</Link>.
-                            </span>
                         </label>
 
                         {error && <p className="text-red-400 text-sm">{error}</p>}
