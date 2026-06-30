@@ -116,7 +116,8 @@ export default function Polla() {
         try {
             await subirFotoPerfil(token, archivo);
             setFotoSubidaOk(true);
-            setTimeout(() => setMostrarFotoReminder(false), 2000);
+            setInfo((prev) => prev ? { ...prev, tiene_foto: true } : prev);
+            setTimeout(() => { setMostrarFotoReminder(false); setFotoSubidaOk(false); }, 3000);
         } catch (err) {
             setErrorFoto(err.message);
         } finally {
@@ -270,22 +271,61 @@ export default function Polla() {
 
             <div className="w-full max-w-md mt-6 relative">
                 <div className="flex items-start justify-between mb-1">
-                    <div>
-                        <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
-                        {info.es_especial && (
-                            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">
-                                🎖️ Bono Especial
-                            </span>
-                        )}
+                    <div className="flex items-center gap-3">
+                        {/* Avatar de perfil — clicable para todos los usuarios */}
+                        <label className="relative cursor-pointer flex-shrink-0 group">
+                            <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-zinc-950 font-black text-xl border-2 border-amber-400/40">
+                                {info.tiene_foto ? (
+                                    <img
+                                        src={`${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}`}
+                                        alt={info.nombre}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                    />
+                                ) : (
+                                    info.nombre.charAt(0).toUpperCase()
+                                )}
+                            </div>
+                            <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="text-white text-lg">📷</span>
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={handleSubirFoto}
+                                className="hidden"
+                                disabled={subiendoFoto}
+                            />
+                            {subiendoFoto && (
+                                <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                                    <span className="text-white text-xs font-bold">...</span>
+                                </div>
+                            )}
+                            {fotoSubidaOk && (
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
+                            )}
+                        </label>
+                        <div>
+                            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
+                            {info.es_especial && (
+                                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">
+                                    🎖️ Bono Especial
+                                </span>
+                            )}
+                            {!info.tiene_foto && !subiendoFoto && (
+                                <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-0.5">Toca la foto para agregar una 📷</p>
+                            )}
+                            {errorFoto && <p className="text-red-400 text-xs mt-0.5">{errorFoto}</p>}
+                        </div>
                     </div>
                     <button
                         onClick={handleCerrarSesion}
-                        className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-500 hover:border-red-500 transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-500 hover:border-red-500 transition-colors flex-shrink-0"
                     >
                         Cerrar sesión
                     </button>
                 </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">Predice el marcador y gana premios increíbles.</p>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6 mt-2">Predice el marcador y gana premios increíbles.</p>
 
                 {/* Monedero de cupos */}
                 <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-5 mb-6 text-center">
