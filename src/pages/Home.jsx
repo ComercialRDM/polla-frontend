@@ -100,7 +100,7 @@ export default function Home() {
                     📍 El crédito en servicios se redime en locales de <strong className="text-zinc-700 dark:text-zinc-300">Barranquilla</strong>.
                     También puedes{' '}
                     <strong className="text-zinc-700 dark:text-zinc-300">regalarlo</strong> a alguien en la ciudad.
-                    Los premios en efectivo aplican desde cualquier lugar del país.
+                    Los premios (bonos y gift cards) aplican desde cualquier lugar del país.
                 </p>
             </div>
 

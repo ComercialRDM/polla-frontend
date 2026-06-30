@@ -474,7 +474,7 @@ export default function Comprar() {
                         El crédito en servicios de La Retoucherie se aplica exclusivamente en nuestros locales de Barranquilla.
                         Puedes comprarlo para ti si resides o visitas la ciudad con frecuencia, o{' '}
                         <span className="font-semibold">regalárselo a alguien en Barranquilla</span>.
-                        Los premios en efectivo aplican para participantes de cualquier ciudad.
+                        Los premios (bonos y gift cards) aplican para participantes de cualquier ciudad.
                     </p>
                 </div>
 
