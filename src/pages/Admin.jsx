@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, API_BASE } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, API_BASE } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -145,6 +145,9 @@ export default function Admin() {
     const [demograficos,        setDemograficos]        = useState(null);
     const [demoCargando,        setDemoCargando]        = useState(false);
 
+    // ── Inicio: canales de adquisición ───────────────────────────────────────
+    const [inicioCanales,       setInicioCanales]       = useState(null);
+
     // ── Inicio: bolsa de marketing ────────────────────────────────────────────
     const [marketing,           setMarketing]           = useState(null);
     const [mktCargando,         setMktCargando]         = useState(false);
@@ -199,6 +202,20 @@ export default function Admin() {
         } catch (err) {
             // silencioso
         }
+    }
+
+    async function cargarInicioSimulador() {
+        try {
+            const d = await adminSimuladorMetricas(token);
+            if (d?.success) setMetricasSimulador(d);
+        } catch { /* silencioso */ }
+    }
+
+    async function cargarInicioCanales() {
+        try {
+            const d = await adminVentasPorCanal(token);
+            if (d?.success) setInicioCanales(d.canales || []);
+        } catch { /* silencioso */ }
     }
 
     async function cargarDemograficos() {
@@ -748,7 +765,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
     }, []);
 
     useEffect(() => {
-        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); }
+        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); cargarInicioSimulador(); cargarInicioCanales(); cargarAfiliados(); }
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
@@ -1212,7 +1229,186 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
 
                 {/* ── Inicio ── */}
                 {seccionActiva === 'inicio' && (
-                <div className="space-y-8">
+                <div className="space-y-10">
+
+                    {/* ── Termómetro + KPIs + Recomendaciones ── */}
+                    {(() => {
+                        const META_MUNDIAL = 2_600_000_000;
+                        const ing = metricasSimulador?.ingresosActuales || 0;
+                        const pctMeta = Math.min(100, (ing / META_MUNDIAL) * 100);
+                        const diasRestantes = metricasSimulador?.diasRestantes || 1;
+                        const tasaRebote = metricasSimulador?.checkout?.tasaRebote || 0;
+
+                        const diasTotales = Math.max(1, Math.round((new Date('2026-07-19') - new Date('2025-11-01')) / 86400000));
+                        const diasTranscurridos = Math.max(1, diasTotales - diasRestantes);
+                        const ingDiario = ing / diasTranscurridos;
+                        const ingNecesario = (META_MUNDIAL - ing) / Math.max(1, diasRestantes);
+                        const pctRitmo = ingNecesario > 0 ? Math.min(100, (ingDiario / ingNecesario) * 100) : (ing >= META_MUNDIAL ? 100 : 0);
+
+                        const diasProyectados = ingDiario > 0 ? (META_MUNDIAL - ing) / ingDiario : Infinity;
+                        const pctTrack = isFinite(diasProyectados) && diasProyectados > 0 ? Math.min(100, (diasRestantes / diasProyectados) * 100) : 0;
+                        const pctConv = Math.min(100, (1 - tasaRebote) * 100);
+
+                        const totalIngC = inicioCanales?.reduce((s, c) => s + c.ingresos, 0) || 0;
+                        const canalesOrden = inicioCanales ? [...inicioCanales].sort((a, b) => b.ingresos - a.ingresos) : [];
+
+                        const afiliadosActivos = afiliados?.filter(a => a.activo) || [];
+                        const afiliadosConV = afiliadosActivos.filter(a => a.total_ventas > 0);
+                        const pctAff = afiliadosActivos.length > 0 ? Math.round((afiliadosConV.length / afiliadosActivos.length) * 100) : 0;
+
+                        const colorRitmo = pctRitmo >= 80 ? '#22C55E' : pctRitmo >= 50 ? '#EAB308' : '#DC2626';
+                        const colorConv  = pctConv >= 60 ? '#22C55E' : pctConv >= 40 ? '#EAB308' : '#DC2626';
+                        const colorTrack = pctTrack >= 80 ? '#22C55E' : pctTrack >= 50 ? '#EAB308' : '#DC2626';
+                        const colorAff   = pctAff >= 60 ? '#22C55E' : pctAff >= 30 ? '#EAB308' : '#DC2626';
+                        const colorTermo = pctMeta < 1.92 ? '#DC2626' : pctMeta < 3.85 ? '#EF4444' : pctMeta < 19.23 ? '#F97316' : pctMeta < 57.69 ? '#EAB308' : pctMeta < 76.92 ? '#84CC16' : '#22C55E';
+
+                        const NOMBRES_CANAL = { paid_ads: '💰 Pauta digital', whatsapp: '📱 WhatsApp', influencer: '🎖️ Influencers', email: '📧 Email', organic_social: '📲 Redes orgánicas', direct: '🔗 Directo', referral: '👥 Referidos', friend: '🤝 Amigos', sms: '💬 SMS', organic_search: '🔍 Búsqueda', sin_clasificar: '❓ Sin clasificar' };
+                        const fp = formatoPesos;
+
+                        // Motor de recomendaciones
+                        const recs = [];
+                        if (pctRitmo < 50 && ing < META_MUNDIAL)
+                            recs.push({ p: 5, ico: '🚨', titulo: 'Ritmo muy por debajo', desc: `Llevas ${fp(Math.round(ingDiario))}/día pero necesitas ${fp(Math.round(ingNecesario))}/día.`, accion: 'Activa una campaña de WhatsApp masiva HOY — es el canal más rápido.' });
+                        else if (pctRitmo < 80 && ing < META_MUNDIAL)
+                            recs.push({ p: 3, ico: '⚡', titulo: 'Ritmo bajo', desc: `Necesitas ${fp(Math.round(ingNecesario))}/día y llevas ${fp(Math.round(ingDiario))}/día.`, accion: 'Aumenta la frecuencia de campañas o activa más influencers.' });
+
+                        if (tasaRebote > 0.7)
+                            recs.push({ p: 5, ico: '🛒', titulo: `${Math.round(tasaRebote * 100)}% abandona el checkout`, desc: 'Más de 7 de cada 10 personas que entran al checkout se van sin pagar.', accion: 'Verifica que Wompi funcione correctamente y activa seguimiento por WhatsApp 30 min después del abandono.' });
+                        else if (tasaRebote > 0.5)
+                            recs.push({ p: 3, ico: '🛒', titulo: `${Math.round(tasaRebote * 100)}% abandona el checkout`, desc: 'Hay espacio para mejorar la conversión.', accion: 'Prueba activar un recordatorio por WhatsApp a quien abandona el checkout.' });
+
+                        if (canalesOrden.length > 0) {
+                            const top = canalesOrden[0];
+                            const pctC = totalIngC > 0 ? Math.round((top.ingresos / totalIngC) * 100) : 0;
+                            const nmC = NOMBRES_CANAL[top.canal] || top.canal;
+                            if (top.canal === 'paid_ads')
+                                recs.push({ p: 4, ico: '💰', titulo: `${nmC} lidera (${pctC}%)`, desc: `Genera ${fp(top.ingresos)} — tu canal más rentable.`, accion: 'Aumenta el presupuesto de pauta un 20-30% esta semana.' });
+                            else if (top.canal === 'whatsapp')
+                                recs.push({ p: 3, ico: '📱', titulo: `${nmC} lidera (${pctC}%)`, desc: `Tu canal estrella genera ${fp(top.ingresos)}.`, accion: 'Programa la próxima campaña para mañana entre 10am y 12pm.' });
+                            else if (top.canal === 'influencer')
+                                recs.push({ p: 3, ico: '🎖️', titulo: `${nmC} lideran (${pctC}%)`, desc: `Generan ${fp(top.ingresos)} — tu canal de mayor impacto hoy.`, accion: 'Activa 2-3 influencers nuevos esta semana.' });
+                            else
+                                recs.push({ p: 2, ico: '📊', titulo: `Canal top: ${nmC} (${pctC}%)`, desc: `Genera ${fp(top.ingresos)} en ingresos.`, accion: 'Refuerza este canal con más contenido o presupuesto.' });
+                        }
+
+                        if (afiliados?.length > 0) {
+                            const sinV = afiliadosActivos.filter(a => a.total_ventas === 0);
+                            if (sinV.length >= 3)
+                                recs.push({ p: 3, ico: '👥', titulo: `${sinV.length} influencers sin ventas`, desc: 'Tienen el link activo pero no han convertido ningún cliente.', accion: 'Envíales un kit de contenido y recuérdales las fechas clave del torneo.' });
+                            const altosClics = afiliadosActivos.filter(a => a.total_clics > 200 && a.total_ventas < 5);
+                            if (altosClics.length > 0) {
+                                const aff = altosClics[0];
+                                recs.push({ p: 4, ico: '🔗', titulo: `${aff.nombre || 'Influencer'}: ${aff.total_clics} clics → ${aff.total_ventas} ventas`, desc: `Conversión del ${aff.total_clics > 0 ? Math.round((aff.total_ventas / aff.total_clics) * 100) : 0}%. Puede ser link roto o contenido que no convierte.`, accion: 'Verifica el link de afiliado y dale material de contenido nuevo.' });
+                            }
+                        }
+
+                        if (recs.length === 0 && ing > 0)
+                            recs.push({ p: 1, ico: '✅', titulo: '¡Todo en orden!', desc: 'No hay alertas críticas en este momento.', accion: 'Sigue monitoreando diariamente.' });
+                        recs.sort((a, b) => b.p - a.p);
+
+                        const BORDER_REC = { 5: 'border-red-400 bg-red-50 dark:bg-red-950/30', 4: 'border-orange-400 bg-orange-50 dark:bg-orange-950/30', 3: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30', 2: 'border-blue-300 bg-blue-50 dark:bg-blue-950/30', 1: 'border-green-400 bg-green-50 dark:bg-green-950/30' };
+
+                        return (
+                        <>
+                        {/* Termómetro + KPIs */}
+                        <div>
+                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">🎯 Meta 2026 — $2.600.000.000</h2>
+                            <p className="text-xs text-zinc-400 mb-6">Ingresos acumulados vs objetivo total · Faltan <strong className="text-zinc-600 dark:text-zinc-300">{diasRestantes}</strong> días</p>
+
+                            <div className="flex flex-col lg:flex-row gap-10">
+                                {/* Termómetro */}
+                                <div className="flex items-end gap-6 justify-center lg:justify-start flex-shrink-0">
+                                    <div className="relative flex flex-col items-center">
+                                        {/* Marcas de escala */}
+                                        <div className="absolute right-full mr-2 inset-y-0 flex flex-col justify-between py-0.5 text-right pointer-events-none" style={{ height: 320 }}>
+                                            {['$2.600MM', '$2.000MM', '$1.500MM', '$500MM', '$100MM', '$50MM', '$0'].map(l => (
+                                                <span key={l} className="text-[9px] text-zinc-400 leading-none whitespace-nowrap">{l}</span>
+                                            ))}
+                                        </div>
+                                        {/* Tubo */}
+                                        <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320 }}>
+                                            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #DC2626 0% 1.92%, #EF4444 1.92% 3.85%, #F97316 3.85% 19.23%, #EAB308 19.23% 57.69%, #84CC16 57.69% 76.92%, #22C55E 76.92% 100%)' }} />
+                                            <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctMeta}%` }} />
+                                            {pctMeta > 1 && <div className="absolute left-0 right-0 h-px bg-white/70" style={{ bottom: `${pctMeta}%` }} />}
+                                        </div>
+                                        {/* Bulbo */}
+                                        <div className="w-8 h-8 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorTermo }} />
+                                    </div>
+
+                                    {/* Info junto al termómetro */}
+                                    <div className="flex flex-col justify-end gap-4 pb-10">
+                                        <div>
+                                            <p className="text-3xl font-black transition-colors duration-[2000ms]" style={{ color: colorTermo }}>{pctMeta.toFixed(2)}%</p>
+                                            <p className="text-xs text-zinc-400">completado</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-zinc-800 dark:text-white">{fp(ing)}</p>
+                                            <p className="text-xs text-zinc-400">ingresos actuales</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-zinc-500">{fp(META_MUNDIAL - ing)}</p>
+                                            <p className="text-xs text-zinc-400">faltante</p>
+                                        </div>
+                                        <div className="border-t border-zinc-200 dark:border-white/10 pt-3 space-y-1">
+                                            <p className="text-xs text-zinc-500">Ritmo actual: <strong className="text-zinc-700 dark:text-zinc-200">{fp(Math.round(ingDiario))}/día</strong></p>
+                                            <p className="text-xs text-zinc-500">Necesario: <strong className="text-zinc-700 dark:text-zinc-200">{fp(Math.round(ingNecesario))}/día</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* KPIs + Canales */}
+                                <div className="flex-1 space-y-5">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                        <GaugeKPI pct={pctRitmo} valor={`${Math.round(pctRitmo)}%`} label="Ritmo diario" nota={`${fp(Math.round(ingDiario))}/día`} color={colorRitmo} />
+                                        <GaugeKPI pct={pctConv} valor={`${Math.round(pctConv)}%`} label="Conversión checkout" nota={`${Math.round(tasaRebote * 100)}% abandona`} color={colorConv} />
+                                        <GaugeKPI pct={pctTrack} valor={`${Math.round(pctTrack)}%`} label="Proyección a meta" nota={isFinite(diasProyectados) ? `~${Math.round(diasProyectados)} días` : 'sin datos'} color={colorTrack} />
+                                        <GaugeKPI pct={pctAff} valor={`${pctAff}%`} label="Influencers activos" nota={`${afiliadosConV.length}/${afiliadosActivos.length} con ventas`} color={colorAff} />
+                                    </div>
+
+                                    {canalesOrden.length > 0 && (
+                                    <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/10">
+                                        <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Canales de adquisición</p>
+                                        <div className="space-y-2.5">
+                                            {canalesOrden.filter(c => c.ingresos > 0).slice(0, 6).map(c => {
+                                                const pctC = totalIngC > 0 ? Math.round((c.ingresos / totalIngC) * 100) : 0;
+                                                return (
+                                                    <div key={c.canal}>
+                                                        <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-300 mb-1">
+                                                            <span>{NOMBRES_CANAL[c.canal] || c.canal}</span>
+                                                            <span className="font-bold">{fp(c.ingresos)} <span className="text-zinc-400">({pctC}%)</span></span>
+                                                        </div>
+                                                        <div className="h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-amber-400 rounded-full transition-all duration-700" style={{ width: `${pctC}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {canalesOrden.every(c => c.ingresos === 0) && <p className="text-xs text-zinc-400">Sin ventas clasificadas aún</p>}
+                                        </div>
+                                    </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recomendaciones */}
+                        {recs.length > 0 && (
+                        <div>
+                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4">💡 Qué mejorar para llegar a la meta</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {recs.map((r, i) => (
+                                    <div key={i} className={`rounded-xl p-4 border-l-4 ${BORDER_REC[r.p] || BORDER_REC[2]}`}>
+                                        <p className="text-sm font-bold text-zinc-800 dark:text-white mb-1">{r.ico} {r.titulo}</p>
+                                        <p className="text-xs text-zinc-600 dark:text-zinc-300 mb-2">{r.desc}</p>
+                                        <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">→ {r.accion}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        )}
+                        </>
+                        );
+                    })()}
 
                     {/* Bolsa de Marketing */}
                     <div>
@@ -3274,6 +3470,38 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 </>
                 )}
             </div>
+        </div>
+    );
+}
+
+function GaugeKPI({ pct = 0, valor, label, nota, color = '#22C55E' }) {
+    const r = 36;
+    const cx = 50;
+    const cy = 50;
+    const filled = Math.max(0, Math.min(100, pct));
+    return (
+        <div className="flex flex-col items-center gap-1">
+            <svg viewBox="0 0 100 60" className="w-28">
+                {/* Track */}
+                <path
+                    d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+                    fill="none" stroke="#e4e4e7" strokeWidth="10" strokeLinecap="round"
+                    className="dark:[stroke:#3f3f46]"
+                />
+                {/* Fill */}
+                <path
+                    d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+                    fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
+                    pathLength="100"
+                    strokeDasharray="100"
+                    strokeDashoffset={100 - filled}
+                    style={{ transition: 'stroke-dashoffset 1.2s ease, stroke 0.5s ease' }}
+                />
+                {/* Valor */}
+                <text x="50" y="45" textAnchor="middle" fontSize="14" fontWeight="bold" fill={color}>{valor}</text>
+            </svg>
+            <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 text-center leading-tight">{label}</p>
+            {nota && <p className="text-[10px] text-zinc-400 text-center leading-tight">{nota}</p>}
         </div>
     );
 }
