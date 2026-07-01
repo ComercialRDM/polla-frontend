@@ -147,7 +147,7 @@ export default function Polla() {
 
     useEffect(() => {
         if (!info || info.tiene_cuenta || cuentaReminderDismissed()) return;
-        const timer = setTimeout(() => setMostrarCuentaBanner(true), 5000);
+        const timer = setTimeout(() => setMostrarCuentaBanner(true), 10000);
         return () => clearTimeout(timer);
     }, [info]);
 
