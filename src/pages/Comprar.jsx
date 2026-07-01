@@ -13,6 +13,7 @@ import { getStoredAttribution } from '../lib/attribution';
 import { trackViewItem, trackBeginCheckout, trackAddPaymentInfo } from '../lib/analytics';
 import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
+import PageHeader from '../components/PageHeader';
 import wompiLogo from '../assets/Wompi_Logo.jpg';
 import pseLogo from '../assets/boton-pse.png';
 import bancolombiaLogo from '../assets/bancolombia-logo.png';
@@ -410,20 +411,7 @@ export default function Comprar() {
 
     return (
         <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950">
-            {/* Franja Colombia */}
-            <div className="fixed top-0 left-0 right-0 h-1.5 flex z-50">
-                <div className="flex-1 bg-colombia-yellow" />
-                <div className="flex-1 bg-colombia-blue" />
-                <div className="flex-1 bg-colombia-red" />
-            </div>
-
-            {/* Header sticky */}
-            <div className="sticky top-1.5 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-lg border-b border-zinc-200 dark:border-white/10 px-4 py-3 flex items-center justify-between gap-3">
-                <Link to="/" className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400 text-sm font-medium hover:text-zinc-900 dark:hover:text-white transition-colors shrink-0">
-                    ← Inicio
-                </Link>
-                <p className="font-black text-zinc-900 dark:text-white text-sm truncate">Compra tu Bono Digital</p>
-            </div>
+            <PageHeader titulo="Compra tu Bono" />
 
             <form id="comprar-form" onSubmit={handleSubmit}>
             <div className="max-w-lg mx-auto px-4 pt-5 pb-40 flex flex-col gap-4">
@@ -718,6 +706,29 @@ export default function Comprar() {
                     </div>
                 )}
 
+                {/* Términos — justo después del método de pago para que no se olvide */}
+                <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${aceptaTerminos ? 'border-amber-400 bg-amber-50 dark:bg-amber-400/10' : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900'}`}>
+                    <input
+                        type="checkbox"
+                        checked={aceptaTerminos}
+                        onChange={(e) => setAceptaTerminos(e.target.checked)}
+                        className="sr-only"
+                    />
+                    <div className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${aceptaTerminos ? 'border-amber-400 bg-amber-400' : 'border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800'}`}>
+                        {aceptaTerminos && (
+                            <svg viewBox="0 0 12 10" className="w-4 h-4" fill="none" aria-hidden="true">
+                                <path d="M1 5l3.5 3.5L11 1" stroke="#09090b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        )}
+                    </div>
+                    <span className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                        Acepto los{' '}
+                        <Link to="/terminos" target="_blank" className="text-amber-500 underline font-semibold" onClick={(e) => e.stopPropagation()}>Términos y Condiciones</Link>{' '}
+                        y la{' '}
+                        <Link to="/privacidad" target="_blank" className="text-amber-500 underline font-semibold" onClick={(e) => e.stopPropagation()}>Política de Privacidad</Link>.
+                    </span>
+                </label>
+
                 <CountdownPartido partido={partidoSeleccionado} />
 
                 {/* Banner bonos limitados — al final para que el cliente lo vea antes de irse */}
@@ -727,22 +738,6 @@ export default function Comprar() {
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 p-3">
                     <TrustBadges />
                 </div>
-
-                {/* Términos */}
-                <label className="flex items-start gap-3 cursor-pointer px-1">
-                    <input
-                        type="checkbox"
-                        checked={aceptaTerminos}
-                        onChange={(e) => setAceptaTerminos(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 accent-amber-400 shrink-0"
-                    />
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                        Acepto los{' '}
-                        <Link to="/terminos" target="_blank" className="text-amber-500 underline font-medium">Términos y Condiciones</Link>{' '}
-                        y la{' '}
-                        <Link to="/privacidad" target="_blank" className="text-amber-500 underline font-medium">Política de Privacidad</Link>.
-                    </span>
-                </label>
 
                 {error && (
                     <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 px-4 py-3">

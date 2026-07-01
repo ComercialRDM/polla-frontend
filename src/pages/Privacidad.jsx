@@ -1,16 +1,12 @@
 import { Link } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
 
 export default function Privacidad() {
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
-            <div className="absolute top-0 left-0 right-0 h-2 flex">
-                <div className="flex-1 bg-colombia-yellow" />
-                <div className="flex-1 bg-colombia-blue" />
-                <div className="flex-1 bg-colombia-red" />
-            </div>
+        <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow flex flex-col items-center">
+            <PageHeader titulo="Privacidad" />
 
-            <div className="w-full max-w-md mt-6">
-                <Link to="/" className="text-zinc-500 dark:text-zinc-400 text-sm hover:text-zinc-900 dark:hover:text-white">&larr; Volver</Link>
+            <div className="w-full max-w-md px-6 pt-6 pb-10">
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">
                     Política de Privacidad y Tratamiento de Datos Personales

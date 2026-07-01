@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 
@@ -18,11 +19,15 @@ function formatoCompacto(valor) {
 }
 
 export default function NotificacionActividad() {
+    const { pathname } = useLocation();
     const [actividad, setActividad] = useState([]);
     const [actual, setActual] = useState(null);
     const [visible, setVisible] = useState(false);
     const idxRef = useRef(0);
     const timerRef = useRef(null);
+    // En /comprar la barra fija de pago mide ~150px; subimos la notificación
+    // para que no tape el botón "Pagar".
+    const bottomClass = pathname === '/comprar' ? 'bottom-44' : 'bottom-24';
 
     useEffect(() => {
         fetch(`${API_BASE}/api/polla/actividad-reciente`)
@@ -58,7 +63,7 @@ export default function NotificacionActividad() {
 
     return (
         <div
-            className={`fixed bottom-24 left-3 z-40 max-w-[280px] transition-all duration-500 ${
+            className={`fixed ${bottomClass} left-3 z-40 max-w-[280px] transition-all duration-500 ${
                 visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
             }`}
         >
