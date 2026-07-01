@@ -172,7 +172,7 @@ export default function Polla() {
         try {
             await subirFotoPerfil(token, archivo);
             setFotoSubidaOk(true);
-            setInfo((prev) => prev ? { ...prev, tiene_foto: true } : prev);
+            setInfo((prev) => prev ? { ...prev, foto_estado: 'pendiente', foto_razon_rechazo: null } : prev);
             setTimeout(() => { setMostrarFotoReminder(false); setFotoSubidaOk(false); }, 3000);
         } catch (err) {
             setErrorFoto(err.message);
@@ -448,7 +448,7 @@ export default function Polla() {
                     <div className="flex items-center gap-3">
                         {/* Avatar de perfil — clicable para todos los usuarios */}
                         <label className="relative cursor-pointer flex-shrink-0 group">
-                            <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-zinc-950 font-black text-xl border-2 border-amber-400/40">
+                            <div className={`w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-zinc-950 font-black text-xl border-2 ${info.foto_estado === 'pendiente' ? 'border-amber-400 bg-gradient-to-br from-amber-300 to-amber-500' : info.foto_estado === 'rechazada' ? 'border-red-400 bg-gradient-to-br from-red-400 to-red-600' : 'border-amber-400/40 bg-gradient-to-br from-amber-400 to-amber-600'}`}>
                                 {info.tiene_foto ? (
                                     <img
                                         src={`${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}`}
@@ -478,15 +478,39 @@ export default function Polla() {
                             {fotoSubidaOk && (
                                 <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
                             )}
-                        </label>
-                        <div>
-                            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
-                            {info.es_especial && (
-                                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">
-                                    🎖️ Bono Especial
-                                </span>
+                            {info.foto_estado === 'pendiente' && !subiendoFoto && (
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-zinc-950 text-xs">⏳</div>
                             )}
-                            {!info.tiene_foto && !subiendoFoto && (
+                            {info.foto_estado === 'rechazada' && !subiendoFoto && (
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">!</div>
+                            )}
+                        </label>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                {info.es_influencer ? (
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                                        🎖️ Creador de contenido
+                                    </span>
+                                ) : (
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                        👤 Cliente
+                                    </span>
+                                )}
+                                {info.es_especial && (
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">
+                                        Bono especial
+                                    </span>
+                                )}
+                            </div>
+                            {/* Estado de la foto */}
+                            {info.foto_estado === 'pendiente' && !subiendoFoto && (
+                                <p className="text-amber-500 dark:text-amber-400 text-xs mt-1">📷 Foto en revisión — se aprueba en pocas horas</p>
+                            )}
+                            {info.foto_estado === 'rechazada' && !subiendoFoto && (
+                                <p className="text-red-500 dark:text-red-400 text-xs mt-1">❌ Foto rechazada{info.foto_razon_rechazo ? `: ${info.foto_razon_rechazo}` : ''}. Toca para subir otra.</p>
+                            )}
+                            {!info.foto_estado && !subiendoFoto && !fotoSubidaOk && (
                                 <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-0.5">Toca la foto para agregar una 📷</p>
                             )}
                             {errorFoto && <p className="text-red-400 text-xs mt-0.5">{errorFoto}</p>}
@@ -499,7 +523,11 @@ export default function Polla() {
                         Cerrar sesión
                     </button>
                 </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4 mt-2">Predice el marcador y gana premios increíbles.</p>
+                {info.es_influencer ? (
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4 mt-2">Predice los marcadores y demuestra tu habilidad. Como creador de contenido, tus bonos especiales no compiten por los premios monetarios.</p>
+                ) : (
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4 mt-2">Predice el marcador y gana premios increíbles.</p>
+                )}
 
                 {/* Banner: sugerir registro para más seguridad */}
                 {mostrarCuentaBanner && (

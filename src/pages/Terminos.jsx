@@ -25,7 +25,7 @@ export default function Terminos() {
             <div className="w-full max-w-md px-6 pt-6 pb-10">
 
                 <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mt-4 mb-1">Términos y Condiciones</h1>
-                <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">Versión 2.1 — 26 de junio de 2026</p>
+                <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">Versión 2.2 — 1 de julio de 2026</p>
                 <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-6">
                     Operador: <strong className="text-zinc-700 dark:text-zinc-300">RDM MASTER COLOMBIA SAS</strong> · NIT 901.765.354-3<br />
                     Carrera 51 #95-31, Barranquilla · comercial@retoucherie.com.co · +57 310 396 3708
@@ -393,7 +393,22 @@ export default function Terminos() {
                     </P>
 
                     {/* 17 */}
-                    <S>17. Aceptación</S>
+                    <S>17. Fotos de perfil y moderación de contenido</S>
+                    <P>
+                        Los Participantes podrán subir voluntariamente una fotografía de perfil personal visible en el
+                        ranking de la Actividad. Al hacerlo, el Participante declara:
+                    </P>
+                    <ul className="list-disc list-inside text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed space-y-1 mt-1">
+                        <li>Ser el titular de los derechos de la imagen o contar con autorización expresa de quien aparezca en ella.</li>
+                        <li>Que la fotografía no contiene desnudos, contenido sexualmente explícito, imágenes violentas, símbolos de odio, ni material que infrinja derechos de terceros.</li>
+                        <li>Que no se trata de una fotografía que suplante la identidad de otra persona.</li>
+                    </ul>
+                    <P>
+                        Toda foto subida queda en estado <strong>«pendiente de revisión»</strong> y no es visible públicamente hasta que el Operador la apruebe. El Operador puede rechazar o eliminar cualquier fotografía en cualquier momento y sin previo aviso si considera que infringe estas condiciones o resulta inapropiada, notificando el motivo al Participante. El Participante indemnizará y mantendrá indemne al Operador frente a cualquier reclamación de terceros derivada de la fotografía subida.
+                    </P>
+
+                    {/* 18 */}
+                    <S>18. Aceptación</S>
                     <P>
                         Al registrarse en el Sitio y/o adquirir un Bono, el Participante declara ser mayor de 18 años,
                         haber leído íntegramente estos Términos y Condiciones y la{' '}

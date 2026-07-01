@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -23,6 +23,7 @@ const GRUPOS_NAV = [
             { id: 'pronosticos',    label: '⚽ Pronósticos' },
             { id: 'redenciones',    label: '🧾 Redenciones' },
             { id: 'regalos',        label: '🎁 Regalos' },
+            { id: 'fotos',          label: '📸 Fotos' },
         ],
     },
     {
@@ -232,6 +233,41 @@ export default function Admin() {
     const [apCargando, setApCargando]     = useState(false);
     const [apError, setApError]           = useState('');
     const [exportando, setExportando]     = useState('');
+
+    // ── Moderación de fotos ───────────────────────────────────────────────────
+    const [fotos,               setFotos]               = useState([]);
+    const [fotosCargando,       setFotosCargando]       = useState(false);
+    const [fotosError,          setFotosError]          = useState('');
+    const [fotosMsg,            setFotosMsg]            = useState('');
+    const [rechazandoFotoId,    setRechazandoFotoId]    = useState(null);
+    const [razonRechazoFoto,    setRazonRechazoFoto]    = useState('');
+
+    async function cargarFotosPendientes() {
+        setFotosCargando(true); setFotosError('');
+        try {
+            const data = await adminListarFotosPendientes(token);
+            if (data?.success) setFotos(data.fotos || []);
+            else setFotosError(data?.error || 'Error al cargar fotos');
+        } catch { setFotosError('Error de conexión'); }
+        finally { setFotosCargando(false); }
+    }
+
+    async function handleAprobarFoto(usuarioId) {
+        try {
+            const data = await adminAprobarFoto(token, usuarioId);
+            if (data?.success) { setFotosMsg('Foto aprobada y publicada.'); setFotos(p => p.filter(f => f.usuario_id !== usuarioId)); }
+            else setFotosError(data?.error || 'Error al aprobar');
+        } catch { setFotosError('Error de conexión'); }
+    }
+
+    async function handleRechazarFoto(usuarioId) {
+        if (!razonRechazoFoto.trim()) { setFotosError('Escribe el motivo del rechazo'); return; }
+        try {
+            const data = await adminRechazarFoto(token, usuarioId, razonRechazoFoto.trim());
+            if (data?.success) { setFotosMsg('Foto rechazada.'); setFotos(p => p.filter(f => f.usuario_id !== usuarioId)); setRechazandoFotoId(null); setRazonRechazoFoto(''); }
+            else setFotosError(data?.error || 'Error al rechazar');
+        } catch { setFotosError('Error de conexión'); }
+    }
 
     // ── Regalos de bonos ──────────────────────────────────────────────────────
     const [regalosEstado,       setRegalosEstado]       = useState('PENDIENTE');
@@ -969,6 +1005,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'redenciones' && token) cargarResumenDia(resumenDiaFecha);
         if (seccionActiva === 'regalos' && token) cargarRegalos('PENDIENTE');
+        if (seccionActiva === 'fotos' && token) cargarFotosPendientes();
         if (seccionActiva === 'checklist' && token) { cargarChecklist(); cargarChecklistMatriz(); }
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -3706,6 +3743,81 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                         </div>
                     </div>
 
+                </div>
+                )}
+
+                {/* ── Moderación de fotos ── */}
+                {seccionActiva === 'fotos' && (
+                <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <h1 className="text-xl font-black text-zinc-900 dark:text-white">📸 Moderación de fotos de perfil</h1>
+                        <button onClick={cargarFotosPendientes} disabled={fotosCargando} className="text-xs px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400 transition-colors disabled:opacity-50">
+                            {fotosCargando ? 'Cargando...' : '↺ Actualizar'}
+                        </button>
+                    </div>
+
+                    {fotosMsg && <p className="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 text-sm font-semibold">{fotosMsg}</p>}
+                    {fotosError && <p className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 px-4 py-3 text-sm">{fotosError}</p>}
+
+                    {!fotosCargando && fotos.length === 0 && (
+                        <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-8 text-center">
+                            <p className="text-4xl mb-2">✅</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">No hay fotos pendientes de revisión.</p>
+                        </div>
+                    )}
+
+                    {fotos.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {fotos.map((f) => (
+                                <div key={f.usuario_id} className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 overflow-hidden flex flex-col">
+                                    <img
+                                        src={adminPreviewFotoUrl(f.usuario_id) + `?t=${Date.now()}`}
+                                        alt={f.nombre}
+                                        className="w-full aspect-square object-cover bg-zinc-100 dark:bg-zinc-800"
+                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                    />
+                                    <div className="p-4 flex flex-col gap-3 flex-1">
+                                        <div>
+                                            <p className="font-bold text-zinc-900 dark:text-white text-sm truncate">{f.nombre}</p>
+                                            <p className="text-zinc-400 text-xs">{f.celular}{f.correo ? ` · ${f.correo}` : ''}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${f.es_influencer ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'}`}>
+                                                    {f.es_influencer ? '🎖️ Influencer' : '👤 Cliente'}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-400">{f.bonos_aprobados} bono{f.bonos_aprobados !== 1 ? 's' : ''}</span>
+                                            </div>
+                                        </div>
+
+                                        {rechazandoFotoId === f.usuario_id ? (
+                                            <div className="flex flex-col gap-2">
+                                                <select
+                                                    value={razonRechazoFoto}
+                                                    onChange={(e) => setRazonRechazoFoto(e.target.value)}
+                                                    className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none"
+                                                >
+                                                    <option value="">Selecciona el motivo...</option>
+                                                    <option value="Contenido inapropiado o explícito">Contenido inapropiado o explícito</option>
+                                                    <option value="Imagen borrosa o de baja calidad">Imagen borrosa o de baja calidad</option>
+                                                    <option value="No es una foto de perfil personal">No es una foto de perfil personal</option>
+                                                    <option value="Contiene texto, logos o marcas externas">Contiene texto, logos o marcas externas</option>
+                                                    <option value="Posible suplantación de identidad">Posible suplantación de identidad</option>
+                                                </select>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleRechazarFoto(f.usuario_id)} className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-colors">Confirmar rechazo</button>
+                                                    <button onClick={() => { setRechazandoFotoId(null); setRazonRechazoFoto(''); }} className="px-3 py-2 rounded-lg border border-zinc-200 dark:border-white/10 text-zinc-500 text-xs hover:border-zinc-400 transition-colors">Cancelar</button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2 mt-auto">
+                                                <button onClick={() => handleAprobarFoto(f.usuario_id)} className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-bold transition-colors">✓ Aprobar</button>
+                                                <button onClick={() => { setRechazandoFotoId(f.usuario_id); setFotosError(''); setFotosMsg(''); }} className="flex-1 py-2 rounded-lg border border-red-200 dark:border-red-700/50 text-red-600 dark:text-red-400 text-sm font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">✕ Rechazar</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 )}
 

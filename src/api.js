@@ -869,4 +869,29 @@ export async function adminDescargarReporteRegalos(token, { desde, hasta, format
     URL.revokeObjectURL(url);
 }
 
+// ── Moderación de fotos de perfil (admin) ─────────────────────────────────
+
+export function adminListarFotosPendientes(token) {
+    return request('/api/admin/fotos-pendientes', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function adminPreviewFotoUrl(usuarioId) {
+    return `${API_BASE}/api/admin/fotos/${usuarioId}/preview`;
+}
+
+export function adminAprobarFoto(token, usuarioId) {
+    return request(`/api/admin/fotos/${usuarioId}/aprobar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function adminRechazarFoto(token, usuarioId, razon) {
+    return request(`/api/admin/fotos/${usuarioId}/rechazar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ razon }),
+    });
+}
+
 export { API_BASE };
