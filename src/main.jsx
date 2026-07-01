@@ -12,15 +12,10 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   })
 }
 
-// registerType: 'autoUpdate' (vite.config.js) activa el service worker nuevo
-// solo (skipWaiting + clientsClaim), pero las pestañas YA abiertas antes del
-// despliegue se quedan apuntando a archivos JS con hash viejo que el servidor
-// ya no tiene -- eso es lo que causaba la pantalla en blanco justo despues de
-// un deploy. Este listener fuerza un reload UNA sola vez cuando el nuevo
-// service worker toma control, para que la pestaña siempre quede con los
-// archivos correctos sin que el usuario tenga que borrar datos a mano.
-registerSW({ immediate: true })
-
+// Escuchar ANTES de registrar el SW para no perder el evento si activa rápido.
+// controllerchange: el nuevo SW tomó control → recargar para servir JS/CSS frescos.
+// visibilitychange: el usuario vuelve a la app (desde el switcher de iOS) →
+//   forzar que el SW compruebe si hay una versión nueva disponible.
 if ('serviceWorker' in navigator) {
   let yaRecargo = false
   navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -28,7 +23,15 @@ if ('serviceWorker' in navigator) {
     yaRecargo = true
     window.location.reload()
   })
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      navigator.serviceWorker.ready.then((reg) => reg.update()).catch(() => {})
+    }
+  })
 }
+
+registerSW({ immediate: true })
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
