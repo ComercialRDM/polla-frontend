@@ -102,7 +102,14 @@ export default function Polla() {
 
     useEffect(() => {
         if (!token) {
-            setError('Link de acceso inválido. Ingresa desde la página principal.');
+            // Si no llegó token en la URL, intentar con el guardado en localStorage
+            // (cubre el caso de usuario que cierra la app y vuelve directo a /polla).
+            const tokenGuardado = localStorage.getItem('polla_token_acceso');
+            if (tokenGuardado) {
+                navigate(`/polla?token=${tokenGuardado}`, { replace: true });
+                return;
+            }
+            setError('No encontramos tu sesión. Ingresa con tu correo o celular.');
             setCargando(false);
             return;
         }
@@ -358,9 +365,19 @@ export default function Polla() {
 
     if (error && !info) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white px-6 text-center gap-4">
-                <p className="text-red-400">{error}</p>
-                <Link to="/" className="text-amber-500 dark:text-amber-400 underline">Volver al inicio</Link>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-zinc-950 px-6 text-center gap-5">
+                <span className="text-5xl">🔐</span>
+                <div>
+                    <p className="text-zinc-900 dark:text-white font-bold text-lg mb-1">Sesión no encontrada</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">{error}</p>
+                </div>
+                <Link
+                    to="/ingresar"
+                    className="w-full max-w-xs py-3.5 rounded-2xl font-black text-zinc-950 text-base bg-[#FCD116] text-center block shadow-lg shadow-amber-400/20"
+                >
+                    Ingresar con mi correo o celular
+                </Link>
+                <Link to="/" className="text-xs text-zinc-400 underline">Volver al inicio</Link>
             </div>
         );
     }
