@@ -381,7 +381,23 @@ export default function Terminos() {
                     </P>
 
                     {/* 16 */}
-                    <S>16. Aceptación</S>
+                    <S>16. Actividad Reciente y Prueba Social</S>
+                    <P>
+                        Con el fin de informar a los visitantes sobre la participación activa en el Programa, La Retoucherie
+                        podrá mostrar de forma pública y anónima notificaciones de actividad reciente, tales como
+                        "Carlos acaba de comprar su bono". Estas notificaciones utilizan únicamente el <strong>primer nombre</strong> del
+                        Participante y el tiempo aproximado de la transacción. No se divulga apellido, número de celular,
+                        correo electrónico ni ningún otro dato personal identificable. Al aceptar estos Términos, el
+                        Participante autoriza expresamente este uso limitado y anónimo de su primer nombre con fines
+                        informativos y de prueba social. Si el Participante desea que su nombre no aparezca en estas
+                        notificaciones, podrá solicitarlo escribiendo a{' '}
+                        <a href="mailto:comercial@retoucherie.com.co" className="text-amber-500 dark:text-amber-400 underline">
+                            comercial@retoucherie.com.co
+                        </a>.
+                    </P>
+
+                    {/* 17 */}
+                    <S>17. Aceptación</S>
                     <P>
                         Al registrarse en el Sitio y/o adquirir un Bono, el Participante declara ser mayor de 18 años,
                         haber leído íntegramente estos Términos y Condiciones y la{' '}

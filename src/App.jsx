@@ -33,6 +33,7 @@ import BottomNav from './components/BottomNav';
 import CookieBanner from './components/CookieBanner';
 import BackendDown from './components/BackendDown';
 import InstalarApp from './components/InstalarApp';
+import NotificacionActividad from './components/NotificacionActividad';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
 import { registrarClicAfiliado } from './api';
@@ -183,6 +184,7 @@ export default function App() {
                 <AppRoutes />
             </BrowserRouter>
             {backendCaido && <BackendDown />}
+            <NotificacionActividad />
             <InstalarApp delayMs={30000} />
         </ThemeProvider>
     );
