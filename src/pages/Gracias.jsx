@@ -236,7 +236,7 @@ export default function Gracias() {
                         </li>
                     </ul>
                     <Link
-                        to={tieneSesion ? '/' : '/registro'}
+                        to={token ? `/polla?token=${token}` : (tieneSesion ? '/' : '/registro')}
                         className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
                     >
                         {tieneSesion ? 'Ir a mi cuenta' : 'Registrarme ahora — ¡es gratis!'}

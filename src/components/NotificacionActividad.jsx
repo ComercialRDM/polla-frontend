@@ -40,16 +40,16 @@ export default function NotificacionActividad() {
             setActual(item);
             setVisible(true);
 
-            // Ocultar después de 5 segundos
+            // Ocultar después de 4 segundos
             timerRef.current = setTimeout(() => {
                 setVisible(false);
-                // Mostrar el siguiente después de 10 segundos de pausa
-                timerRef.current = setTimeout(mostrarSiguiente, 10000);
-            }, 5000);
+                // Mostrar el siguiente después de 45 segundos de pausa
+                timerRef.current = setTimeout(mostrarSiguiente, 45000);
+            }, 4000);
         }
 
-        // Primera notificación a los 8 segundos
-        timerRef.current = setTimeout(mostrarSiguiente, 8000);
+        // Primera notificación a los 20 segundos
+        timerRef.current = setTimeout(mostrarSiguiente, 20000);
 
         return () => clearTimeout(timerRef.current);
     }, [actividad]);

@@ -20,7 +20,7 @@ export default function PremiosSection() {
     const stagger = useStaggerContainer();
 
     return (
-        <section id="premios" className="w-full bg-zinc-50 dark:bg-black px-6 py-24 sm:py-32 print:break-inside-avoid-page">
+        <section id="premios" className="w-full bg-zinc-50 dark:bg-black px-6 pt-10 pb-24 sm:pt-14 sm:pb-32 scroll-mt-0 print:break-inside-avoid-page">
             <div className="max-w-6xl mx-auto">
                 <motion.h2
                     variants={fadeUp}

@@ -66,7 +66,7 @@ export const PUNTOS_EXTRA = [
         tope: 'Máximo 500 puntos',
     },
     {
-        icono: 'UserPlus',
+        icono: 'WhatsApp',
         titulo: 'Invita amigos',
         descripcion: 'Inicia sesión para generar tu enlace personal. Ganas puntos cuando alguien compra un bono con él.',
         puntos: '+20 pts',
@@ -103,7 +103,7 @@ export const BONO_COLOMBIA = {
     titulo: 'Bono Colombia',
     monto: 1000000,
     descripcion:
-        'Por cada partido de la Selección Colombia en Fase de Grupos: $1.000.000 COP para quienes acierten el marcador exacto. Si son más de 10 acertantes, se sortean 10 ganadores de $100.000 cada uno.',
+        'Por cada partido de la Selección Colombia en Fase de Grupos: $1.000.000 en bonos para quienes acierten el marcador exacto. Si son más de 10 acertantes, se sortean 10 ganadores de $100.000 en bonos cada uno.',
 };
 
 export const PREMIOS_FLASH = {
@@ -155,7 +155,7 @@ export const FAQ_COMO_FUNCIONA = [
     {
         pregunta: '¿Cómo gano el Bono Colombia?',
         respuesta:
-            'Acertando el marcador exacto de un partido de la Selección Colombia en la Fase de Grupos. Ese partido reparte $1.000.000 COP entre quienes acierten; si son más de 10 acertantes, se sortean 10 ganadores de $100.000 cada uno.',
+            'Acertando el marcador exacto de un partido de la Selección Colombia en la Fase de Grupos. Ese partido reparte $1.000.000 en bonos entre quienes acierten; si son más de 10 acertantes, se sortean 10 ganadores de $100.000 en bonos cada uno.',
     },
     {
         pregunta: '¿Cuántos pronósticos puedo hacer?',

@@ -32,7 +32,6 @@ import ThemeToggle from './components/ThemeToggle';
 import BottomNav from './components/BottomNav';
 import CookieBanner from './components/CookieBanner';
 import BackendDown from './components/BackendDown';
-import InstalarApp from './components/InstalarApp';
 import NotificacionActividad from './components/NotificacionActividad';
 import { ThemeProvider } from './context/ThemeContext';
 import { obtenerSesion } from './utils/sesion';
@@ -113,7 +112,7 @@ function AppRoutes() {
     const mostrarBottomNav = RUTAS_CON_BOTTOM_NAV.includes(location.pathname);
     // /como-funciona tiene su propio boton fijo de compra en movil (CTAFijoMovil);
     // se desplaza el de WhatsApp hacia arriba para que no se encimen.
-    const conCTAFijo = location.pathname === '/como-funciona';
+    const conCTAFijo = location.pathname === '/' || location.pathname === '/como-funciona';
 
     return (
         <>
@@ -185,7 +184,6 @@ export default function App() {
             </BrowserRouter>
             {backendCaido && <BackendDown />}
             <NotificacionActividad />
-            <InstalarApp delayMs={30000} />
         </ThemeProvider>
     );
 }

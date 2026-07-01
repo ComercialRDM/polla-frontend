@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, solicitarRegalo, misSolicitudesRegalo } from '../api';
+import InstalarApp from '../components/InstalarApp';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
@@ -62,6 +63,8 @@ export default function Polla() {
     const [info, setInfo] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
+    const [pendienteVerificacion, setPendienteVerificacion] = useState(false);
+    const [nombrePendiente, setNombrePendiente] = useState('');
     const [ahora, setAhora] = useState(() => Date.now());
     const [marcadores, setMarcadores] = useState({});
     const [enviandoId, setEnviandoId] = useState(null);
@@ -106,7 +109,10 @@ export default function Polla() {
 
         obtenerInfoPolla(token)
             .then((data) => {
-                if (!data?.acceso) {
+                if (data?.pendiente_verificacion) {
+                    setPendienteVerificacion(true);
+                    setNombrePendiente(data.nombre || '');
+                } else if (!data?.acceso) {
                     setError('No encontramos un bono activo asociado a este link.');
                 } else {
                     setInfo(data);
@@ -355,6 +361,59 @@ export default function Polla() {
             <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white px-6 text-center gap-4">
                 <p className="text-red-400">{error}</p>
                 <Link to="/" className="text-amber-500 dark:text-amber-400 underline">Volver al inicio</Link>
+            </div>
+        );
+    }
+
+    if (pendienteVerificacion) {
+        return (
+            <div className="min-h-screen bg-white dark:bg-zinc-950 px-6 py-10 flex flex-col items-center">
+                <div className="absolute top-0 left-0 right-0 h-2 flex">
+                    <div className="flex-1 bg-colombia-yellow" />
+                    <div className="flex-1 bg-colombia-blue" />
+                    <div className="flex-1 bg-colombia-red" />
+                </div>
+                <div className="w-full max-w-md mt-16 flex flex-col items-center text-center">
+                    <span className="text-6xl mb-4">⏳</span>
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">
+                        {nombrePendiente ? `¡Hola, ${nombrePendiente.split(' ')[0]}!` : '¡Ya casi!'}
+                    </h1>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">
+                        Estamos verificando tu transferencia. En cuanto confirmemos el pago, tus cupos quedan activos automáticamente.
+                    </p>
+                    <div className="w-full rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/10 p-5 mb-6 text-left">
+                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">⏳ Verificación en proceso</p>
+                        <p className="text-zinc-600 dark:text-zinc-300 text-sm">
+                            Tu comprobante fue recibido. Lo revisamos en menos de 24 h (generalmente el mismo día). Recibirás un correo de confirmación.
+                        </p>
+                    </div>
+                    <div className="w-full rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 p-5 mb-6 text-left">
+                        <p className="text-zinc-700 dark:text-zinc-300 font-bold text-sm mb-2">Mientras tanto puedes:</p>
+                        <ul className="flex flex-col gap-2">
+                            {[
+                                'Ver los partidos del Mundial 2026',
+                                'Conocer cómo funciona el sistema de cupos',
+                                'Revisar los premios disponibles',
+                            ].map((item) => (
+                                <li key={item} className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                                    <span className="text-amber-500 font-bold mt-0.5">✓</span> {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <Link
+                        to="/"
+                        className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform mb-3"
+                    >
+                        Explorar la Polla Mundialista
+                    </Link>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                        ¿Dudas? Escríbenos a{' '}
+                        <a href="https://wa.me/573103963708" target="_blank" rel="noreferrer" className="text-amber-500 underline">
+                            WhatsApp
+                        </a>
+                    </p>
+                </div>
             </div>
         );
     }
@@ -958,6 +1017,8 @@ export default function Polla() {
                     {errorFoto && <p className="text-xs text-red-500 mt-2">{errorFoto}</p>}
                 </div>
             )}
+
+            <InstalarApp delayMs={20000} />
         </div>
     );
 }

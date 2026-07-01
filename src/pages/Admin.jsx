@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -191,6 +191,7 @@ export default function Admin() {
 
     // ── Inicio: canales de adquisición ───────────────────────────────────────
     const [inicioCanales,       setInicioCanales]       = useState(null);
+    const [inicioCampanas,      setInicioCampanas]      = useState(null);
 
     // ── Inicio: bolsa de marketing ────────────────────────────────────────────
     const [marketing,           setMarketing]           = useState(null);
@@ -332,6 +333,13 @@ export default function Admin() {
         try {
             const d = await adminVentasPorCanal(token);
             if (d?.success) setInicioCanales(d.canales || []);
+        } catch { /* silencioso */ }
+    }
+
+    async function cargarInicioCampanas() {
+        try {
+            const d = await adminVentasPorCampana(token);
+            if (d?.success) setInicioCampanas(d.campanas || []);
         } catch { /* silencioso */ }
     }
 
@@ -953,7 +961,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
     }, []);
 
     useEffect(() => {
-        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); cargarInicioSimulador(); cargarInicioCanales(); cargarAfiliados(); cargarDispositivos(); }
+        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); cargarInicioSimulador(); cargarInicioCanales(); cargarInicioCampanas(); cargarAfiliados(); cargarDispositivos(); }
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
@@ -1623,6 +1631,45 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         </div>
                                     </div>
                                     )}
+
+                                    {inicioCampanas && (() => {
+                                        const campEmail = inicioCampanas.filter(c => c.utmSource === 'email_marketing');
+                                        const campWA    = inicioCampanas.filter(c => c.utmSource === 'manychat');
+
+                                        function TarjetaCampanas({ titulo, icono, campanas, colorBarra }) {
+                                            if (campanas.length === 0) return null;
+                                            const totalIng = campanas.reduce((s, c) => s + c.ingresos, 0);
+                                            return (
+                                                <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/10">
+                                                    <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">{icono} {titulo}</p>
+                                                    <div className="space-y-2.5">
+                                                        {campanas.map((c, i) => {
+                                                            const pctC = totalIng > 0 ? Math.round((c.ingresos / totalIng) * 100) : 0;
+                                                            const etiqueta = c.utmCampaign || '(sin nombre)';
+                                                            return (
+                                                                <div key={i}>
+                                                                    <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-300 mb-1">
+                                                                        <span className="font-medium truncate max-w-[55%]">{etiqueta}</span>
+                                                                        <span className="font-bold shrink-0">{fp(c.ingresos)} · {c.totalVentas} {c.totalVentas === 1 ? 'venta' : 'ventas'} <span className="text-zinc-400">({pctC}%)</span></span>
+                                                                    </div>
+                                                                    <div className="h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                                                        <div className={`h-full ${colorBarra} rounded-full transition-all duration-700`} style={{ width: `${pctC}%` }} />
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <>
+                                                <TarjetaCampanas titulo="Campañas Email Marketing" icono="📧" campanas={campEmail} colorBarra="bg-blue-400" />
+                                                <TarjetaCampanas titulo="Campañas WhatsApp / ManyChat" icono="💬" campanas={campWA} colorBarra="bg-green-400" />
+                                            </>
+                                        );
+                                    })()}
 
                                     {statsDispositivos && (() => {
                                         const ios     = Number(statsDispositivos.ios)     || 0;

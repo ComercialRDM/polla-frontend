@@ -97,6 +97,7 @@ export default function Comprar() {
 
     const [enviado, setEnviado] = useState(false);
     const [mensajeExito, setMensajeExito] = useState('');
+    const [tokenTransferencia, setTokenTransferencia] = useState('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
     const [aceptaTerminos, setAceptaTerminos] = useState(false);
@@ -109,6 +110,8 @@ export default function Comprar() {
     const cuposCustom = calcularCupos(montoCustomNumero);
     const saldoBonoCustom = calcularSaldoBono(montoCustomNumero);
     const residuoCustom = montoCustomNumero % CUPO_VALOR_PERSONALIZADO;
+
+    useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
 
     useEffect(() => {
         if (metodoPago === 'pse' && bancosPse.length === 0) {
@@ -303,7 +306,11 @@ export default function Comprar() {
                 });
                 if (data?.success) {
                     guardarSesionDePago(data);
-                    setMensajeExito(data.mensaje || 'Tu comprobante fue recibido. Te avisaremos cuando se confirme el pago.');
+                    if (data.token_acceso) {
+                        setTokenTransferencia(data.token_acceso);
+                        localStorage.setItem('polla_token_acceso', data.token_acceso);
+                    }
+                    setMensajeExito(data.mensaje || 'Comprobante recibido. Ya puedes explorar tu cuenta — te notificamos por correo en cuanto confirmemos el pago.');
                     setEnviado(true);
                 } else {
                     setError(data?.error || 'No se pudo registrar el pago.');
@@ -388,10 +395,10 @@ export default function Comprar() {
                             </li>
                         </ul>
                         <Link
-                            to="/"
+                            to={tokenTransferencia ? `/polla?token=${tokenTransferencia}` : '/'}
                             className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
                         >
-                            Ir a mi cuenta
+                            Ir a mi cuenta →
                         </Link>
                     </div>
 
@@ -695,7 +702,7 @@ export default function Comprar() {
                                 <span className="text-zinc-500 font-bold text-sm">Total a transferir</span>
                                 <span className="font-black text-amber-500 text-xl">{valorAPagar > 0 ? formatoPesos(valorAPagar) : '—'}</span>
                             </div>
-                            <p className="text-xs text-zinc-400 mt-1">Activamos tu bono en minutos tras verificar el comprobante.</p>
+                            <p className="text-xs text-zinc-400 mt-1">Verificamos el comprobante en menos de 24 h (generalmente el mismo día). Puedes ingresar a tu cuenta de inmediato.</p>
                         </div>
                         <div className="px-4 pb-4">
                             <label className="block text-[10px] text-zinc-400 uppercase tracking-wider font-bold mb-2">Comprobante de pago</label>
@@ -707,36 +714,6 @@ export default function Comprar() {
                             />
                         </div>
                     </div>
-                )}
-
-                {/* Partido */}
-                {partidos.length > 0 && (
-                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-hidden">
-                    {partidoDesdeUrl && partidoSeleccionado ? (
-                        <div className="px-4 py-3.5 flex items-center justify-center gap-2 text-sm font-bold text-zinc-900 dark:text-white">
-                            <Bandera equipo={partidoSeleccionado.equipo_local} className="w-5 h-5" />
-                            {partidoSeleccionado.equipo_local}
-                            <span className="text-zinc-400 font-normal">vs</span>
-                            <Bandera equipo={partidoSeleccionado.equipo_visitante} className="w-5 h-5" />
-                            {partidoSeleccionado.equipo_visitante}
-                        </div>
-                    ) : (
-                        <div className="px-4 py-3.5">
-                            <label className="block text-[10px] text-zinc-400 uppercase tracking-wider font-bold mb-2">Partido para participar</label>
-                            <select
-                                value={partidoId ?? ''}
-                                onChange={(e) => setPartidoId(Number(e.target.value))}
-                                className="w-full bg-transparent text-zinc-900 dark:text-white text-sm focus:outline-none"
-                            >
-                                {partidos.map((p) => {
-                                    const fecha = new Date(p.fecha_hora_inicio).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
-                                    return <option key={p.id} value={p.id}>{p.equipo_local} vs {p.equipo_visitante} — {fecha}</option>;
-                                })}
-                            </select>
-                            <p className="text-zinc-400 text-xs mt-1.5">Tus cupos se pueden usar en cualquier partido activo.</p>
-                        </div>
-                    )}
-                </div>
                 )}
 
                 <CountdownPartido partido={partidoSeleccionado} />

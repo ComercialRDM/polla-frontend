@@ -26,6 +26,8 @@ export default function Ingresar() {
             const data = await verificarAcceso({ contacto: contacto.trim() });
             if (data?.acceso) {
                 navigate(`/polla?token=${data.token_acceso}`);
+            } else if (data?.pendiente_verificacion) {
+                navigate(`/polla?token=${data.token_acceso}`);
             } else {
                 setSinAcceso(true);
             }

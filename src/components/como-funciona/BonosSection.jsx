@@ -46,23 +46,31 @@ export default function BonosSection() {
                         <motion.div key={plan.valor} variants={fadeUp} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
                             <Link
                                 to={`/comprar?plan=${plan.valor}`}
-                                className={`cf-card relative flex flex-col h-full rounded-3xl p-7 hover:shadow-xl transition-shadow print:break-inside-avoid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:focus-visible:outline-[#FCD116] ${esFavorito ? 'border-2 border-amber-400 bg-amber-50 dark:bg-amber-400/5 shadow-lg shadow-amber-400/10' : 'border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900'}`}
+                                className={`cf-card relative flex flex-col h-full rounded-3xl p-6 hover:shadow-xl transition-shadow print:break-inside-avoid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:focus-visible:outline-[#FCD116] ${esFavorito ? 'border-2 border-amber-400 bg-amber-50 dark:bg-amber-400/5 shadow-lg shadow-amber-400/10' : 'border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900'}`}
                             >
                                 {esFavorito && (
                                     <span className="absolute -top-3 left-6 text-[10px] font-black uppercase px-3 py-1 rounded-full bg-amber-400 text-zinc-950">
                                         ⭐ Favorito
                                     </span>
                                 )}
-                                <p className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wide mt-1">{plan.etiqueta}</p>
-                                <p className="font-display text-3xl text-zinc-950 dark:text-white mt-2">{formatoPesos(plan.valor)}</p>
+                                <p className="font-black text-zinc-950 dark:text-white text-lg leading-tight mt-1">
+                                    {plan.etiqueta}
+                                </p>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-sm font-medium mb-3">
+                                    Polla Mundialista
+                                </p>
+                                <p className="font-display text-3xl text-zinc-950 dark:text-white">{formatoPesos(plan.valor)}</p>
                                 <span className="inline-flex items-center gap-1 self-start mt-3 px-3 py-1 rounded-full bg-green-100 dark:bg-green-400/10 text-green-700 dark:text-green-400 text-xs font-black uppercase tracking-wide">
                                     +{formatoPesos(bono)} gratis
                                 </span>
-                                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2">
+                                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 mb-5">
                                     Recibes <strong className="text-zinc-700 dark:text-zinc-200">{formatoPesos(plan.saldoBono)}</strong> en servicios
                                 </p>
-                                <span className="mt-auto pt-6 text-sm font-bold text-zinc-950 dark:text-white">
-                                    Comprar este bono →
+                                <span className="mt-auto w-full flex items-center justify-between gap-2">
+                                    <span className="text-sm text-zinc-600 dark:text-zinc-300 font-semibold">Comprar este bono</span>
+                                    <span className="shrink-0 inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#FCD116] text-zinc-950 font-black text-sm shadow-md shadow-amber-400/20">
+                                        Comprar →
+                                    </span>
                                 </span>
                             </Link>
                         </motion.div>
