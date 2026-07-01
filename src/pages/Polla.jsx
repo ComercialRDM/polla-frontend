@@ -26,6 +26,13 @@ function demoReminderDismissed() {
     return ts && Date.now() - Number(ts) < DEMO_REMINDER_DIAS * 24 * 60 * 60 * 1000;
 }
 
+const CUENTA_REMINDER_KEY = 'polla_cuenta_recordatorio_at';
+const CUENTA_REMINDER_DIAS = 14;
+function cuentaReminderDismissed() {
+    const ts = localStorage.getItem(CUENTA_REMINDER_KEY);
+    return ts && Date.now() - Number(ts) < CUENTA_REMINDER_DIAS * 24 * 60 * 60 * 1000;
+}
+
 function calcularRestante(fechaInicio) {
     const ahora = new Date();
     const inicio = new Date(fechaInicio);
@@ -64,6 +71,7 @@ export default function Polla() {
     const [partidosVisibles, setPartidosVisibles] = useState(3);
     const [encolados, setEncolados] = useState({});
     const [mostrarFotoReminder, setMostrarFotoReminder] = useState(false);
+    const [mostrarCuentaBanner, setMostrarCuentaBanner] = useState(false);
     const [subiendoFoto, setSubiendoFoto] = useState(false);
     const [fotoSubidaOk, setFotoSubidaOk] = useState(false);
     const [errorFoto, setErrorFoto] = useState('');
@@ -134,6 +142,12 @@ export default function Polla() {
     useEffect(() => {
         if (!info || info.fecha_nacimiento || demoReminderDismissed()) return;
         const timer = setTimeout(() => setMostrarDemoBanner(true), 8000);
+        return () => clearTimeout(timer);
+    }, [info]);
+
+    useEffect(() => {
+        if (!info || info.tiene_cuenta || cuentaReminderDismissed()) return;
+        const timer = setTimeout(() => setMostrarCuentaBanner(true), 5000);
         return () => clearTimeout(timer);
     }, [info]);
 
@@ -409,7 +423,36 @@ export default function Polla() {
                         Cerrar sesión
                     </button>
                 </div>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6 mt-2">Predice el marcador y gana premios increíbles.</p>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4 mt-2">Predice el marcador y gana premios increíbles.</p>
+
+                {/* Banner: sugerir registro para más seguridad */}
+                {mostrarCuentaBanner && (
+                    <div className="mb-5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 flex items-start gap-3">
+                        <span className="text-xl shrink-0 mt-0.5">🔒</span>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Protege tu acceso</p>
+                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">
+                                Ahora entras con tu link personal. Crea una cuenta para poder acceder con correo o contraseña si pierdes el link.
+                            </p>
+                            <Link
+                                to={`/registro?token=${token}`}
+                                className="inline-block mt-2 text-xs font-bold text-amber-600 dark:text-amber-400 underline"
+                            >
+                                Crear cuenta gratis →
+                            </Link>
+                        </div>
+                        <button
+                            onClick={() => {
+                                localStorage.setItem(CUENTA_REMINDER_KEY, String(Date.now()));
+                                setMostrarCuentaBanner(false);
+                            }}
+                            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg leading-none shrink-0 mt-0.5"
+                            aria-label="Cerrar"
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
 
                 {/* Monedero de cupos */}
                 <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-5 mb-6 text-center">
