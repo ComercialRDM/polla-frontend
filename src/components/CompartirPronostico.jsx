@@ -3,13 +3,16 @@ import { registrarCompartida } from '../api';
 import { bandera, codigoPais } from '../utils/banderas';
 import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
 
-export default function CompartirPronostico({ equipoLocal, equipoVisitante, localPred, visitantePred, tokenAcceso, partidoId }) {
+export default function CompartirPronostico({
+    equipoLocal, equipoVisitante, localPred, visitantePred,
+    tokenAcceso, partidoId,
+    nombreUsuario, fotoUrl,
+}) {
     const [copiado, setCopiado] = useState(false);
     const [generando, setGenerando] = useState(false);
     const [ptoGanado, setPtoGanado] = useState(0);
     const [mensaje, setMensaje] = useState('');
 
-    // Carga una imagen con soporte CORS (para flagcdn.com)
     function loadImg(src) {
         return new Promise((resolve) => {
             const img = new Image();
@@ -20,8 +23,7 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         });
     }
 
-    // Dibuja una bandera como imagen circular recortada
-    function drawCircleFlag(ctx, img, cx, cy, r) {
+    function drawCircleImg(ctx, img, cx, cy, r) {
         ctx.save();
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -33,7 +35,6 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         ctx.restore();
     }
 
-    // Dibuja emoji de bandera centrado verticalmente
     function drawEmojiFlag(ctx, emoji, cx, cy, size) {
         const prev = ctx.textBaseline;
         ctx.textBaseline = 'middle';
@@ -50,6 +51,7 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         canvas.height = H;
         const ctx = canvas.getContext('2d');
 
+        // Rectángulo redondeado
         const rr = (x, y, w, h, r) => {
             ctx.beginPath();
             ctx.moveTo(x + r, y);
@@ -64,20 +66,20 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
             ctx.closePath();
         };
 
-        // Carga de banderas en paralelo
         const codeL = codigoPais(equipoLocal);
         const codeV = codigoPais(equipoVisitante);
-        const [imgL, imgV, imgLogo] = await Promise.all([
+
+        const [imgL, imgV, imgLogo, imgUsuario] = await Promise.all([
             codeL ? loadImg(`https://flagcdn.com/w320/${codeL}.png`) : Promise.resolve(null),
             codeV ? loadImg(`https://flagcdn.com/w320/${codeV}.png`) : Promise.resolve(null),
             loadImg(logoRetoucherie),
+            fotoUrl ? loadImg(fotoUrl) : Promise.resolve(null),
         ]);
 
         // ── FONDO ──
         ctx.fillStyle = '#060610';
         ctx.fillRect(0, 0, W, H);
 
-        // Glow naranja-ámbar en la parte superior (estadio al atardecer)
         const topGlow = ctx.createRadialGradient(W / 2, -80, 0, W / 2, -80, 850);
         topGlow.addColorStop(0, 'rgba(215, 90, 5, 0.75)');
         topGlow.addColorStop(0.45, 'rgba(170, 60, 5, 0.38)');
@@ -85,7 +87,6 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         ctx.fillStyle = topGlow;
         ctx.fillRect(0, 0, W, H);
 
-        // Focos laterales (luces de estadio)
         [[0, 260, 0.18], [W, 260, 0.18]].forEach(([x, y, a]) => {
             const g = ctx.createRadialGradient(x, y, 0, x, y, 500);
             g.addColorStop(0, `rgba(255,180,30,${a})`);
@@ -94,8 +95,7 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
             ctx.fillRect(0, 0, W, H);
         });
 
-        // Glow dorado detrás del marcador
-        const sg = ctx.createRadialGradient(W / 2, 890, 0, W / 2, 890, 550);
+        const sg = ctx.createRadialGradient(W / 2, 860, 0, W / 2, 860, 550);
         sg.addColorStop(0, 'rgba(252,209,22,0.13)');
         sg.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = sg;
@@ -109,18 +109,16 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         // ── CABECERA ──
         ctx.textAlign = 'center';
 
-        // Logo oficial Retoucherie
         if (imgLogo) {
-            const logoH = 150;
+            const logoH = 130;
             const logoW = logoH * ((imgLogo.naturalWidth || imgLogo.width) / (imgLogo.naturalHeight || imgLogo.height));
-            ctx.drawImage(imgLogo, (W - logoW) / 2, 20, logoW, logoH);
+            ctx.drawImage(imgLogo, (W - logoW) / 2, 22, logoW, logoH);
         }
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 42px Arial';
         ctx.fillText('POLLA MUNDIALISTA  ·  MUNDIAL 2026', W / 2, 200);
 
-        // Línea separadora
         const sepGrad = ctx.createLinearGradient(60, 0, W - 60, 0);
         sepGrad.addColorStop(0, 'rgba(252,209,22,0)');
         sepGrad.addColorStop(0.5, 'rgba(252,209,22,0.6)');
@@ -129,16 +127,15 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(60, 235); ctx.lineTo(W - 60, 235); ctx.stroke();
 
-        // Título principal
+        // "MI PRONÓSTICO" — desplazado 65px arriba vs versión anterior
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 100px Arial';
-        ctx.fillText('MI PRONÓSTICO', W / 2, 380);
+        ctx.fillText('MI PRONÓSTICO', W / 2, 315);
 
-        // ── BANDERAS ──
+        // ── BANDERAS (flagCY=495, antes 560) ──
         const flagR = 118;
-        const lCX = 255, vCX = W - 255, flagCY = 560;
+        const lCX = 255, vCX = W - 255, flagCY = 495;
 
-        // Anillo dorado detrás de cada bandera
         [lCX, vCX].forEach((cx) => {
             ctx.shadowColor = 'rgba(252,209,22,0.5)';
             ctx.shadowBlur = 25;
@@ -150,7 +147,6 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
             ctx.shadowBlur = 0;
         });
 
-        // Fondo circular oscuro (fallback si no carga imagen)
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#12122a';
             ctx.beginPath();
@@ -158,30 +154,21 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
             ctx.fill();
         });
 
-        // Bandera local
-        if (imgL) {
-            drawCircleFlag(ctx, imgL, lCX, flagCY, flagR);
-        } else {
-            drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, 120);
-        }
+        if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR);
+        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, 120);
 
-        // Bandera visitante
-        if (imgV) {
-            drawCircleFlag(ctx, imgV, vCX, flagCY, flagR);
-        } else {
-            drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, 120);
-        }
+        if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR);
+        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, 120);
 
-        // "VS" en el centro
         ctx.shadowColor = 'rgba(252,209,22,0.7)';
         ctx.shadowBlur = 18;
         ctx.fillStyle = '#FCD116';
         ctx.font = 'bold 72px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('VS', W / 2, 568);
+        ctx.fillText('VS', W / 2, 503);
         ctx.shadowBlur = 0;
 
-        // Nombres de equipos (se achican si son largos)
+        // Nombres de equipos (y=655, antes 720)
         const drawFit = (text, cx, y, maxW) => {
             let size = 58;
             ctx.font = `bold ${size}px Arial`;
@@ -193,69 +180,117 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
             ctx.textAlign = 'center';
             ctx.fillText(text, cx, y);
         };
-        drawFit(equipoLocal, lCX, 720, 430);
-        drawFit(equipoVisitante, vCX, 720, 430);
+        drawFit(equipoLocal, lCX, 655, 430);
+        drawFit(equipoVisitante, vCX, 655, 430);
 
-        // ── TARJETA MARCADOR ──
-        // Sombra dorada exterior
+        // ── TARJETA MARCADOR (y=707, antes 772) ──
         ctx.shadowColor = 'rgba(252,209,22,0.65)';
         ctx.shadowBlur = 55;
         ctx.fillStyle = '#FCD116';
-        rr(68, 772, W - 136, 308, 36);
+        rr(68, 707, W - 136, 308, 36);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Fondo interior oscuro
         ctx.fillStyle = '#07070f';
-        rr(76, 780, W - 152, 292, 30);
+        rr(76, 715, W - 152, 292, 30);
         ctx.fill();
 
-        // Marcador
         ctx.shadowColor = 'rgba(252,209,22,0.45)';
         ctx.shadowBlur = 18;
         ctx.fillStyle = '#FCD116';
         ctx.font = 'bold 215px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`${localPred}  -  ${visitantePred}`, W / 2, 1000);
+        ctx.fillText(`${localPred}  -  ${visitantePred}`, W / 2, 935);
         ctx.shadowBlur = 0;
 
-        // ── SEPARADOR ──
+        // ── SEPARADOR (y=1073, antes 1138) ──
         const sep2 = ctx.createLinearGradient(60, 0, W - 60, 0);
         sep2.addColorStop(0, 'rgba(255,255,255,0)');
         sep2.addColorStop(0.5, 'rgba(255,255,255,0.1)');
         sep2.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.strokeStyle = sep2;
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(60, 1138); ctx.lineTo(W - 60, 1138); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(60, 1073); ctx.lineTo(W - 60, 1073); ctx.stroke();
 
-        // ── LLAMADA A LA ACCIÓN ──
+        // ── LLAMADA A LA ACCIÓN (desplazada -65) ──
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 76px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('¿Y TÚ, QUÉ MARCADOR', W / 2, 1275);
-        ctx.fillText('CREES QUE VA A QUEDAR?', W / 2, 1362);
+        ctx.fillText('¿Y TÚ, QUÉ MARCADOR', W / 2, 1210);
+        ctx.fillText('CREES QUE VA A QUEDAR?', W / 2, 1297);
 
         ctx.fillStyle = '#aaaaaa';
         ctx.font = '46px Arial';
-        ctx.fillText('Compra tu bono y participa en la', W / 2, 1460);
-        ctx.fillText('Polla Mundialista La Retoucherie 2026', W / 2, 1520);
+        ctx.fillText('Compra tu bono y participa en la', W / 2, 1395);
+        ctx.fillText('Polla Mundialista La Retoucherie 2026', W / 2, 1455);
 
-        // Emojis
-        ctx.font = '84px sans-serif';
-        ctx.fillText('🇨🇴  ⚽  🏆', W / 2, 1648);
+        // ── SECCIÓN USUARIO ──
+        // Separador sutil antes del avatar
+        const sep3 = ctx.createLinearGradient(60, 0, W - 60, 0);
+        sep3.addColorStop(0, 'rgba(255,255,255,0)');
+        sep3.addColorStop(0.5, 'rgba(255,255,255,0.07)');
+        sep3.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.strokeStyle = sep3;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(60, 1495); ctx.lineTo(W - 60, 1495); ctx.stroke();
 
-        // Botón URL con glow
+        const uCX = W / 2, uCY = 1572, uR = 65;
+
+        // Anillo dorado exterior
+        ctx.shadowColor = 'rgba(252,209,22,0.45)';
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = '#FCD116';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(uCX, uCY, uR + 7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Círculo de fondo oscuro
+        ctx.fillStyle = '#12122a';
+        ctx.beginPath();
+        ctx.arc(uCX, uCY, uR, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (imgUsuario) {
+            drawCircleImg(ctx, imgUsuario, uCX, uCY, uR);
+        } else if (nombreUsuario) {
+            // Iniciales cuando no hay foto
+            const iniciales = nombreUsuario.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+            ctx.fillStyle = '#FCD116';
+            ctx.font = 'bold 52px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(iniciales, uCX, uCY);
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        // Nombre del usuario
+        if (nombreUsuario) {
+            const maxNW = W - 120;
+            let nameSize = 54;
+            ctx.font = `bold ${nameSize}px Arial`;
+            while (ctx.measureText(nombreUsuario).width > maxNW && nameSize > 28) {
+                nameSize -= 2;
+                ctx.font = `bold ${nameSize}px Arial`;
+            }
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(nombreUsuario, uCX, 1705);
+        }
+
+        // ── BOTÓN URL (y=1748) ──
         ctx.shadowColor = 'rgba(252,209,22,0.55)';
         ctx.shadowBlur = 35;
         ctx.fillStyle = '#FCD116';
-        rr(68, 1718, W - 136, 128, 28);
+        rr(68, 1748, W - 136, 112, 28);
         ctx.fill();
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#000000';
         ctx.font = 'bold 54px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('www.ganaconretoucherie.com', W / 2, 1797);
+        ctx.fillText('www.ganaconretoucherie.com', W / 2, 1820);
 
         return canvas;
     }
@@ -269,8 +304,6 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
             const file = new File([blob], 'pronostico-retoucherie.png', { type: 'image/png' });
             let compartido = false;
 
-            // Path 1: Web Share API con archivo — abre el share sheet nativo del sistema
-            // En iOS/Android muestra "Instagram" → va directo a crear Story con la imagen
             if (navigator.canShare?.({ files: [file] })) {
                 await navigator.share({
                     files: [file],
@@ -278,18 +311,16 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
                 });
                 compartido = true;
             } else {
-                // Path 2: descarga directa (desktop o browsers sin Web Share)
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'pronostico-retoucherie.png';
                 a.click();
                 URL.revokeObjectURL(url);
-                setMensaje('📲 Imagen descargada — súbela desde tu galería a Instagram Stories');
+                setMensaje('📲 Imagen descargada — súbela desde tu galería a Instagram Stories o WhatsApp');
                 compartido = true;
             }
 
-            // Registrar compartida y otorgar puntos (máx 1/partido)
             if (compartido && tokenAcceso && partidoId) {
                 try {
                     const resp = await registrarCompartida(tokenAcceso, partidoId);
@@ -320,7 +351,7 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
 
     return (
         <div className="mt-4 rounded-xl bg-zinc-950 border border-[#FCD116]/25 overflow-hidden">
-            {/* Tarjeta visual previa */}
+            {/* Vista previa compacta */}
             <div className="px-4 pt-4 pb-3 text-center border-b border-white/5">
                 <p className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold mb-1">Mi pronóstico</p>
                 <div className="flex items-center justify-center gap-3 my-2">
@@ -341,7 +372,7 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
                         disabled={generando}
                         className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-pink-500 to-purple-600 active:scale-95 transition-transform disabled:opacity-60"
                     >
-                        {generando ? 'Preparando imagen...' : '📲 Compartir en Instagram Stories'}
+                        {generando ? 'Preparando imagen...' : '📲 Compartir mi pronóstico'}
                     </button>
                     {ptoGanado > 0 && (
                         <span className="absolute -top-2 right-2 bg-[#FCD116] text-black text-xs font-black px-2 py-0.5 rounded-full animate-bounce shadow-lg">
@@ -358,12 +389,11 @@ export default function CompartirPronostico({ equipoLocal, equipoVisitante, loca
                 </button>
             </div>
 
-            {/* Mensaje dinámico */}
             {mensaje ? (
                 <p className="text-[#FCD116] text-[11px] text-center px-3 pb-3 leading-snug">{mensaje}</p>
             ) : (
                 <p className="text-zinc-600 text-[10px] text-center pb-2.5">
-                    Genera imagen 9:16 con tu pronóstico lista para Instagram Stories
+                    Genera imagen con tu foto y pronóstico lista para compartir en redes o WhatsApp
                 </p>
             )}
         </div>

@@ -13,6 +13,16 @@ import CompartirPronostico from '../components/CompartirPronostico';
 import { cerrarSesion } from '../utils/sesion';
 import PozoPremios from '../components/PozoPremios';
 
+// Partidos donde se muestra el botón "Compartir pronóstico":
+// todos los partidos de Colombia + fases eliminatorias
+const FASES_COMPARTIR = new Set(['octavos', 'cuartos', 'semifinal', 'tercer_puesto', 'final']);
+function puedeCompartir(partido) {
+    const local = (partido.equipo_local || '').toLowerCase();
+    const visitante = (partido.equipo_visitante || '').toLowerCase();
+    return local === 'colombia' || visitante === 'colombia'
+        || FASES_COMPARTIR.has((partido.fase || '').toLowerCase());
+}
+
 const UNA_HORA_MS = 60 * 60 * 1000;
 const FOTO_REMINDER_KEY = 'polla_foto_recordatorio_at';
 const FOTO_REMINDER_DIAS = 7;
@@ -746,14 +756,18 @@ export default function Polla() {
                                         <p className="text-2xl font-black text-lime-400 font-scoreboard">
                                             {p.pronostico.local} - {p.pronostico.visitante}
                                         </p>
-                                        <CompartirPronostico
-                                            equipoLocal={p.equipo_local}
-                                            equipoVisitante={p.equipo_visitante}
-                                            localPred={p.pronostico.local}
-                                            visitantePred={p.pronostico.visitante}
-                                            tokenAcceso={token}
-                                            partidoId={p.partido_id}
-                                        />
+                                        {puedeCompartir(p) && (
+                                            <CompartirPronostico
+                                                equipoLocal={p.equipo_local}
+                                                equipoVisitante={p.equipo_visitante}
+                                                localPred={p.pronostico.local}
+                                                visitantePred={p.pronostico.visitante}
+                                                tokenAcceso={token}
+                                                partidoId={p.partido_id}
+                                                nombreUsuario={info.nombre}
+                                                fotoUrl={info.tiene_foto ? `${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}` : null}
+                                            />
+                                        )}
                                     </div>
                                 ) : cerrado ? (
                                     <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
@@ -811,7 +825,7 @@ export default function Polla() {
                                             </button>
                                         )}
 
-                                        {mensajeExitoId === p.partido_id && (
+                                        {mensajeExitoId === p.partido_id && puedeCompartir(p) && (
                                             <CompartirPronostico
                                                 equipoLocal={p.equipo_local}
                                                 equipoVisitante={p.equipo_visitante}
@@ -819,6 +833,8 @@ export default function Polla() {
                                                 visitantePred={m.visitante}
                                                 tokenAcceso={token}
                                                 partidoId={p.partido_id}
+                                                nombreUsuario={info.nombre}
+                                                fotoUrl={info.tiene_foto ? `${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}` : null}
                                             />
                                         )}
                                     </>
