@@ -46,7 +46,7 @@ export default function BonosSection() {
                         <motion.div key={plan.valor} variants={fadeUp} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
                             <Link
                                 to={`/comprar?plan=${plan.valor}`}
-                                className={`cf-card relative flex flex-col h-full rounded-3xl p-6 hover:shadow-xl transition-shadow print:break-inside-avoid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:focus-visible:outline-[#FCD116] ${esFavorito ? 'border-2 border-b-[6px] border-amber-400 border-b-amber-600 bg-amber-50 dark:bg-amber-400/5 shadow-lg shadow-amber-400/10' : 'border border-b-[5px] border-zinc-200 border-b-zinc-300 dark:border-white/10 dark:border-b-white/20 bg-white dark:bg-zinc-900'}`}
+                                className={`cf-card relative flex flex-col h-full rounded-3xl p-6 hover:shadow-xl transition-shadow print:break-inside-avoid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:focus-visible:outline-[#FCD116] ${esFavorito ? 'card-bdb-popular border-2 border-amber-400 bg-amber-50 dark:bg-amber-400/5 shadow-lg shadow-amber-400/10' : 'card-bdb-regular border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900'}`}
                             >
                                 {esFavorito && (
                                     <span className="absolute -top-3 left-6 text-[10px] font-black uppercase px-3 py-1 rounded-full bg-amber-400 text-zinc-950">
@@ -80,7 +80,7 @@ export default function BonosSection() {
                     <motion.div variants={fadeUp} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
                         <Link
                             to="/comprar"
-                            className="cf-card relative flex flex-col h-full rounded-3xl border-2 border-b-[6px] border-[#FCD116] border-b-[#b89000] bg-zinc-950 p-7 hover:shadow-xl transition-shadow print:break-inside-avoid print:bg-white print:border-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116]"
+                            className="cf-card card-bdb-gold relative flex flex-col h-full rounded-3xl border-2 border-[#FCD116] bg-zinc-950 p-7 hover:shadow-xl transition-shadow print:break-inside-avoid print:bg-white print:border-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116]"
                         >
                             <span className="absolute -top-3 left-6 text-[10px] font-black uppercase px-3 py-1 rounded-full bg-[#FCD116] text-zinc-950">
                                 Más recomendado

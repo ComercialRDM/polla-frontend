@@ -78,6 +78,24 @@ body {
   animation: parpadeo 1s infinite;
 }
 
+/* Efecto 3D borde inferior en tarjetas de bonos — fuera de @layer para
+   ganar sobre los utilitarios de Tailwind sin necesitar !important. */
+.card-bdb-popular {
+  border-bottom-width: 6px;
+  border-bottom-color: #d97706;
+}
+.card-bdb-regular {
+  border-bottom-width: 5px;
+  border-bottom-color: #d4d4d8;
+}
+.dark .card-bdb-regular {
+  border-bottom-color: rgba(255, 255, 255, 0.18);
+}
+.card-bdb-gold {
+  border-bottom-width: 6px;
+  border-bottom-color: #b89000;
+}
+
 @media print {
   /* Botones flotantes (WhatsApp, selector de tema) no aportan nada en una
      impresión/PDF y se solapan con el contenido. */
