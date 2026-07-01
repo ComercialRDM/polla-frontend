@@ -428,9 +428,6 @@ export default function Comprar() {
             <form id="comprar-form" onSubmit={handleSubmit}>
             <div className="max-w-lg mx-auto px-4 pt-5 pb-40 flex flex-col gap-4">
 
-                {/* Banner bonos limitados */}
-                <CuposRestantes />
-
                 {/* Predicciones pendientes */}
                 {pendientes.length > 0 && (
                     <div className="rounded-2xl border border-amber-400/50 bg-amber-400/10 px-4 py-3">
@@ -467,7 +464,7 @@ export default function Comprar() {
                     <div className="p-4 flex flex-col gap-3">
                         {/* Tarjetas de planes */}
                         <div className="grid grid-cols-3 gap-2">
-                            {PLANES.map((plan) => {
+                            {[...PLANES].reverse().map((plan) => {
                                 const sel = selectValor === String(plan.valor);
                                 return (
                                     <button
@@ -722,6 +719,9 @@ export default function Comprar() {
                 )}
 
                 <CountdownPartido partido={partidoSeleccionado} />
+
+                {/* Banner bonos limitados — al final para que el cliente lo vea antes de irse */}
+                <CuposRestantes />
 
                 {/* Trust badges */}
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 p-3">
