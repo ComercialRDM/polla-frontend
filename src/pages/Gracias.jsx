@@ -23,6 +23,13 @@ export default function Gracias() {
     // que se registre, solo lo mandamos a su dashboard.
     const tieneSesion = Boolean(obtenerSesion());
 
+    // Evento Meta Pixel: Lead — se dispara una sola vez al confirmar la compra
+    useEffect(() => {
+        if (typeof window.fbq === 'function') {
+            window.fbq('track', 'Lead');
+        }
+    }, []);
+
     useEffect(() => {
         if (!token) return;
         let cancelado = false;
