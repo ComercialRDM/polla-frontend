@@ -423,11 +423,13 @@ export default function Comprar() {
                     ← Inicio
                 </Link>
                 <p className="font-black text-zinc-900 dark:text-white text-sm truncate">Compra tu Bono Digital</p>
-                <div className="shrink-0"><CuposRestantes /></div>
             </div>
 
             <form id="comprar-form" onSubmit={handleSubmit}>
             <div className="max-w-lg mx-auto px-4 pt-5 pb-40 flex flex-col gap-4">
+
+                {/* Banner bonos limitados */}
+                <CuposRestantes />
 
                 {/* Predicciones pendientes */}
                 {pendientes.length > 0 && (
