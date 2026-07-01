@@ -19,7 +19,7 @@ import bancolombiaLogo from '../assets/bancolombia-logo.png';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 const AFF_STORAGE_KEY = 'polla_aff_token';
-const PLAN_DEFAULT = 10000;
+const PLAN_DEFAULT = 50000;
 const VALOR_OTRO = 'otro';
 
 // Carga el script del Widget Checkout de Wompi una sola vez (a diferencia de
@@ -534,16 +534,19 @@ export default function Comprar() {
 
                         {/* Resumen plan fijo */}
                         {!esOtroMonto && planInfo && (
-                            <div className="rounded-xl bg-amber-400/10 border border-amber-400/30 px-4 py-3 flex items-center justify-between">
-                                <div>
-                                    <p className="text-zinc-900 dark:text-white font-black text-lg leading-tight">{formatoPesos(planInfo.valor)}</p>
-                                    <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                                        Recibes <span className="font-bold text-amber-500">{formatoPesos(planInfo.saldoBono)}</span> en servicios
-                                    </p>
-                                </div>
-                                <div className="text-center shrink-0">
-                                    <p className="text-amber-500 font-black text-2xl leading-none">{planInfo.intentos}</p>
-                                    <p className="text-zinc-500 text-[10px] uppercase font-bold">{planInfo.intentos === 1 ? 'cupo' : 'cupos'} polla</p>
+                            <div className="rounded-xl bg-amber-400/10 border border-amber-400/30 px-4 py-3 flex flex-col gap-2">
+                                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-bold">Selección actual</p>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-zinc-900 dark:text-white font-black text-lg leading-tight">{formatoPesos(planInfo.valor)}</p>
+                                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                                            Recibes <span className="font-bold text-amber-500">{formatoPesos(planInfo.saldoBono)}</span> en servicios
+                                        </p>
+                                    </div>
+                                    <div className="text-center shrink-0">
+                                        <p className="text-amber-500 font-black text-2xl leading-none">{planInfo.intentos}</p>
+                                        <p className="text-zinc-500 text-[10px] uppercase font-bold">{planInfo.intentos === 1 ? 'cupo' : 'cupos'} polla</p>
+                                    </div>
                                 </div>
                             </div>
                         )}
