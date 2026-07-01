@@ -170,10 +170,11 @@ export default function Polla() {
         setSubiendoFoto(true);
         setErrorFoto('');
         try {
-            await subirFotoPerfil(token, archivo);
+            const resultado = await subirFotoPerfil(token, archivo);
             setFotoSubidaOk(true);
-            setInfo((prev) => prev ? { ...prev, foto_estado: 'pendiente', foto_razon_rechazo: null } : prev);
-            setTimeout(() => { setMostrarFotoReminder(false); setFotoSubidaOk(false); }, 3000);
+            const nuevoEstado = resultado?.aprobada ? 'aprobada' : 'pendiente';
+            setInfo((prev) => prev ? { ...prev, tiene_foto: resultado?.aprobada, foto_estado: nuevoEstado, foto_razon_rechazo: null } : prev);
+            setTimeout(() => { setMostrarFotoReminder(false); setFotoSubidaOk(false); }, 4000);
         } catch (err) {
             setErrorFoto(err.message);
         } finally {
