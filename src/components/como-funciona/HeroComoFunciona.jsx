@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import logoRetoucherie from '../../assets/LOGO_RDM.jpeg';
 
@@ -21,6 +22,21 @@ export default function HeroComoFunciona() {
                 <div className="flex-1 bg-[#FCD116]" />
                 <div className="flex-1 bg-zinc-900 dark:bg-white" />
                 <div className="flex-1 bg-[#CE1126]" />
+            </div>
+
+            <div className="absolute top-4 left-4 flex gap-2 print:hidden">
+                <Link
+                    to="/iniciar-sesion"
+                    className="flex items-center justify-center px-4 py-2 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] shadow-sm active:scale-95 transition-transform"
+                >
+                    Iniciar Sesión
+                </Link>
+                <Link
+                    to="/registro"
+                    className="flex items-center justify-center px-4 py-2 rounded-xl font-bold text-sm text-white bg-zinc-900 dark:bg-zinc-800 shadow-sm active:scale-95 transition-transform"
+                >
+                    Registrarse
+                </Link>
             </div>
 
             <motion.div style={{ y, opacity }} className="flex flex-col items-center">

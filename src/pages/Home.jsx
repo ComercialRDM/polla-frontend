@@ -70,16 +70,16 @@ export default function Home() {
                     {/* Botones auth */}
                     <div className="w-full max-w-md px-4 mt-3 flex gap-3">
                         <Link
-                            to="/registro"
-                            className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-white bg-zinc-900 active:scale-95 transition-transform"
-                        >
-                            Registrarse
-                        </Link>
-                        <Link
                             to="/iniciar-sesion"
                             className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform"
                         >
                             Iniciar Sesión
+                        </Link>
+                        <Link
+                            to="/registro"
+                            className="flex-1 flex items-center justify-center py-2.5 rounded-xl font-bold text-sm text-white bg-zinc-900 active:scale-95 transition-transform"
+                        >
+                            Registrarse
                         </Link>
                     </div>
 
