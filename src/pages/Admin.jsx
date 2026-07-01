@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -119,6 +119,8 @@ export default function Admin() {
     const [reenviadoBonoId, setReenviadoBonoId] = useState(null);
     const [resultadoReenviarBono, setResultadoReenviarBono] = useState(null);
     const [erroresPorFila, setErroresPorFila] = useState({});
+    const [copiadoLinkId, setCopiadoLinkId] = useState(null);
+    const [copiadoMsgId, setCopiadoMsgId] = useState(null);
     const [rankingEspeciales, setRankingEspeciales] = useState([]);
     const [cargandoRankingEspeciales, setCargandoRankingEspeciales] = useState(false);
 
@@ -185,6 +187,7 @@ export default function Admin() {
     // ── Inicio: demografía ────────────────────────────────────────────────────
     const [demograficos,        setDemograficos]        = useState(null);
     const [demoCargando,        setDemoCargando]        = useState(false);
+    const [statsDispositivos,   setStatsDispositivos]   = useState(null);
 
     // ── Inicio: canales de adquisición ───────────────────────────────────────
     const [inicioCanales,       setInicioCanales]       = useState(null);
@@ -402,6 +405,13 @@ export default function Admin() {
             const d = await adminDemograficos(token);
             if (d?.success) setDemograficos(d);
         } catch { /* silencioso */ } finally { setDemoCargando(false); }
+    }
+
+    async function cargarDispositivos() {
+        try {
+            const d = await adminDispositivos(token);
+            if (d?.success) setStatsDispositivos(d.stats);
+        } catch { /* silencioso */ }
     }
 
     async function cargarMarketing() {
@@ -943,7 +953,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
     }, []);
 
     useEffect(() => {
-        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); cargarInicioSimulador(); cargarInicioCanales(); cargarAfiliados(); }
+        if (seccionActiva === 'inicio' && token) { cargarDemograficos(); cargarMarketing(); cargarInicioSimulador(); cargarInicioCanales(); cargarAfiliados(); cargarDispositivos(); }
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
@@ -1613,6 +1623,47 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         </div>
                                     </div>
                                     )}
+
+                                    {statsDispositivos && (() => {
+                                        const ios     = Number(statsDispositivos.ios)     || 0;
+                                        const android = Number(statsDispositivos.android) || 0;
+                                        const desktop = Number(statsDispositivos.desktop) || 0;
+                                        const pwa     = Number(statsDispositivos.pwa_instaladas) || 0;
+                                        const total   = Number(statsDispositivos.total)   || 0;
+                                        const detectados = Number(statsDispositivos.con_dispositivo) || 0;
+                                        const pctIos     = detectados > 0 ? Math.round(ios     / detectados * 100) : 0;
+                                        const pctAndroid = detectados > 0 ? Math.round(android / detectados * 100) : 0;
+                                        const pctDesktop = detectados > 0 ? Math.round(desktop / detectados * 100) : 0;
+                                        const pctPwa     = android   > 0 ? Math.round(pwa     / android   * 100) : 0;
+                                        return (
+                                            <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/10">
+                                                <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
+                                                    Dispositivos · <span className="font-normal normal-case">{detectados}/{total} usuarios detectados</span>
+                                                </p>
+                                                <div className="space-y-2.5">
+                                                    {[
+                                                        { label: '🍎 iPhone / iPad', count: ios,     pct: pctIos,     color: 'bg-blue-400' },
+                                                        { label: '🤖 Android',        count: android, pct: pctAndroid, color: 'bg-green-400' },
+                                                        { label: '💻 Desktop / otro', count: desktop, pct: pctDesktop, color: 'bg-zinc-400' },
+                                                    ].map(({ label, count, pct, color }) => (
+                                                        <div key={label}>
+                                                            <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-300 mb-1">
+                                                                <span>{label}</span>
+                                                                <span className="font-bold">{count} <span className="text-zinc-400">({pct}%)</span></span>
+                                                            </div>
+                                                            <div className="h-1.5 bg-zinc-200 dark:bg-white/10 rounded-full overflow-hidden">
+                                                                <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    <div className="pt-2 border-t border-zinc-200 dark:border-white/10 flex items-center justify-between text-xs">
+                                                        <span className="text-zinc-500 dark:text-zinc-400">📲 App instalada <span className="text-zinc-400">(Android confirmado)</span></span>
+                                                        <span className="font-bold text-green-600 dark:text-green-400">{pwa}/{android} · {pctPwa}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
@@ -2958,6 +3009,29 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                         className="px-2 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 whitespace-nowrap"
                                                     >
                                                         {reenviadoBonoId === e.transaccion_id ? 'Enviando...' : '🎫 Reenviar bono WA'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const link = `${window.location.origin}/polla?token=${e.token_acceso}`;
+                                                            navigator.clipboard.writeText(link);
+                                                            setCopiadoLinkId(e.transaccion_id);
+                                                            setTimeout(() => setCopiadoLinkId(null), 2000);
+                                                        }}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-zinc-700 text-white hover:bg-zinc-600 whitespace-nowrap"
+                                                    >
+                                                        {copiadoLinkId === e.transaccion_id ? '✅ ¡Copiado!' : '🔗 Copiar link'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const link = `${window.location.origin}/polla?token=${e.token_acceso}`;
+                                                            const msg = `¡Hola ${e.nombre}! 🎉\n\nTe enviamos tu acceso a la *Polla Mundialista de La Retoucherie*.\n\n👉 Entra aquí a tu bono:\n${link}\n\nCon este link puedes ver tus cupos, predecir los marcadores del Mundial 2026 y participar por los premios.\n\n¡Mucha suerte! 🏆⚽`;
+                                                            navigator.clipboard.writeText(msg);
+                                                            setCopiadoMsgId(e.transaccion_id);
+                                                            setTimeout(() => setCopiadoMsgId(null), 2000);
+                                                        }}
+                                                        className="px-2 py-1 rounded-lg text-xs font-bold bg-zinc-500 text-white hover:bg-zinc-400 whitespace-nowrap"
+                                                    >
+                                                        {copiadoMsgId === e.transaccion_id ? '✅ ¡Copiado!' : '📋 Copiar mensaje WA'}
                                                     </button>
                                                 </div>
                                                 <div className="flex flex-col gap-0.5">

@@ -736,8 +736,19 @@ export function actualizarPerfilDemografico({ token_acceso, fecha_nacimiento, se
     });
 }
 
+export function actualizarDispositivo(token_acceso, { dispositivo, pwa_instalada } = {}) {
+    const body = { token_acceso };
+    if (dispositivo) body.dispositivo = dispositivo;
+    if (pwa_instalada === true) body.pwa_instalada = true;
+    return request('/api/polla/dispositivo', { method: 'PATCH', body: JSON.stringify(body) });
+}
+
 export function adminDemograficos(token) {
     return request('/api/admin/demograficos', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function adminDispositivos(token) {
+    return request('/api/admin/dispositivos', { headers: { Authorization: `Bearer ${token}` } });
 }
 
 export function adminMarketingResumen(token) {

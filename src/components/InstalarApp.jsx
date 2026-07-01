@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
+import { actualizarDispositivo } from '../api';
 
 const STORAGE_KEY = 'polla_instalar_app_dismissido_at';
-const DIAS_SNOOZE = 30;
+const DIAS_SNOOZE = 5;
+const DEV_TRACK_KEY = 'polla_dev_tracked';
+
+function detectarPlataforma() {
+    const ua = navigator.userAgent;
+    if (/iphone|ipad|ipod/i.test(ua)) return 'ios';
+    if (/android/i.test(ua)) return 'android';
+    return 'desktop';
+}
 
 function yaDescartado() {
     const ts = localStorage.getItem(STORAGE_KEY);
@@ -39,13 +48,26 @@ export default function InstalarApp({ delayMs = 30000 }) {
     const navegador = useRef(detectarNavegador()).current;
 
     useEffect(() => {
+        // Registrar tipo de dispositivo una vez por sesión
+        if (!sessionStorage.getItem(DEV_TRACK_KEY)) {
+            const pollaToken = localStorage.getItem('polla_token_acceso');
+            if (pollaToken) {
+                actualizarDispositivo(pollaToken, { dispositivo: detectarPlataforma() }).catch(() => {});
+                sessionStorage.setItem(DEV_TRACK_KEY, '1');
+            }
+        }
+
         if (yaInstalada() || yaDescartado()) return;
 
         function onBeforeInstall(e) {
             e.preventDefault();
             setDeferredPrompt(e);
         }
-        function onInstalled() { cerrar(); }
+        function onInstalled() {
+            const pt = localStorage.getItem('polla_token_acceso');
+            if (pt) actualizarDispositivo(pt, { pwa_instalada: true }).catch(() => {});
+            cerrar();
+        }
 
         window.addEventListener('beforeinstallprompt', onBeforeInstall);
         window.addEventListener('appinstalled', onInstalled);
@@ -89,10 +111,10 @@ export default function InstalarApp({ delayMs = 30000 }) {
                         <img src={logoRetoucherie} alt="La Retoucherie" className="w-10 h-10 rounded-xl object-cover shrink-0" />
                         <div>
                             <p className="font-black text-zinc-900 dark:text-white text-sm leading-tight">
-                                Agrega la app a tu pantalla
+                                ¡Agrega la app y empieza a ganar!
                             </p>
                             <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">
-                                Accede más rápido sin buscar el link
+                                Accede en un clic a premios, sorteos y beneficios exclusivos.
                             </p>
                         </div>
                     </div>
