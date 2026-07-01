@@ -435,7 +435,7 @@ export default function Comprar() {
 
                 {/* Aviso geográfico */}
                 <div className="rounded-2xl border border-blue-200 dark:border-blue-400/20 bg-blue-50 dark:bg-blue-900/10 px-4 py-3">
-                    <p className="text-zinc-700 dark:text-zinc-300 text-xs leading-relaxed">
+                    <p className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed">
                         <span className="font-bold">📍 Redención en Barranquilla:</span>{' '}
                         El crédito en servicios aplica en nuestros locales. Los premios (bonos y gift cards) son para participantes de cualquier ciudad.
                     </p>
@@ -447,7 +447,7 @@ export default function Comprar() {
                         <div className="w-6 h-6 rounded-full bg-[#FCD116] flex items-center justify-center shrink-0">
                             <span className="text-zinc-950 font-black text-[11px]">1</span>
                         </div>
-                        <h2 className="font-bold text-zinc-900 dark:text-white text-sm">Elige tu plan</h2>
+                        <h2 className="font-bold text-zinc-900 dark:text-white text-base">Elige tu plan</h2>
                     </div>
                     <div className="p-4 flex flex-col gap-3">
                         {/* Tarjetas de planes */}
@@ -462,12 +462,12 @@ export default function Comprar() {
                                         className={`relative flex flex-col items-center rounded-xl border-2 px-2 py-3 transition-all text-center ${sel ? 'border-[#FCD116] bg-amber-400/10' : 'border-zinc-200 dark:border-white/10 hover:border-amber-300'}`}
                                     >
                                         {plan.destacado === 'popular' && (
-                                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-black bg-[#FCD116] text-zinc-950 px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐ Popular</span>
+                                            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-black bg-[#FCD116] text-zinc-950 px-1.5 py-0.5 rounded-full whitespace-nowrap">⭐ Popular</span>
                                         )}
-                                        <p className="font-black text-zinc-900 dark:text-white text-sm leading-tight">{formatoPesos(plan.valor)}</p>
-                                        <p className="text-[10px] text-zinc-400 mt-0.5">y recibes</p>
-                                        <p className="font-bold text-amber-500 text-sm leading-tight">{formatoPesos(plan.saldoBono)}</p>
-                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{plan.etiqueta} en la polla</p>
+                                        <p className="font-black text-zinc-900 dark:text-white text-base leading-tight">{formatoPesos(plan.valor)}</p>
+                                        <p className="text-xs text-zinc-400 mt-0.5">y recibes</p>
+                                        <p className="font-bold text-amber-500 text-base leading-tight">{formatoPesos(plan.saldoBono)}</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{plan.etiqueta} en la polla</p>
                                     </button>
                                 );
                             })}
@@ -520,7 +520,7 @@ export default function Comprar() {
                         {/* Resumen plan fijo */}
                         {!esOtroMonto && planInfo && (
                             <div className="rounded-xl bg-amber-400/10 border border-amber-400/30 px-4 py-3 flex flex-col gap-2">
-                                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-bold">Selección actual</p>
+                                <p className="text-xs text-zinc-400 uppercase tracking-wider font-bold">Selección actual</p>
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-zinc-900 dark:text-white font-black text-lg leading-tight">{formatoPesos(planInfo.valor)}</p>
@@ -530,7 +530,7 @@ export default function Comprar() {
                                     </div>
                                     <div className="text-center shrink-0">
                                         <p className="text-amber-500 font-black text-2xl leading-none">{planInfo.intentos}</p>
-                                        <p className="text-zinc-500 text-[10px] uppercase font-bold">{planInfo.intentos === 1 ? 'cupo' : 'cupos'} polla</p>
+                                        <p className="text-zinc-500 text-xs uppercase font-bold">{planInfo.intentos === 1 ? 'cupo' : 'cupos'} polla</p>
                                     </div>
                                 </div>
                             </div>
@@ -544,11 +544,11 @@ export default function Comprar() {
                         <div className="w-6 h-6 rounded-full bg-[#FCD116] flex items-center justify-center shrink-0">
                             <span className="text-zinc-950 font-black text-[11px]">2</span>
                         </div>
-                        <h2 className="font-bold text-zinc-900 dark:text-white text-sm">Tus datos</h2>
+                        <h2 className="font-bold text-zinc-900 dark:text-white text-base">Tus datos</h2>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         <div className="px-4 py-3.5">
-                            <label htmlFor="comprar-nombre" className="block text-[10px] text-zinc-400 uppercase tracking-wider font-bold mb-1">Nombre completo</label>
+                            <label htmlFor="comprar-nombre" className="block text-xs text-zinc-400 uppercase tracking-wider font-bold mb-1">Nombre completo</label>
                             <input
                                 id="comprar-nombre"
                                 type="text"
@@ -557,11 +557,11 @@ export default function Comprar() {
                                 onChange={handleChange}
                                 placeholder="Ej: Manuela Pérez"
                                 autoComplete="name"
-                                className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-sm focus:outline-none"
+                                className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-base focus:outline-none"
                             />
                         </div>
                         <div className="px-4 py-3.5">
-                            <label htmlFor="comprar-correo" className="block text-[10px] text-zinc-400 uppercase tracking-wider font-bold mb-1">Correo electrónico</label>
+                            <label htmlFor="comprar-correo" className="block text-xs text-zinc-400 uppercase tracking-wider font-bold mb-1">Correo electrónico</label>
                             <input
                                 id="comprar-correo"
                                 type="email"
@@ -570,13 +570,13 @@ export default function Comprar() {
                                 onChange={handleChange}
                                 placeholder="tucorreo@email.com"
                                 autoComplete="email"
-                                className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-sm focus:outline-none"
+                                className="w-full bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-base focus:outline-none"
                             />
                         </div>
                         <div className="px-4 py-3.5">
-                            <label htmlFor="comprar-celular" className="block text-[10px] text-zinc-400 uppercase tracking-wider font-bold mb-1">Celular (WhatsApp)</label>
+                            <label htmlFor="comprar-celular" className="block text-xs text-zinc-400 uppercase tracking-wider font-bold mb-1">Celular (WhatsApp)</label>
                             <div className="flex items-center gap-2">
-                                <span className="text-zinc-400 text-sm">🇨🇴 +57</span>
+                                <span className="text-zinc-400 text-base">🇨🇴 +57</span>
                                 <input
                                     id="comprar-celular"
                                     type="tel"
@@ -586,7 +586,7 @@ export default function Comprar() {
                                     placeholder="3001234567"
                                     autoComplete="tel-national"
                                     inputMode="numeric"
-                                    className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-sm focus:outline-none"
+                                    className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 font-medium text-base focus:outline-none"
                                 />
                             </div>
                         </div>
@@ -600,7 +600,7 @@ export default function Comprar() {
                         <div className="w-6 h-6 rounded-full bg-[#FCD116] flex items-center justify-center shrink-0">
                             <span className="text-zinc-950 font-black text-[11px]">3</span>
                         </div>
-                        <h2 className="font-bold text-zinc-900 dark:text-white text-sm">Método de pago</h2>
+                        <h2 className="font-bold text-zinc-900 dark:text-white text-base">Método de pago</h2>
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {[
@@ -619,8 +619,8 @@ export default function Comprar() {
                                 </div>
                                 <img src={logo} alt={label} className={`${logoClass} w-auto object-contain shrink-0`} />
                                 <div className="min-w-0">
-                                    <p className={`text-sm font-bold leading-tight ${metodoPago === id ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300'}`}>{label}</p>
-                                    <p className="text-[11px] text-zinc-400 leading-tight">{sub}</p>
+                                    <p className={`text-base font-bold leading-tight ${metodoPago === id ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300'}`}>{label}</p>
+                                    <p className="text-xs text-zinc-400 leading-tight">{sub}</p>
                                 </div>
                             </button>
                         ))}
@@ -695,7 +695,7 @@ export default function Comprar() {
                             <p className="text-xs text-zinc-400 mt-1">Verificamos el comprobante en menos de 24 h (generalmente el mismo día). Puedes ingresar a tu cuenta de inmediato.</p>
                         </div>
                         <div className="px-4 pb-4">
-                            <label className="block text-[10px] text-zinc-400 uppercase tracking-wider font-bold mb-2">Comprobante de pago</label>
+                            <label className="block text-xs text-zinc-400 uppercase tracking-wider font-bold mb-2">Comprobante de pago</label>
                             <input
                                 type="file"
                                 accept="image/*"
@@ -753,15 +753,15 @@ export default function Comprar() {
                 <div className="max-w-lg mx-auto flex flex-col gap-2">
                     {valorAPagar > 0 && (
                         <div className="flex items-center justify-between px-1">
-                            <span className="text-zinc-500 dark:text-zinc-400 text-xs font-medium">Total a pagar</span>
-                            <span className="font-black text-zinc-900 dark:text-white text-lg">{formatoPesos(valorAPagar)}</span>
+                            <span className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">Total a pagar</span>
+                            <span className="font-black text-zinc-900 dark:text-white text-xl">{formatoPesos(valorAPagar)}</span>
                         </div>
                     )}
                     <button
                         type="submit"
                         form="comprar-form"
                         disabled={cargando || (!mostrarTransferencia && esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
-                        className="w-full py-4 rounded-2xl font-black text-zinc-950 text-base bg-[#FCD116] hover:bg-amber-300 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-amber-400/20"
+                        className="w-full py-3 rounded-2xl font-black text-zinc-950 text-base bg-[#FCD116] hover:bg-amber-300 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-amber-400/20"
                     >
                         {cargando
                             ? (mostrarTransferencia ? 'Enviando comprobante...' : 'Procesando pago...')
