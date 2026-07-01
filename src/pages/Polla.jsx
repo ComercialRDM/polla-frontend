@@ -466,12 +466,19 @@ export default function Polla() {
                     <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1">
                         Bono de Servicios vigente hasta el <strong>1 mar 2027</strong>
                     </p>
-                    {info.cupos_disponibles === 0 && (
+                    {info.cupos_disponibles === 0 ? (
                         <Link
                             to="/comprar"
                             className="inline-block mt-3 px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]"
                         >
                             Recargar cupos
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/comprar"
+                            className="inline-block mt-3 text-xs text-zinc-400 dark:text-zinc-500 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
+                        >
+                            + Comprar más cupos
                         </Link>
                     )}
                 </div>
