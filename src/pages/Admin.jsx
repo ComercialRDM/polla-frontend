@@ -1597,7 +1597,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             <p className="text-xs text-zinc-400 mb-6">Ingresos acumulados vs objetivo total · Faltan <strong className="text-zinc-600 dark:text-zinc-300">{diasRestantes}</strong> días</p>
 
                             <div className="flex flex-col lg:flex-row gap-10">
-                                {/* Termómetro */}
+                                {/* Termómetro Ingresos */}
                                 <div className="flex items-end gap-6 justify-center lg:justify-start flex-shrink-0">
                                     <div className="relative flex flex-col items-center">
                                         {/* Marcas de escala */}
