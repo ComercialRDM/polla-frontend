@@ -169,7 +169,7 @@ export default function Registro() {
             const data = await loginConGoogle(credential);
             if (data?.success && !data.nuevo) {
                 guardarSesion({ ...data.usuario, token: data.token }, recordarDispositivo);
-                navigate('/');
+                navigate(localStorage.getItem('polla_token_acceso') ? '/polla' : '/landing');
                 return;
             }
             if (data?.success && data.nuevo) {
@@ -221,7 +221,7 @@ export default function Registro() {
             const data = await verificarCodigoTelefono({ celular: celularTelefono.trim(), codigo: codigoTelefono.trim() });
             if (data?.success && !data.nuevo) {
                 guardarSesion({ ...data.usuario, token: data.token }, recordarDispositivo);
-                navigate('/');
+                navigate(localStorage.getItem('polla_token_acceso') ? '/polla' : '/landing');
                 return;
             }
             if (data?.success && data.nuevo) {
@@ -311,7 +311,7 @@ export default function Registro() {
                     setCalendarioToken(data.usuario.calendario_token);
                     setPaso(4);
                 } else {
-                    navigate('/');
+                    navigate('/landing');
                 }
             } else {
                 setError(data?.error || 'No se pudo completar el registro.');
@@ -530,7 +530,7 @@ export default function Registro() {
                 ) : (
                     <div className="flex flex-col gap-4">
                         <AgendarCalendario calendarioToken={calendarioToken} />
-                        <button type="button" onClick={() => navigate('/')}
+                        <button type="button" onClick={() => navigate('/landing')}
                             className="w-full py-3 rounded-xl font-black text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform">
                             Continuar
                         </button>

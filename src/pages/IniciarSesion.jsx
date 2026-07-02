@@ -28,7 +28,8 @@ export default function IniciarSesion() {
             const data = await iniciarSesion({ celular: celular.trim(), password });
             if (data?.success) {
                 guardarSesion({ ...data.usuario, token: data.token });
-                navigate('/');
+                const tokenAcceso = localStorage.getItem('polla_token_acceso');
+                navigate(tokenAcceso ? '/polla' : '/landing');
             } else if (data?.error?.includes('No encontramos')) {
                 setSinCuenta(true);
             } else {
@@ -56,7 +57,10 @@ export default function IniciarSesion() {
                     Ingresa con tu número de celular y tu contraseña.
                 </p>
 
-                <BiometriaLogin onExito={() => navigate('/')} />
+                <BiometriaLogin onExito={() => {
+                    const tokenAcceso = localStorage.getItem('polla_token_acceso');
+                    navigate(tokenAcceso ? '/polla' : '/landing');
+                }} />
 
                 <div className="flex items-center gap-3 my-4">
                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
