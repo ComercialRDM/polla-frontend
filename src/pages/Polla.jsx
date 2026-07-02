@@ -439,26 +439,23 @@ export default function Polla() {
     }
 
     return (
-        <div className="min-h-screen relative bg-white dark:bg-zinc-950 stadium-glow px-4 sm:px-6 py-10 flex flex-col items-center">
+        <div className="min-h-screen relative bg-zinc-950 pb-12 flex flex-col items-center">
+            {/* Barra Colombia */}
             <div className="absolute top-0 left-0 right-0 h-2 flex">
                 <div className="flex-1 bg-colombia-yellow" />
                 <div className="flex-1 bg-colombia-blue" />
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className="w-full max-w-md mt-6 relative">
-                <div className="flex items-start justify-between mb-1">
+            <div className="w-full max-w-md px-4 mt-6 pt-2 relative">
+
+                {/* HEADER: foto + saludo + cerrar sesión */}
+                <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        {/* Avatar de perfil — clicable para todos los usuarios */}
                         <label className="relative cursor-pointer flex-shrink-0 group">
                             <div className={`w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-zinc-950 font-black text-xl border-2 ${info.foto_estado === 'pendiente' ? 'border-amber-400 bg-gradient-to-br from-amber-300 to-amber-500' : info.foto_estado === 'rechazada' ? 'border-red-400 bg-gradient-to-br from-red-400 to-red-600' : 'border-amber-400/40 bg-gradient-to-br from-amber-400 to-amber-600'}`}>
                                 {info.tiene_foto ? (
-                                    <img
-                                        src={`${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}`}
-                                        alt={info.nombre}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
+                                    <img src={`${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}`} alt={info.nombre} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                                 ) : (
                                     info.nombre.charAt(0).toUpperCase()
                                 )}
@@ -466,222 +463,219 @@ export default function Polla() {
                             <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <span className="text-white text-lg">📷</span>
                             </div>
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                onChange={handleSubirFoto}
-                                className="hidden"
-                                disabled={subiendoFoto}
-                            />
-                            {subiendoFoto && (
-                                <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
-                                    <span className="text-white text-xs font-bold">...</span>
-                                </div>
-                            )}
-                            {fotoSubidaOk && (
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
-                            )}
-                            {info.foto_estado === 'pendiente' && !subiendoFoto && (
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-zinc-950 text-xs">⏳</div>
-                            )}
-                            {info.foto_estado === 'rechazada' && !subiendoFoto && (
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">!</div>
-                            )}
+                            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleSubirFoto} className="hidden" disabled={subiendoFoto} />
+                            {subiendoFoto && <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center"><span className="text-white text-xs font-bold">...</span></div>}
+                            {fotoSubidaOk && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>}
+                            {info.foto_estado === 'pendiente' && !subiendoFoto && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-zinc-950 text-xs">⏳</div>}
+                            {info.foto_estado === 'rechazada' && !subiendoFoto && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">!</div>}
                         </label>
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">¡Hola, {info.nombre}!</h1>
+                            <h1 className="text-2xl font-extrabold text-white leading-tight">¡Hola, {info.nombre}!</h1>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 {info.es_influencer ? (
-                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                                        🎖️ Creador de contenido
-                                    </span>
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-900/50 text-purple-300">🎖️ Creador de contenido</span>
                                 ) : (
-                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                                        👤 Cliente
-                                    </span>
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-blue-900/30 text-blue-300">👤 Cliente</span>
                                 )}
                                 {info.es_especial && (
-                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">
-                                        Bono especial
-                                    </span>
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">Bono especial</span>
                                 )}
                             </div>
-                            {/* Estado de la foto */}
-                            {info.foto_estado === 'pendiente' && !subiendoFoto && (
-                                <p className="text-amber-500 dark:text-amber-400 text-xs mt-1">📷 Foto en revisión — se aprueba en pocas horas</p>
-                            )}
-                            {info.foto_estado === 'rechazada' && !subiendoFoto && (
-                                <p className="text-red-500 dark:text-red-400 text-xs mt-1">❌ Foto rechazada{info.foto_razon_rechazo ? `: ${info.foto_razon_rechazo}` : ''}. Toca para subir otra.</p>
-                            )}
-                            {!info.foto_estado && !subiendoFoto && !fotoSubidaOk && (
-                                <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-0.5">Toca la foto para agregar una 📷</p>
-                            )}
+                            {info.foto_estado === 'pendiente' && !subiendoFoto && <p className="text-amber-400 text-xs mt-1">📷 Foto en revisión</p>}
+                            {info.foto_estado === 'rechazada' && !subiendoFoto && <p className="text-red-400 text-xs mt-1">❌ Foto rechazada. Toca para subir otra.</p>}
+                            {!info.foto_estado && !subiendoFoto && !fotoSubidaOk && <p className="text-zinc-500 text-xs mt-0.5">Toca la foto para agregar una 📷</p>}
                             {errorFoto && <p className="text-red-400 text-xs mt-0.5">{errorFoto}</p>}
                         </div>
                     </div>
-                    <button
-                        onClick={handleCerrarSesion}
-                        className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-500 hover:border-red-500 transition-colors flex-shrink-0"
-                    >
+                    <button onClick={handleCerrarSesion} className="flex-shrink-0 text-xs text-zinc-400 border border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-400 hover:border-red-400 transition-colors mt-0.5">
                         Cerrar sesión
                     </button>
                 </div>
-                {info.es_influencer ? (
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4 mt-2">Predice los marcadores y demuestra tu habilidad. Como creador de contenido, tus bonos especiales no compiten por los premios monetarios.</p>
-                ) : (
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4 mt-2">Predice el marcador y gana premios increíbles.</p>
-                )}
 
-                {/* Banner: sugerir registro para más seguridad */}
+                {/* Banner crear cuenta */}
                 {mostrarCuentaBanner && (
-                    <div className="mb-5 rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 flex items-start gap-3">
+                    <div className="mb-5 rounded-2xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 flex items-start gap-3">
                         <span className="text-xl shrink-0 mt-0.5">🔒</span>
                         <div className="flex-1 min-w-0">
-                            <p className="text-zinc-900 dark:text-white font-bold text-sm">Protege tu acceso</p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">
-                                Ahora entras con tu link personal. Crea una cuenta para poder acceder con correo o contraseña si pierdes el link.
-                            </p>
-                            <Link
-                                to={`/registro?token=${token}`}
-                                className="inline-block mt-2 text-xs font-bold text-amber-600 dark:text-amber-400 underline"
-                            >
-                                Crear cuenta gratis →
-                            </Link>
+                            <p className="text-white font-bold text-sm">Protege tu acceso</p>
+                            <p className="text-zinc-400 text-xs mt-0.5">Ahora entras con tu link personal. Crea una cuenta para poder acceder con correo o contraseña si pierdes el link.</p>
+                            <Link to={`/registro?token=${token}`} className="inline-block mt-2 text-xs font-bold text-amber-400 underline">Crear cuenta gratis →</Link>
                         </div>
-                        <button
-                            onClick={() => {
-                                localStorage.setItem(CUENTA_REMINDER_KEY, String(Date.now()));
-                                setMostrarCuentaBanner(false);
-                            }}
-                            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg leading-none shrink-0 mt-0.5"
-                            aria-label="Cerrar"
-                        >
-                            ×
-                        </button>
+                        <button onClick={() => { localStorage.setItem(CUENTA_REMINDER_KEY, String(Date.now())); setMostrarCuentaBanner(false); }} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none shrink-0 mt-0.5" aria-label="Cerrar">×</button>
                     </div>
                 )}
 
-                {/* Monedero de cupos */}
-                <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-5 mb-6 text-center">
-                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-1">Tu monedero de pronósticos</p>
-                    <p className="text-amber-500 dark:text-amber-400 font-black text-3xl mb-1">
-                        {info.cupos_disponibles} {info.cupos_disponibles === 1 ? 'cupo' : 'cupos'}
-                    </p>
-                    <p className="text-zinc-600 dark:text-zinc-300 text-sm">
-                        Bono Retoucherie disponible: <span className="font-bold text-zinc-900 dark:text-white">{formatoPesos(info.dinero_disponible)}</span>
-                    </p>
-                    <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1">
-                        Bono de Servicios vigente hasta el <strong>1 mar 2027</strong>
-                    </p>
-                    {info.cupos_disponibles === 0 ? (
-                        <Link
-                            to="/comprar"
-                            className="inline-block mt-3 px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]"
-                        >
-                            Recargar cupos
-                        </Link>
-                    ) : (
-                        <Link
-                            to="/comprar"
-                            className="inline-block mt-3 text-xs text-zinc-400 dark:text-zinc-500 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
-                        >
-                            + Comprar más cupos
-                        </Link>
-                    )}
-                </div>
+                {/* CARD PRINCIPAL — solo clientes */}
+                {!info.es_influencer && (() => {
+                    const posicion = info.posicion || 1;
+                    const totalPart = info.total_participantes || 1;
+                    const puntos = info.puntos || 0;
+                    const ptsFaltan = info.puntos_para_superar;
+                    const esLider = posicion === 1 || ptsFaltan === null;
+                    const ptsObj = puntos + (ptsFaltan || 0);
+                    const progreso = ptsObj > 0 ? Math.min(100, Math.round((puntos / ptsObj) * 100)) : 100;
+                    const medalla = posicion === 1 ? '🥇' : posicion === 2 ? '🥈' : posicion === 3 ? '🥉' : '🏅';
+                    return (
+                        <div className="rounded-2xl bg-zinc-900 border border-[#FCD116]/30 overflow-hidden mb-4">
 
-                {/* Predicciones guardadas sin cupos suficientes todavía */}
+                            {/* Ranking */}
+                            <div className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="font-black text-4xl text-white leading-none">#{posicion}</span>
+                                            <span className="text-zinc-500 text-xs">de {totalPart} {totalPart === 1 ? 'participante' : 'participantes'}</span>
+                                        </div>
+                                        <p className="text-sm mt-1 leading-tight">
+                                            {esLider
+                                                ? <span className="text-[#FCD116] font-semibold">¡Vas en primer lugar! Sigue así 💪</span>
+                                                : <span className="text-zinc-400">Te faltan <span className="text-white font-bold">{ptsFaltan} pt{ptsFaltan === 1 ? '' : 's'}</span> para subir al #{posicion - 1} ⬆️</span>
+                                            }
+                                        </p>
+                                    </div>
+                                    <span className="text-4xl flex-shrink-0">{medalla}</span>
+                                </div>
+                                {!esLider && (
+                                    <div className="mt-3">
+                                        <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                                            <div className="h-2 rounded-full bg-gradient-to-r from-[#FCD116] to-amber-500 transition-all duration-700" style={{ width: `${progreso}%` }} />
+                                        </div>
+                                        <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                                            <span>Tus {puntos} pts</span>
+                                            <span>{ptsObj} pts del #{posicion - 1}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Stats grid */}
+                            <div className="grid grid-cols-4 gap-2 px-3 pb-3 border-t border-white/5 pt-3">
+                                {[
+                                    { icono: '⭐', valor: info.puntos || 0, label: 'Puntos', color: 'text-[#FCD116]' },
+                                    { icono: '🎯', valor: info.exactos || 0, label: 'Exactos', color: 'text-green-400' },
+                                    { icono: '⚽', valor: info.cupos_usados || 0, label: 'Usados', color: 'text-blue-400' },
+                                    { icono: '🎟️', valor: info.cupos_disponibles || 0, label: info.cupos_disponibles > 0 ? 'Quedan' : 'Agotados', color: info.cupos_disponibles > 0 ? 'text-white' : 'text-zinc-600' },
+                                ].map(({ icono, valor, label, color }) => (
+                                    <div key={label} className="flex flex-col items-center justify-center rounded-xl bg-zinc-800/60 border border-white/5 py-2.5 px-1">
+                                        <span className="text-sm mb-0.5">{icono}</span>
+                                        <span className={`font-black text-xl leading-none ${color}`}>{valor}</span>
+                                        <span className="text-zinc-500 text-[10px] mt-0.5 text-center leading-tight">{label}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Equipos favoritos */}
+                            {info.equipos_favoritos?.length > 0 && (
+                                <div className="px-3 pb-3 border-t border-white/5 pt-3">
+                                    <p className="text-zinc-500 text-[10px] uppercase tracking-wide font-bold mb-2">⭐ Equipos favoritos</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {info.equipos_favoritos.map((equipo) => (
+                                            <span key={equipo} className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full pl-1 pr-2.5 py-0.5">
+                                                <Bandera equipo={equipo} className="w-5 h-5 flex-shrink-0" />
+                                                <span className="text-zinc-200 text-xs font-semibold">{equipo}</span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Botones de acción */}
+                            <div className="px-3 pb-3 flex gap-2 border-t border-white/5 pt-3">
+                                <a href="#partidos-section" className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-black text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform">
+                                    🌐 Pronosticar ahora
+                                </a>
+                                <Link to="/comprar" className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl font-bold text-sm border border-[#FCD116]/40 text-[#FCD116] hover:bg-[#FCD116]/10 active:scale-95 transition-transform">
+                                    + Bono
+                                </Link>
+                            </div>
+
+                            {/* Texto motivacional */}
+                            <div className="px-4 pb-4 border-t border-white/5 pt-3">
+                                <p className="text-sm text-zinc-300 leading-snug">
+                                    {info.cupos_disponibles === 0
+                                        ? '🔥 Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.'
+                                        : posicion > 3
+                                            ? '🚀 Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar hasta $1.000.000 en el Bono Colombia.'
+                                            : '💪 ¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.'}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })()}
+
+                {/* Texto descriptivo influencers */}
+                {info.es_influencer && (
+                    <p className="text-zinc-400 text-sm mb-4 mt-2">Predice los marcadores y demuestra tu habilidad. Como creador de contenido, tus bonos especiales no compiten por los premios monetarios.</p>
+                )}
+
+                {/* RETA A UN AMIGO */}
+                {(() => {
+                    const urlRef = `${typeof window !== 'undefined' ? window.location.origin : 'https://ganaconretoucherie.com'}/?ref=${token}`;
+                    const textoComp = `🇨🇴⚽ ¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela!\n\nPredice el marcador de los partidos y gana premios increíbles.\n\n👉 ${urlRef}`;
+                    async function compartirAmigo() {
+                        if (typeof navigator !== 'undefined' && navigator.share) {
+                            try { await navigator.share({ text: textoComp, url: urlRef }); } catch (_) {}
+                        } else {
+                            window.open(`https://wa.me/?text=${encodeURIComponent(textoComp)}`, '_blank');
+                        }
+                    }
+                    return (
+                        <div className="rounded-2xl bg-zinc-900 border border-white/10 px-4 py-3 mb-4">
+                            <p className="text-white font-bold text-sm mb-0.5">🏆 Reta a un amigo y gana puntos</p>
+                            <p className="text-zinc-400 text-sm mb-3">Comparte con tu grupo de fútbol y compitan juntos por los premios.</p>
+                            <div className="flex gap-2">
+                                <button onClick={compartirAmigo} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform">
+                                    📲 Compartir
+                                </button>
+                                <button onClick={() => { navigator.clipboard.writeText(urlRef); setMensajeCopiado(true); setTimeout(() => setMensajeCopiado(false), 2200); }} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-zinc-300 border border-white/10 bg-white/5 active:scale-95 transition-transform">
+                                    {mensajeCopiado ? '✅ ¡Copiado!' : '🔗 Copiar link'}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })()}
+
+                {/* Predicciones guardadas sin cupos */}
                 {cantidadEncolados > 0 && (
-                    <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-6 text-center">
-                        <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">
-                            🔥 Tienes {cantidadEncolados} {cantidadEncolados === 1 ? 'predicción guardada' : 'predicciones guardadas'} sin cupos
-                        </p>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
-                            Compra {cuposEncolados} {cuposEncolados === 1 ? 'cupo' : 'cupos'} más para confirmarlas todas.
-                        </p>
-                        <Link
-                            to="/comprar"
-                            className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]"
-                        >
-                            Comprar {formatoPesos(montoEncolados)}
-                        </Link>
+                    <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-4 text-center">
+                        <p className="text-white font-bold text-sm mb-1">🔥 Tienes {cantidadEncolados} {cantidadEncolados === 1 ? 'predicción guardada' : 'predicciones guardadas'} sin cupos</p>
+                        <p className="text-zinc-400 text-xs mb-3">Compra {cuposEncolados} {cuposEncolados === 1 ? 'cupo' : 'cupos'} más para confirmarlas todas.</p>
+                        <Link to="/comprar" className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]">Comprar {formatoPesos(montoEncolados)}</Link>
                     </div>
                 )}
 
-                {/* Ranking solo entre creadores de contenido (Bono Especial) */}
+                {/* Ranking influencers + Pozo */}
                 {info.es_especial && <RankingInfluencers token={token} />}
-
-                {/* Pozo de premios en tiempo real */}
                 <PozoPremios compact />
 
                 {/* Mi Grupo */}
                 {misGrupos !== null && (
-                    <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 p-4 mb-2">
+                    <div className="rounded-2xl border border-amber-400/20 bg-zinc-900 p-4 mb-4">
                         <div className="flex items-center justify-between mb-3">
-                            <p className="text-zinc-900 dark:text-white font-bold text-sm">🏆 Mi grupo</p>
-                            <button
-                                onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }}
-                                className="text-xs text-amber-500 hover:text-amber-400 font-semibold"
-                            >
-                                {mostrarFormGrupo ? 'Cancelar' : '+ Crear grupo'}
-                            </button>
+                            <p className="text-white font-bold text-sm">🏆 Mi grupo</p>
+                            <button onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }} className="text-xs text-amber-400 hover:text-amber-300 font-semibold">{mostrarFormGrupo ? 'Cancelar' : '+ Crear grupo'}</button>
                         </div>
-
                         {mostrarFormGrupo && (
                             <form onSubmit={handleCrearGrupo} className="flex flex-col gap-2 mb-3">
-                                <input
-                                    type="text"
-                                    value={nuevoGrupoNombre}
-                                    onChange={(e) => setNuevoGrupoNombre(e.target.value)}
-                                    placeholder="Nombre del grupo (ej: Familia García)"
-                                    maxLength={100}
-                                    className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                                />
-                                <select
-                                    value={nuevoGrupoPartido}
-                                    onChange={(e) => setNuevoGrupoPartido(e.target.value)}
-                                    className="w-full rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                                >
+                                <input type="text" value={nuevoGrupoNombre} onChange={(e) => setNuevoGrupoNombre(e.target.value)} placeholder="Nombre del grupo (ej: Familia García)" maxLength={100} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                                <select value={nuevoGrupoPartido} onChange={(e) => setNuevoGrupoPartido(e.target.value)} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400">
                                     <option value="">Selecciona el partido del grupo</option>
                                     {info.partidos.filter((p) => p.estado_partido === 'activo').map((p) => (
-                                        <option key={p.partido_id} value={p.partido_id}>
-                                            {p.equipo_local} vs {p.equipo_visitante}
-                                        </option>
+                                        <option key={p.partido_id} value={p.partido_id}>{p.equipo_local} vs {p.equipo_visitante}</option>
                                     ))}
                                 </select>
                                 {errorGrupo && <p className="text-red-400 text-xs">{errorGrupo}</p>}
-                                <button
-                                    type="submit"
-                                    disabled={creandoGrupo}
-                                    className="w-full py-2.5 rounded-xl font-black text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 disabled:opacity-60"
-                                >
-                                    {creandoGrupo ? 'Creando...' : 'Crear grupo'}
-                                </button>
+                                <button type="submit" disabled={creandoGrupo} className="w-full py-2.5 rounded-xl font-black text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 disabled:opacity-60">{creandoGrupo ? 'Creando...' : 'Crear grupo'}</button>
                             </form>
                         )}
-
-                        {misGrupos.length === 0 && !mostrarFormGrupo && (
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs text-center py-2">
-                                No estás en ningún grupo aún. ¡Crea uno y compártelo con tus amigos!
-                            </p>
-                        )}
-
+                        {misGrupos.length === 0 && !mostrarFormGrupo && <p className="text-zinc-500 text-xs text-center py-2">No estás en ningún grupo aún. ¡Crea uno y compártelo con tus amigos!</p>}
                         {misGrupos.length > 0 && (
                             <div className="flex flex-col gap-2">
                                 {misGrupos.map((g) => (
-                                    <Link
-                                        key={g.token_grupo}
-                                        to={`/grupo/${g.token_grupo}`}
-                                        className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 dark:bg-zinc-800/50 px-3 py-2.5 hover:bg-amber-400/5 transition-colors"
-                                    >
+                                    <Link key={g.token_grupo} to={`/grupo/${g.token_grupo}`} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 hover:bg-amber-400/5 transition-colors">
                                         <div>
-                                            <p className="text-zinc-900 dark:text-white font-bold text-sm">
-                                                {g.nombre}
-                                                {g.es_admin && <span className="ml-1 text-xs text-amber-400 font-normal">(admin)</span>}
-                                            </p>
-                                            <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                                                {g.equipo_local} vs {g.equipo_visitante} · {g.total_miembros}/{g.max_miembros}
-                                            </p>
+                                            <p className="text-white font-bold text-sm">{g.nombre}{g.es_admin && <span className="ml-1 text-xs text-amber-400 font-normal">(admin)</span>}</p>
+                                            <p className="text-zinc-500 text-xs">{g.equipo_local} vs {g.equipo_visitante} · {g.total_miembros}/{g.max_miembros}</p>
                                         </div>
                                         <span className="text-amber-400 text-sm">→</span>
                                     </Link>
@@ -691,35 +685,24 @@ export default function Polla() {
                     </div>
                 )}
 
-                {/* Tarjetas de pronóstico por partido */}
-                <p className="text-zinc-900 dark:text-white font-bold text-base mb-3 mt-6">Partidos disponibles para predecir</p>
-
+                {/* PARTIDOS */}
+                <div id="partidos-section">
+                    <p className="text-white font-bold text-base mb-3 mt-4">Partidos disponibles para predecir</p>
+                </div>
                 {info.partidos.length === 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-slate-900 p-5 text-center text-zinc-300 mb-4">
-                        No hay partidos activos por el momento.
-                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5 text-center text-zinc-300 mb-4">No hay partidos activos por el momento.</div>
                 )}
-
                 <div className="flex flex-col gap-5 mb-4">
                     {info.partidos.slice(0, partidosVisibles).map((p) => {
                         const msRestantes = new Date(p.fecha_hora_inicio).getTime() - ahora;
                         const cerrado = msRestantes < 5 * 60 * 1000 || p.estado_partido !== 'activo';
                         const enUltimaHora = msRestantes > 0 && msRestantes <= UNA_HORA_MS;
                         const m = marcadores[p.partido_id] || { local: '', visitante: '' };
-
                         return (
-                            <div
-                                key={p.partido_id}
-                                className="relative rounded-2xl border border-white/10 bg-slate-900 shadow-[0_0_20px_rgba(234,179,8,0.1)] p-5 pt-6"
-                            >
-                                {/* Costo en cupos */}
+                            <div key={p.partido_id} className="relative rounded-2xl border border-white/10 bg-slate-900 shadow-[0_0_20px_rgba(234,179,8,0.1)] p-5 pt-6">
                                 <div className="absolute top-2 right-2">
-                                    <span className="text-xs bg-amber-400/15 text-amber-500 dark:text-amber-400 rounded-full px-2 py-0.5 font-semibold">
-                                        {p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'}
-                                    </span>
+                                    <span className="text-xs bg-amber-400/15 text-amber-400 rounded-full px-2 py-0.5 font-semibold">{p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'}</span>
                                 </div>
-
-                                {/* Equipos */}
                                 <div className="flex items-center justify-center gap-3 mb-3">
                                     <div className="flex flex-col items-center gap-1 flex-1">
                                         <Bandera equipo={p.equipo_local} className="w-10 h-10" />
@@ -731,33 +714,16 @@ export default function Polla() {
                                         <span className="text-white font-bold text-xs text-center leading-tight">{p.equipo_visitante}</span>
                                     </div>
                                 </div>
-
                                 {!cerrado && (
-                                    <div
-                                        className={`text-center font-scoreboard text-xl font-black tracking-widest bg-black/60 rounded-lg py-1 mb-3 ${
-                                            enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'
-                                        }`}
-                                    >
+                                    <div className={`text-center font-scoreboard text-xl font-black tracking-widest bg-black/60 rounded-lg py-1 mb-3 ${enUltimaHora ? 'text-red-500 parpadeo-rojo' : 'text-amber-400 neon-gold'}`}>
                                         {formatearTiempo(msRestantes)}
                                     </div>
                                 )}
-
                                 {p.ya_pronosticado ? (
                                     <div className="text-center text-zinc-300 text-sm">
                                         <p className="mb-1">Tu pronóstico:</p>
-                                        <p className="text-2xl font-black text-lime-400 font-scoreboard">
-                                            {p.pronostico.local} - {p.pronostico.visitante}
-                                        </p>
-                                        <CompartirPronostico
-                                            equipoLocal={p.equipo_local}
-                                            equipoVisitante={p.equipo_visitante}
-                                            localPred={p.pronostico.local}
-                                            visitantePred={p.pronostico.visitante}
-                                            tokenAcceso={token}
-                                            partidoId={p.partido_id}
-                                            nombreUsuario={info.nombre}
-                                            fotoUrl={info.tiene_foto ? `${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}` : null}
-                                        />
+                                        <p className="text-2xl font-black text-lime-400 font-scoreboard">{p.pronostico.local} - {p.pronostico.visitante}</p>
+                                        <CompartirPronostico equipoLocal={p.equipo_local} equipoVisitante={p.equipo_visitante} localPred={p.pronostico.local} visitantePred={p.pronostico.visitante} tokenAcceso={token} partidoId={p.partido_id} nombreUsuario={info.nombre} fotoUrl={info.tiene_foto ? `${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}` : null} />
                                     </div>
                                 ) : cerrado ? (
                                     <p className="text-center text-zinc-400 text-sm">La votación para este partido está cerrada.</p>
@@ -765,67 +731,28 @@ export default function Polla() {
                                     <>
                                         <div className="flex items-center justify-between gap-2">
                                             <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={m.local}
-                                                    onChange={(e) => actualizarMarcador(p.partido_id, 'local', e.target.value)}
-                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
-                                                />
+                                                <input type="text" inputMode="numeric" value={m.local} onChange={(e) => actualizarMarcador(p.partido_id, 'local', e.target.value)} className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
                                             </div>
-
                                             <span className="text-amber-400 font-black text-xl sm:text-2xl font-scoreboard">VS</span>
-
                                             <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={m.visitante}
-                                                    onChange={(e) => actualizarMarcador(p.partido_id, 'visitante', e.target.value)}
-                                                    className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]"
-                                                />
+                                                <input type="text" inputMode="numeric" value={m.visitante} onChange={(e) => actualizarMarcador(p.partido_id, 'visitante', e.target.value)} className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
                                             </div>
                                         </div>
-
                                         {info.cupos_disponibles < (p.cupos_costo || 1) && !encolados[p.partido_id] && (
-                                            <p className="text-amber-400 text-xs text-center mt-2">
-                                                Te faltan cupos para este partido ({p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'} — tienes {info.cupos_disponibles}). Puedes guardar tu predicción igual y comprar más cupos después.
-                                            </p>
+                                            <p className="text-amber-400 text-xs text-center mt-2">Te faltan cupos para este partido ({p.cupos_costo} {p.cupos_costo === 1 ? 'cupo' : 'cupos'} — tienes {info.cupos_disponibles}). Puedes guardar tu predicción igual y comprar más cupos después.</p>
                                         )}
-
-                                        {errorPorPartido[p.partido_id] && (
-                                            <p className="text-red-400 text-sm text-center mt-3">{errorPorPartido[p.partido_id]}</p>
-                                        )}
-
+                                        {errorPorPartido[p.partido_id] && <p className="text-red-400 text-sm text-center mt-3">{errorPorPartido[p.partido_id]}</p>}
                                         {encolados[p.partido_id] ? (
-                                            <div className="w-full mt-4 py-3 rounded-xl font-bold text-center bg-amber-400/15 text-amber-600 dark:text-amber-400 text-sm">
+                                            <div className="w-full mt-4 py-3 rounded-xl font-bold text-center bg-amber-400/15 text-amber-400 text-sm">
                                                 ✓ Predicción guardada — <Link to="/comprar" className="underline">compra cupos para confirmarla</Link>
                                             </div>
                                         ) : (
-                                            <button
-                                                onClick={() => handleSubmit(p)}
-                                                disabled={enviandoId === p.partido_id}
-                                                className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                                            >
-                                                {enviandoId === p.partido_id
-                                                    ? 'Guardando...'
-                                                    : info.cupos_disponibles < (p.cupos_costo || 1)
-                                                        ? `Guardar predicción (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`
-                                                        : `Guardar pronóstico (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`}
+                                            <button onClick={() => handleSubmit(p)} disabled={enviandoId === p.partido_id} className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60">
+                                                {enviandoId === p.partido_id ? 'Guardando...' : info.cupos_disponibles < (p.cupos_costo || 1) ? `Guardar predicción (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})` : `Guardar pronóstico (${p.cupos_costo} ${p.cupos_costo === 1 ? 'cupo' : 'cupos'})`}
                                             </button>
                                         )}
-
                                         {mensajeExitoId === p.partido_id && (
-                                            <CompartirPronostico
-                                                equipoLocal={p.equipo_local}
-                                                equipoVisitante={p.equipo_visitante}
-                                                localPred={m.local}
-                                                visitantePred={m.visitante}
-                                                tokenAcceso={token}
-                                                partidoId={p.partido_id}
-                                                nombreUsuario={info.nombre}
-                                                fotoUrl={info.tiene_foto ? `${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}` : null}
-                                            />
+                                            <CompartirPronostico equipoLocal={p.equipo_local} equipoVisitante={p.equipo_visitante} localPred={m.local} visitantePred={m.visitante} tokenAcceso={token} partidoId={p.partido_id} nombreUsuario={info.nombre} fotoUrl={info.tiene_foto ? `${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}` : null} />
                                         )}
                                     </>
                                 )}
@@ -838,88 +765,33 @@ export default function Polla() {
                 {info.partidos.length > 3 && (
                     <div className="flex flex-col items-center gap-3 mb-6">
                         {partidosVisibles < info.partidos.length && (
-                            <button
-                                onClick={() => setPartidosVisibles((v) => v + 10)}
-                                className="w-full py-4 rounded-2xl font-black text-base text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
-                            >
+                            <button onClick={() => setPartidosVisibles((v) => v + 10)} className="w-full py-4 rounded-2xl font-black text-base text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform">
                                 ⚽ Ver más partidos — {info.partidos.length - partidosVisibles} restantes
                             </button>
                         )}
                         {partidosVisibles > 3 && (
-                            <button
-                                onClick={() => setPartidosVisibles(3)}
-                                className="text-zinc-500 text-sm underline hover:text-zinc-300 transition-colors"
-                            >
-                                Mostrar menos
-                            </button>
+                            <button onClick={() => setPartidosVisibles(3)} className="text-zinc-500 text-sm underline hover:text-zinc-300 transition-colors">Mostrar menos</button>
                         )}
                     </div>
                 )}
 
-                {/* Equipos favoritos */}
-                <EquiposFavoritos
-                    token={token}
-                    equiposIniciales={info.equipos_favoritos || []}
-                    calendarioToken={info.calendario_token}
-                    onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))}
-                />
-
-                {/* Próximos partidos de los equipos favoritos */}
+                {/* Editor equipos favoritos */}
+                <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
                 <PartidosFavoritos equipos={info.equipos_favoritos} />
-
-                {/* Reta a un amigo */}
-                <div className="rounded-2xl border border-amber-400/20 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-none backdrop-blur-lg p-4 mb-6 text-center">
-                    <p className="text-zinc-900 dark:text-white font-bold text-sm mb-1">🏆 Reta a un amigo</p>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-3">
-                        Comparte tu link y reta a tus amigos a participar.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <a
-                            href={`https://wa.me/?text=${encodeURIComponent(
-                                `¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela! Predice el marcador de los partidos de Colombia y gana premios 🇨🇴⚽\n\nCompra tu Bono Digital aquí: ${window.location.origin}/?ref=${token}`
-                            )}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 inline-block py-2.5 rounded-xl font-bold text-sm text-white text-center bg-green-600 hover:bg-green-700 transition-colors"
-                        >
-                            📲 Retar por WhatsApp
-                        </a>
-                        <button
-                            onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/?ref=${token}`);
-                                setMensajeCopiado(true);
-                                setTimeout(() => setMensajeCopiado(false), 2000);
-                            }}
-                            className="flex-1 py-2.5 rounded-xl font-bold text-sm text-zinc-900 dark:text-white text-center border border-zinc-200 dark:border-white/15 bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors"
-                        >
-                            {mensajeCopiado ? '¡Copiado! ✅' : '🔗 Copiar link'}
-                        </button>
-                    </div>
-                </div>
 
                 {/* Ranking en vivo del próximo partido */}
                 {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
 
-                {/* ── Regalo de Bono (discreto) ── */}
+                {/* Regalo de Bono */}
                 <div className="mt-8 mb-2 text-center">
                     {misSolicitudes.length > 0 && (
-                        <div className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+                        <div className="mb-3 text-xs text-zinc-600">
                             {misSolicitudes.map((s) => (
-                                <p key={s.id}>
-                                    🎁 Regalo a {s.receptor_nombre}:{' '}
-                                    <span className={s.estado === 'APROBADO' ? 'text-green-500' : s.estado === 'RECHAZADO' ? 'text-red-400' : 'text-amber-400'}>
-                                        {s.estado === 'APROBADO' ? 'Aprobado' : s.estado === 'RECHAZADO' ? `Rechazado${s.motivo_rechazo ? ` — ${s.motivo_rechazo}` : ''}` : 'Pendiente de revisión'}
-                                    </span>
-                                </p>
+                                <p key={s.id}>🎁 Regalo a {s.receptor_nombre}: <span className={s.estado === 'APROBADO' ? 'text-green-500' : s.estado === 'RECHAZADO' ? 'text-red-400' : 'text-amber-400'}>{s.estado === 'APROBADO' ? 'Aprobado' : s.estado === 'RECHAZADO' ? `Rechazado${s.motivo_rechazo ? ` — ${s.motivo_rechazo}` : ''}` : 'Pendiente de revisión'}</span></p>
                             ))}
                         </div>
                     )}
-                    <button
-                        onClick={() => { setMostrarModalRegalo(true); setRegaloMensaje(''); setRegaloError(''); }}
-                        className="text-xs text-zinc-400 dark:text-zinc-500 underline hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
-                    >
-                        ¿Quieres regalar tu bono? Solicítalo aquí
-                    </button>
+                    <button onClick={() => { setMostrarModalRegalo(true); setRegaloMensaje(''); setRegaloError(''); }} className="text-xs text-zinc-600 underline hover:text-zinc-400 transition-colors">¿Quieres regalar tu bono? Solicítalo aquí</button>
                 </div>
             </div>
 
