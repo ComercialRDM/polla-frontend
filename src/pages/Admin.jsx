@@ -1591,7 +1591,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             <p className="text-xs text-zinc-400 mb-6">Ingresos acumulados vs objetivo total · Faltan <strong className="text-zinc-600 dark:text-zinc-300">{diasRestantes}</strong> días</p>
 
                             <div className="space-y-8">
-                            <div className="flex flex-wrap gap-6 justify-center lg:justify-start">
+                            <div className="grid grid-cols-3 gap-4">
                                 {/* ── Termómetros de Usuarios ── */}
                                 {metricasSimulador && (() => {
                                     const META_U = 200_000;
@@ -1606,10 +1606,10 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                     return (
                                         <>
                                             {/* Tarjeta Usuarios Registrados */}
-                                            <div className="bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-5 flex-shrink-0">
+                                            <div className="bg-white dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-5 shadow-lg hover:shadow-xl transition-shadow">
                                                 <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">👥 Usuarios registrados · meta 200K</p>
                                                 <div className="flex items-end gap-6">
-                                                    <div className="relative flex flex-col items-center">
+                                                    <div className="relative flex flex-col items-center flex-shrink-0">
                                                         <div className="absolute right-full mr-2 text-right pointer-events-none" style={{ height: 320, width: 44 }}>
                                                             {[{ v: 200000, pct: 100 }, { v: 100000, pct: 50, goal: true }, { v: 0, pct: 0 }].map(({ v, pct, goal }) => (
                                                                 <span key={v} className={`absolute right-0 leading-none whitespace-nowrap ${goal ? 'text-[8px] text-cyan-400 font-bold' : 'text-[9px] text-zinc-400'}`} style={{ bottom: `calc(${pct}% - 4px)` }}>
@@ -1617,36 +1617,37 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                                 </span>
                                                             ))}
                                                         </div>
-                                                        <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320 }}>
+                                                        <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320, boxShadow: 'inset 3px 0 8px rgba(0,0,0,0.25), inset -3px 0 6px rgba(0,0,0,0.15)' }}>
                                                             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #1e3a8a 0% 0.5%, #1d4ed8 0.5% 5%, #3b82f6 5% 25%, #06b6d4 25% 50%, #14b8a6 50% 75%, #22c55e 75% 100%)' }} />
                                                             <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctTU}%` }} />
-                                                            {pctTU > 0.1 && <div className="absolute left-0 right-0 h-px bg-white/60" style={{ bottom: `${pctTU}%` }} />}
+                                                            {pctTU > 0.1 && <div className="absolute left-0 right-0 h-0.5 bg-white/70 blur-[0.5px]" style={{ bottom: `${pctTU}%` }} />}
                                                             <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '50%', borderTop: '1px dashed rgba(34,211,238,0.8)' }} />
+                                                            <div className="absolute inset-y-0 pointer-events-none" style={{ left: '8%', width: '26%', background: 'linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 70%, transparent 100%)' }} />
                                                         </div>
-                                                        <div className="w-8 h-8 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorTU }} />
+                                                        <div className="w-9 h-9 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorTU, boxShadow: `0 0 14px ${colorTU}90, inset 2px 2px 4px rgba(255,255,255,0.35), inset -2px -2px 4px rgba(0,0,0,0.25)` }} />
                                                     </div>
-                                                    <div className="flex flex-col justify-end gap-4 pb-10">
+                                                    <div className="flex flex-col justify-end gap-4 pb-10 flex-1 min-w-0">
                                                         <div>
                                                             <p className="text-3xl font-black transition-colors duration-[2000ms]" style={{ color: colorTU }}>{pctTU.toFixed(2)}%</p>
-                                                            <p className="text-xs text-zinc-400">completado</p>
+                                                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">completado</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-bold text-zinc-800 dark:text-white">{totalU.toLocaleString('es-CO')}</p>
-                                                            <p className="text-xs text-zinc-400">registrados</p>
+                                                            <p className="text-xl font-black text-zinc-900 dark:text-white">{totalU.toLocaleString('es-CO')}</p>
+                                                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">registrados</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-semibold text-zinc-500">{(META_U - totalU).toLocaleString('es-CO')}</p>
-                                                            <p className="text-xs text-zinc-400">faltante</p>
+                                                            <p className="text-base font-black text-zinc-600 dark:text-zinc-300">{(META_U - totalU).toLocaleString('es-CO')}</p>
+                                                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">faltante</p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Tarjeta Usuarios con Compras */}
-                                            <div className="bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-5 flex-shrink-0">
+                                            <div className="bg-white dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-5 shadow-lg hover:shadow-xl transition-shadow">
                                                 <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">💳 Usuarios con compras · meta 200K</p>
                                                 <div className="flex items-end gap-6">
-                                                    <div className="relative flex flex-col items-center">
+                                                    <div className="relative flex flex-col items-center flex-shrink-0">
                                                         <div className="absolute right-full mr-2 text-right pointer-events-none" style={{ height: 320, width: 44 }}>
                                                             {[{ v: 200000, pct: 100 }, { v: 10000, pct: 5, goal: true }, { v: 0, pct: 0 }].map(({ v, pct, goal }) => (
                                                                 <span key={v} className={`absolute right-0 leading-none whitespace-nowrap ${goal ? 'text-[8px] text-purple-400 font-bold' : 'text-[9px] text-zinc-400'}`} style={{ bottom: `calc(${pct}% - 4px)` }}>
@@ -1654,26 +1655,27 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                                 </span>
                                                             ))}
                                                         </div>
-                                                        <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320 }}>
+                                                        <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320, boxShadow: 'inset 3px 0 8px rgba(0,0,0,0.25), inset -3px 0 6px rgba(0,0,0,0.15)' }}>
                                                             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #4c1d95 0% 0.5%, #6d28d9 0.5% 5%, #7c3aed 5% 25%, #a855f7 25% 50%, #c026d3 50% 75%, #ec4899 75% 100%)' }} />
                                                             <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctPU}%` }} />
-                                                            {pctPU > 0.1 && <div className="absolute left-0 right-0 h-px bg-white/60" style={{ bottom: `${pctPU}%` }} />}
+                                                            {pctPU > 0.1 && <div className="absolute left-0 right-0 h-0.5 bg-white/70 blur-[0.5px]" style={{ bottom: `${pctPU}%` }} />}
                                                             <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '5%', borderTop: '1px dashed rgba(216,180,254,0.8)' }} />
+                                                            <div className="absolute inset-y-0 pointer-events-none" style={{ left: '8%', width: '26%', background: 'linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 70%, transparent 100%)' }} />
                                                         </div>
-                                                        <div className="w-8 h-8 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorPU }} />
+                                                        <div className="w-9 h-9 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorPU, boxShadow: `0 0 14px ${colorPU}90, inset 2px 2px 4px rgba(255,255,255,0.35), inset -2px -2px 4px rgba(0,0,0,0.25)` }} />
                                                     </div>
-                                                    <div className="flex flex-col justify-end gap-4 pb-10">
+                                                    <div className="flex flex-col justify-end gap-4 pb-10 flex-1 min-w-0">
                                                         <div>
                                                             <p className="text-3xl font-black transition-colors duration-[2000ms]" style={{ color: colorPU }}>{pctPU.toFixed(2)}%</p>
-                                                            <p className="text-xs text-zinc-400">completado</p>
+                                                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">completado</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-bold text-zinc-800 dark:text-white">{pagadosU.toLocaleString('es-CO')}</p>
-                                                            <p className="text-xs text-zinc-400">con compras</p>
+                                                            <p className="text-xl font-black text-zinc-900 dark:text-white">{pagadosU.toLocaleString('es-CO')}</p>
+                                                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">con compras</p>
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-semibold text-zinc-500">{pctConvU}%</p>
-                                                            <p className="text-xs text-zinc-400">conversión total</p>
+                                                            <p className="text-base font-black text-zinc-600 dark:text-zinc-300">{pctConvU}%</p>
+                                                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">conversión</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1683,11 +1685,10 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                 })()}
 
                                 {/* ── Termómetro Ingresos ── */}
-                                <div className="bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-5 flex-shrink-0">
+                                <div className="bg-white dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 p-5 shadow-lg hover:shadow-xl transition-shadow">
                                     <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">💰 Ingresos acumulados · meta $2.600MM</p>
                                     <div className="flex items-end gap-6">
-                                        <div className="relative flex flex-col items-center">
-                                            {/* Marcas de escala */}
+                                        <div className="relative flex flex-col items-center flex-shrink-0">
                                             <div className="absolute right-full mr-2 inset-y-0 flex flex-col justify-between py-0.5 text-right pointer-events-none" style={{ height: 320 }}>
                                                 {['$2.600MM', '$2.000MM', '$1.500MM', '$500MM', '$100MM', '$50MM', '$0'].map(l => (
                                                     l === '$100MM'
@@ -1697,31 +1698,27 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                         : <span key={l} className="text-[9px] text-zinc-400 leading-none whitespace-nowrap">{l}</span>
                                                 ))}
                                             </div>
-                                            {/* Tubo */}
-                                            <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320 }}>
+                                            <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320, boxShadow: 'inset 3px 0 8px rgba(0,0,0,0.25), inset -3px 0 6px rgba(0,0,0,0.15)' }}>
                                                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #DC2626 0% 1.92%, #EF4444 1.92% 3.85%, #F97316 3.85% 19.23%, #EAB308 19.23% 57.69%, #84CC16 57.69% 76.92%, #22C55E 76.92% 100%)' }} />
                                                 <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctMeta}%` }} />
-                                                {pctMeta > 1 && <div className="absolute left-0 right-0 h-px bg-white/60" style={{ bottom: `${pctMeta}%` }} />}
-                                                {/* First goal $100M = 3.846% desde el fondo */}
+                                                {pctMeta > 1 && <div className="absolute left-0 right-0 h-0.5 bg-white/70 blur-[0.5px]" style={{ bottom: `${pctMeta}%` }} />}
                                                 <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '3.846%', borderTop: '1px dashed rgba(251,191,36,0.75)' }} />
+                                                <div className="absolute inset-y-0 pointer-events-none" style={{ left: '8%', width: '26%', background: 'linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 70%, transparent 100%)' }} />
                                             </div>
-                                            {/* Bulbo */}
-                                            <div className="w-8 h-8 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorTermo }} />
+                                            <div className="w-9 h-9 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorTermo, boxShadow: `0 0 14px ${colorTermo}90, inset 2px 2px 4px rgba(255,255,255,0.35), inset -2px -2px 4px rgba(0,0,0,0.25)` }} />
                                         </div>
-
-                                        {/* Info junto al termómetro */}
-                                        <div className="flex flex-col justify-end gap-4 pb-10">
+                                        <div className="flex flex-col justify-end gap-4 pb-10 flex-1 min-w-0">
                                             <div>
                                                 <p className="text-3xl font-black transition-colors duration-[2000ms]" style={{ color: colorTermo }}>{pctMeta.toFixed(2)}%</p>
-                                                <p className="text-xs text-zinc-400">completado</p>
+                                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">completado</p>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-zinc-800 dark:text-white">{fp(ing)}</p>
-                                                <p className="text-xs text-zinc-400">ingresos actuales</p>
+                                                <p className="text-xl font-black text-zinc-900 dark:text-white">{fp(ing)}</p>
+                                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">ingresos actuales</p>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-semibold text-zinc-500">{fp(META_MUNDIAL - ing)}</p>
-                                                <p className="text-xs text-zinc-400">faltante</p>
+                                                <p className="text-base font-black text-zinc-600 dark:text-zinc-300">{fp(META_MUNDIAL - ing)}</p>
+                                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">faltante</p>
                                             </div>
                                             <div className="border-t border-zinc-200 dark:border-white/10 pt-3 space-y-1">
                                                 <p className="text-xs text-zinc-500">Ritmo actual: <strong className="text-zinc-700 dark:text-zinc-200">{fp(Math.round(ingDiario))}/día</strong></p>
