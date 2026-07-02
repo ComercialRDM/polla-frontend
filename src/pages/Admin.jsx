@@ -11,7 +11,8 @@ const GRUPOS_NAV = [
         id: 'overview', label: null,
         color: 'amber',
         secciones: [
-            { id: 'inicio', label: '🏠 Inicio' },
+            { id: 'inicio',     label: '🏠 Inicio' },
+            { id: 'checklist',  label: '📋 Growth Checklist' },
         ],
     },
     {
@@ -49,13 +50,6 @@ const GRUPOS_NAV = [
         color: 'red',
         secciones: [
             { id: 'seguridad', label: '🔐 Seguridad' },
-        ],
-    },
-    {
-        id: 'growth', label: 'Growth',
-        color: 'teal',
-        secciones: [
-            { id: 'checklist', label: '📋 Growth Checklist' },
         ],
     },
 ];
@@ -1596,7 +1590,8 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">🎯 Meta 2026 — $2.600.000.000</h2>
                             <p className="text-xs text-zinc-400 mb-6">Ingresos acumulados vs objetivo total · Faltan <strong className="text-zinc-600 dark:text-zinc-300">{diasRestantes}</strong> días</p>
 
-                            <div className="flex flex-col lg:flex-row gap-10">
+                            <div className="space-y-8">
+                            <div className="flex flex-wrap gap-10 justify-center lg:justify-start">
                                 {/* ── Termómetro Usuarios ── */}
                                 {metricasSimulador && (() => {
                                     const META_U = 200_000;
@@ -1733,9 +1728,10 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                     </div>
                                 </div>
 
-                                {/* KPIs + Canales */}
-                                <div className="flex-1 space-y-5">
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            </div>
+
+                            {/* Tacómetros KPI */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                         <GaugeKPI pct={pctRitmo} valor={`${Math.round(pctRitmo)}%`} label="Ritmo diario" nota={`${fp(Math.round(ingDiario))}/día`} color={colorRitmo} />
                                         <GaugeKPI pct={pctConv} valor={`${Math.round(pctConv)}%`} label="Conversión checkout" nota={`${Math.round(tasaRebote * 100)}% abandona`} color={colorConv} />
                                         <GaugeKPI pct={pctTrack} valor={`${Math.round(pctTrack)}%`} label="Proyección a meta" nota={isFinite(diasProyectados) ? `~${Math.round(diasProyectados)} días` : 'sin datos'} color={colorTrack} />
@@ -1844,7 +1840,6 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                             </div>
                                         );
                                     })()}
-                                </div>
                             </div>
                         </div>
 
