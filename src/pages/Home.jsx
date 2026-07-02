@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { obtenerSesion, cerrarSesion } from '../utils/sesion';
+import { cerrarSesionRemota } from '../api';
 import HeroPrediccion from '../components/HeroPrediccion';
 import ProximosPartidos from '../components/ProximosPartidos';
 import PlanesBono from '../components/PlanesBono';
@@ -41,8 +42,9 @@ export default function Home() {
     const sesion = obtenerSesion();
 
     function handleCerrarSesion() {
+        cerrarSesionRemota().catch(() => {});
         cerrarSesion();
-        navigate(0); // recarga la página
+        navigate(0);
     }
 
     return (

@@ -256,6 +256,7 @@ export default function Comprar() {
                     ref,
                     aff_token: affToken,
                     atribucion,
+                    acepta_terminos: aceptaTerminos,
                 });
                 if (data?.success && data.redirect_url) {
                     guardarSesionDePago(data);
@@ -277,6 +278,7 @@ export default function Comprar() {
                     ref,
                     aff_token: affToken,
                     atribucion,
+                    acepta_terminos: aceptaTerminos,
                 });
                 if (data?.success && data.redirect_url) {
                     guardarSesionDePago(data);
@@ -304,6 +306,7 @@ export default function Comprar() {
                     ref,
                     aff_token: affToken,
                     atribucion,
+                    acepta_terminos: aceptaTerminos,
                 });
                 if (data?.success) {
                     guardarSesionDePago(data);
@@ -329,6 +332,7 @@ export default function Comprar() {
                 ref,
                 aff_token: affToken,
                 atribucion,
+                acepta_terminos: aceptaTerminos,
             });
 
             if (data?.success && data.widget) {

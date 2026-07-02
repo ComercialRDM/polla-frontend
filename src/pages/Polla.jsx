@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, solicitarRegalo, misSolicitudesRegalo } from '../api';
+import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, solicitarRegalo, misSolicitudesRegalo, cerrarSesionRemota } from '../api';
 import InstalarApp from '../components/InstalarApp';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
@@ -57,6 +57,7 @@ export default function Polla() {
     const token = searchParams.get('token');
 
     function handleCerrarSesion() {
+        cerrarSesionRemota().catch(() => {});
         cerrarSesion();
         navigate('/');
     }

@@ -12,6 +12,7 @@ async function request(path, options = {}) {
     let res;
     try {
         res = await fetch(`${API_BASE}${path}`, {
+            credentials: 'include',
             ...rest,
             headers: { 'Content-Type': 'application/json', ...(headers || {}) },
         });
@@ -46,6 +47,10 @@ export function obtenerResumenUsuario() {
 
 export function obtenerMisPronosticos() {
     return request('/api/polla/mis-pronosticos', { headers: authHeader() });
+}
+
+export function cerrarSesionRemota() {
+    return request('/api/auth/logout', { method: 'POST' });
 }
 
 export function obtenerPartidosFlash() {

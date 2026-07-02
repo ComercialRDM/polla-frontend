@@ -240,6 +240,7 @@ export default function Registro() {
     function handleContinuarTelefono(e) {
         e.preventDefault();
         setError('');
+        if (!aceptaTerminos) { setError('Debes aceptar los Términos y Condiciones y la Política de Privacidad.'); return; }
         if (!nombre.trim()) { setError('Ingresa tu nombre completo.'); return; }
 
         setCelular(celularTelefono.trim());
