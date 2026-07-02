@@ -1603,14 +1603,20 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         {/* Marcas de escala */}
                                         <div className="absolute right-full mr-2 inset-y-0 flex flex-col justify-between py-0.5 text-right pointer-events-none" style={{ height: 320 }}>
                                             {['$2.600MM', '$2.000MM', '$1.500MM', '$500MM', '$100MM', '$50MM', '$0'].map(l => (
-                                                <span key={l} className="text-[9px] text-zinc-400 leading-none whitespace-nowrap">{l}</span>
+                                                l === '$100MM'
+                                                    ? <span key={l} className="text-[8px] text-amber-400 font-bold leading-none whitespace-nowrap">
+                                                        {l}<span className="block text-[6px] font-normal text-amber-300/80">↑ first goal</span>
+                                                      </span>
+                                                    : <span key={l} className="text-[9px] text-zinc-400 leading-none whitespace-nowrap">{l}</span>
                                             ))}
                                         </div>
                                         {/* Tubo */}
                                         <div className="relative w-12 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320 }}>
                                             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #DC2626 0% 1.92%, #EF4444 1.92% 3.85%, #F97316 3.85% 19.23%, #EAB308 19.23% 57.69%, #84CC16 57.69% 76.92%, #22C55E 76.92% 100%)' }} />
                                             <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctMeta}%` }} />
-                                            {pctMeta > 1 && <div className="absolute left-0 right-0 h-px bg-white/70" style={{ bottom: `${pctMeta}%` }} />}
+                                            {pctMeta > 1 && <div className="absolute left-0 right-0 h-px bg-white/60" style={{ bottom: `${pctMeta}%` }} />}
+                                            {/* First goal $100M = 3.846% desde el fondo */}
+                                            <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '3.846%', borderTop: '1px dashed rgba(251,191,36,0.75)' }} />
                                         </div>
                                         {/* Bulbo */}
                                         <div className="w-8 h-8 rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-1 transition-colors duration-[2000ms]" style={{ background: colorTermo }} />
@@ -1749,6 +1755,113 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                         );
                                     })()}
                                 </div>
+
+                                {/* ── Termómetro Usuarios ── */}
+                                {metricasSimulador && (() => {
+                                    const META_U = 200_000;
+                                    const totalU = metricasSimulador.totalUsuarios || 0;
+                                    const pagadosU = metricasSimulador.usuariosPagados || 0;
+                                    const pctTU = Math.min(100, (totalU / META_U) * 100);
+                                    const pctPU = Math.min(100, (pagadosU / META_U) * 100);
+                                    const pctConvU = totalU > 0 ? ((pagadosU / totalU) * 100).toFixed(1) : '0.0';
+                                    const colorTU = pctTU >= 75 ? '#22c55e' : pctTU >= 50 ? '#14b8a6' : pctTU >= 25 ? '#06b6d4' : pctTU >= 5 ? '#3b82f6' : '#1e40af';
+                                    const colorPU = pctPU >= 50 ? '#ec4899' : pctPU >= 25 ? '#c026d3' : pctPU >= 5 ? '#9333ea' : '#7c3aed';
+                                    const fU = n => n === 0 ? '0' : n >= 1000 ? `${n / 1000}K` : String(n);
+                                    const TICKS_U = [200000, 180000, 160000, 140000, 120000, 100000, 80000, 60000, 40000, 20000, 10000, 1000, 0];
+
+                                    return (
+                                        <div className="flex items-end gap-4 justify-center lg:justify-start flex-shrink-0">
+                                            {/* Info panel */}
+                                            <div className="flex flex-col justify-end gap-3 pb-10 text-right">
+                                                <div>
+                                                    <p className="text-3xl font-black transition-colors duration-[2000ms]" style={{ color: colorTU }}>{pctTU.toFixed(2)}%</p>
+                                                    <p className="text-xs text-zinc-400">completado</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-zinc-800 dark:text-white">{totalU.toLocaleString('es-CO')}</p>
+                                                    <p className="text-xs text-zinc-400">usuarios registrados</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-zinc-500">{(META_U - totalU).toLocaleString('es-CO')}</p>
+                                                    <p className="text-xs text-zinc-400">faltante</p>
+                                                </div>
+                                                <div className="border-t border-zinc-200 dark:border-white/10 pt-2 space-y-0.5">
+                                                    <p className="text-xs font-bold" style={{ color: colorPU }}>{pagadosU.toLocaleString('es-CO')} pagos</p>
+                                                    <p className="text-xs text-zinc-500">{pctConvU}% conversión</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Tubos + etiquetas */}
+                                            <div className="flex flex-col items-start">
+                                                <div className="flex" style={{ height: 320 }}>
+                                                    {/* Etiquetas izquierda — usuarios totales */}
+                                                    <div className="relative flex-shrink-0" style={{ width: 34, height: 320 }}>
+                                                        {TICKS_U.map(v => {
+                                                            const pct = (v / META_U) * 100;
+                                                            const isGoal = v === 100000;
+                                                            return (
+                                                                <span key={v}
+                                                                    className={`absolute right-1 leading-none whitespace-nowrap text-right ${isGoal ? 'text-[7px] text-cyan-400 font-bold' : 'text-[8px] text-zinc-400'}`}
+                                                                    style={{ bottom: `calc(${pct}% - 4px)` }}
+                                                                >
+                                                                    {fU(v)}
+                                                                    {isGoal && <span className="block text-[6px] text-cyan-300/80">1st goal</span>}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Tubo usuarios totales */}
+                                                    <div className="relative w-5 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320 }}>
+                                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #1e3a8a 0% 0.5%, #1d4ed8 0.5% 5%, #3b82f6 5% 25%, #06b6d4 25% 50%, #14b8a6 50% 75%, #22c55e 75% 100%)' }} />
+                                                        <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctTU}%` }} />
+                                                        {pctTU > 0.1 && <div className="absolute left-0 right-0 h-px bg-white/60" style={{ bottom: `${pctTU}%` }} />}
+                                                        {/* First goal 100K = 50% */}
+                                                        <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '50%', borderTop: '1px dashed rgba(34,211,238,0.8)' }} />
+                                                    </div>
+
+                                                    {/* Tubo usuarios pagados */}
+                                                    <div className="relative w-5 rounded-full overflow-hidden border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800" style={{ height: 320, marginLeft: 6 }}>
+                                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #4c1d95 0% 0.5%, #6d28d9 0.5% 5%, #7c3aed 5% 25%, #a855f7 25% 50%, #c026d3 50% 75%, #ec4899 75% 100%)' }} />
+                                                        <div className="absolute top-0 left-0 right-0 bg-zinc-100 dark:bg-zinc-800 transition-all duration-[2000ms]" style={{ height: `${100 - pctPU}%` }} />
+                                                        {pctPU > 0.1 && <div className="absolute left-0 right-0 h-px bg-white/60" style={{ bottom: `${pctPU}%` }} />}
+                                                        {/* First goal 10K = 5% */}
+                                                        <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '5%', borderTop: '1px dashed rgba(216,180,254,0.8)' }} />
+                                                    </div>
+
+                                                    {/* Etiquetas derecha — usuarios pagados */}
+                                                    <div className="relative flex-shrink-0" style={{ width: 36, height: 320, marginLeft: 4 }}>
+                                                        {TICKS_U.map(v => {
+                                                            const pct = (v / META_U) * 100;
+                                                            const isGoal = v === 10000;
+                                                            return (
+                                                                <span key={v}
+                                                                    className={`absolute left-1 leading-none whitespace-nowrap ${isGoal ? 'text-[7px] text-purple-400 font-bold' : 'text-[8px] text-zinc-400'}`}
+                                                                    style={{ bottom: `calc(${pct}% - 4px)` }}
+                                                                >
+                                                                    {fU(v)}
+                                                                    {isGoal && <span className="block text-[6px] text-purple-300/80">1st goal</span>}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                {/* Bulbos */}
+                                                <div className="flex mt-1" style={{ paddingLeft: 34 }}>
+                                                    <div className="w-5 h-5 rounded-full border-2 border-zinc-300 dark:border-zinc-600 transition-colors duration-[2000ms]" style={{ background: colorTU }} />
+                                                    <div className="w-5 h-5 rounded-full border-2 border-zinc-300 dark:border-zinc-600 transition-colors duration-[2000ms]" style={{ background: colorPU, marginLeft: 6 }} />
+                                                </div>
+
+                                                {/* Leyenda */}
+                                                <div className="flex gap-3 mt-1 text-[9px]" style={{ paddingLeft: 34 }}>
+                                                    <span className="text-zinc-400">● Registrados</span>
+                                                    <span style={{ color: colorPU }}>● Pagados</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         </div>
 
