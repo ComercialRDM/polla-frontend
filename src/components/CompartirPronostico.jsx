@@ -127,14 +127,77 @@ export default function CompartirPronostico({
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(60, 235); ctx.lineTo(W - 60, 235); ctx.stroke();
 
-        // "MI PRONÓSTICO" — desplazado 65px arriba vs versión anterior
+        // "MI PRONÓSTICO"
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 100px Arial';
         ctx.fillText('MI PRONÓSTICO', W / 2, 315);
 
-        // ── BANDERAS (flagCY=495, antes 560) ──
+        // ── SECCIÓN USUARIO (justo debajo del título) ──
+        // Separador sutil entre título y avatar
+        const sep3 = ctx.createLinearGradient(60, 0, W - 60, 0);
+        sep3.addColorStop(0, 'rgba(255,255,255,0)');
+        sep3.addColorStop(0.5, 'rgba(255,255,255,0.07)');
+        sep3.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.strokeStyle = sep3;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(60, 350); ctx.lineTo(W - 60, 350); ctx.stroke();
+
+        const uCX = W / 2, uCY = 440, uR = 65;
+
+        // Anillo dorado exterior
+        ctx.shadowColor = 'rgba(252,209,22,0.45)';
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = '#FCD116';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(uCX, uCY, uR + 7, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Círculo de fondo oscuro
+        ctx.fillStyle = '#12122a';
+        ctx.beginPath();
+        ctx.arc(uCX, uCY, uR, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (imgUsuario) {
+            drawCircleImg(ctx, imgUsuario, uCX, uCY, uR);
+        } else if (nombreUsuario) {
+            const iniciales = nombreUsuario.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+            ctx.fillStyle = '#FCD116';
+            ctx.font = 'bold 52px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(iniciales, uCX, uCY);
+            ctx.textBaseline = 'alphabetic';
+        }
+
+        // Nombre del usuario
+        if (nombreUsuario) {
+            const maxNW = W - 120;
+            let nameSize = 54;
+            ctx.font = `bold ${nameSize}px Arial`;
+            while (ctx.measureText(nombreUsuario).width > maxNW && nameSize > 28) {
+                nameSize -= 2;
+                ctx.font = `bold ${nameSize}px Arial`;
+            }
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(nombreUsuario, uCX, 575);
+        }
+
+        // Separador entre usuario y banderas
+        const sep3b = ctx.createLinearGradient(60, 0, W - 60, 0);
+        sep3b.addColorStop(0, 'rgba(255,255,255,0)');
+        sep3b.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+        sep3b.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.strokeStyle = sep3b;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(60, 618); ctx.lineTo(W - 60, 618); ctx.stroke();
+
+        // ── BANDERAS ──
         const flagR = 118;
-        const lCX = 255, vCX = W - 255, flagCY = 495;
+        const lCX = 255, vCX = W - 255, flagCY = 770;
 
         [lCX, vCX].forEach((cx) => {
             ctx.shadowColor = 'rgba(252,209,22,0.5)';
@@ -165,10 +228,10 @@ export default function CompartirPronostico({
         ctx.fillStyle = '#FCD116';
         ctx.font = 'bold 72px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('VS', W / 2, 503);
+        ctx.fillText('VS', W / 2, 778);
         ctx.shadowBlur = 0;
 
-        // Nombres de equipos (y=655, antes 720)
+        // Nombres de equipos
         const drawFit = (text, cx, y, maxW) => {
             let size = 58;
             ctx.font = `bold ${size}px Arial`;
@@ -180,106 +243,51 @@ export default function CompartirPronostico({
             ctx.textAlign = 'center';
             ctx.fillText(text, cx, y);
         };
-        drawFit(equipoLocal, lCX, 655, 430);
-        drawFit(equipoVisitante, vCX, 655, 430);
+        drawFit(equipoLocal, lCX, 932, 430);
+        drawFit(equipoVisitante, vCX, 932, 430);
 
-        // ── TARJETA MARCADOR (y=707, antes 772) ──
+        // ── TARJETA MARCADOR ──
         ctx.shadowColor = 'rgba(252,209,22,0.65)';
         ctx.shadowBlur = 55;
         ctx.fillStyle = '#FCD116';
-        rr(68, 707, W - 136, 308, 36);
+        rr(68, 978, W - 136, 290, 36);
         ctx.fill();
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#07070f';
-        rr(76, 715, W - 152, 292, 30);
+        rr(76, 986, W - 152, 274, 30);
         ctx.fill();
 
         ctx.shadowColor = 'rgba(252,209,22,0.45)';
         ctx.shadowBlur = 18;
         ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 215px monospace';
+        ctx.font = 'bold 200px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`${localPred}  -  ${visitantePred}`, W / 2, 935);
+        ctx.fillText(`${localPred}  -  ${visitantePred}`, W / 2, 1190);
         ctx.shadowBlur = 0;
 
-        // ── SEPARADOR (y=1073, antes 1138) ──
+        // ── SEPARADOR ──
         const sep2 = ctx.createLinearGradient(60, 0, W - 60, 0);
         sep2.addColorStop(0, 'rgba(255,255,255,0)');
         sep2.addColorStop(0.5, 'rgba(255,255,255,0.1)');
         sep2.addColorStop(1, 'rgba(255,255,255,0)');
         ctx.strokeStyle = sep2;
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(60, 1073); ctx.lineTo(W - 60, 1073); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(60, 1318); ctx.lineTo(W - 60, 1318); ctx.stroke();
 
-        // ── LLAMADA A LA ACCIÓN (desplazada -65) ──
+        // ── LLAMADA A LA ACCIÓN ──
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 76px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('¿Y TÚ, QUÉ MARCADOR', W / 2, 1210);
-        ctx.fillText('CREES QUE VA A QUEDAR?', W / 2, 1297);
+        ctx.fillText('¿Y TÚ, QUÉ MARCADOR', W / 2, 1440);
+        ctx.fillText('CREES QUE VA A QUEDAR?', W / 2, 1527);
 
         ctx.fillStyle = '#aaaaaa';
         ctx.font = '46px Arial';
-        ctx.fillText('Compra tu bono y participa en la', W / 2, 1395);
-        ctx.fillText('Polla Mundialista La Retoucherie 2026', W / 2, 1455);
+        ctx.fillText('Compra tu bono y participa en la', W / 2, 1617);
+        ctx.fillText('Polla Mundialista La Retoucherie 2026', W / 2, 1677);
 
-        // ── SECCIÓN USUARIO ──
-        // Separador sutil antes del avatar
-        const sep3 = ctx.createLinearGradient(60, 0, W - 60, 0);
-        sep3.addColorStop(0, 'rgba(255,255,255,0)');
-        sep3.addColorStop(0.5, 'rgba(255,255,255,0.07)');
-        sep3.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.strokeStyle = sep3;
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(60, 1495); ctx.lineTo(W - 60, 1495); ctx.stroke();
-
-        const uCX = W / 2, uCY = 1572, uR = 65;
-
-        // Anillo dorado exterior
-        ctx.shadowColor = 'rgba(252,209,22,0.45)';
-        ctx.shadowBlur = 20;
-        ctx.strokeStyle = '#FCD116';
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.arc(uCX, uCY, uR + 7, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // Círculo de fondo oscuro
-        ctx.fillStyle = '#12122a';
-        ctx.beginPath();
-        ctx.arc(uCX, uCY, uR, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (imgUsuario) {
-            drawCircleImg(ctx, imgUsuario, uCX, uCY, uR);
-        } else if (nombreUsuario) {
-            // Iniciales cuando no hay foto
-            const iniciales = nombreUsuario.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
-            ctx.fillStyle = '#FCD116';
-            ctx.font = 'bold 52px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(iniciales, uCX, uCY);
-            ctx.textBaseline = 'alphabetic';
-        }
-
-        // Nombre del usuario
-        if (nombreUsuario) {
-            const maxNW = W - 120;
-            let nameSize = 54;
-            ctx.font = `bold ${nameSize}px Arial`;
-            while (ctx.measureText(nombreUsuario).width > maxNW && nameSize > 28) {
-                nameSize -= 2;
-                ctx.font = `bold ${nameSize}px Arial`;
-            }
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario, uCX, 1705);
-        }
-
-        // ── BOTÓN URL (y=1748) ──
+        // ── BOTÓN URL ──
         ctx.shadowColor = 'rgba(252,209,22,0.55)';
         ctx.shadowBlur = 35;
         ctx.fillStyle = '#FCD116';
