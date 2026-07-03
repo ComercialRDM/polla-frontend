@@ -115,6 +115,7 @@ function AppRoutes() {
     // /como-funciona tiene su propio boton fijo de compra en movil (CTAFijoMovil);
     // se desplaza el de WhatsApp hacia arriba para que no se encimen.
     const conCTAFijo = location.pathname === '/' || location.pathname === '/como-funciona';
+    const ocultarWhatsApp = location.pathname === '/colombia';
 
     return (
         <>
@@ -148,7 +149,7 @@ function AppRoutes() {
                     <Route path="/colombia" element={<ColombiaLanding />} />
                 </Routes>
             </Suspense>
-            <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />
+            {!ocultarWhatsApp && <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />}
             <ThemeToggle />
             {mostrarBottomNav && <BottomNav />}
             <CookieBanner />

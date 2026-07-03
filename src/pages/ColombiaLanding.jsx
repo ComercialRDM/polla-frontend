@@ -6,8 +6,6 @@ import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 
-const SCORES = Array.from({ length: 16 }, (_, i) => i);
-
 function esColombia(p) {
     const loc = (p.equipo_local || '').toLowerCase();
     const vis = (p.equipo_visitante || '').toLowerCase();
@@ -20,6 +18,27 @@ function formatFechaHora(iso) {
         weekday: 'long', day: '2-digit', month: 'long',
         hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota',
     });
+}
+
+function GolInput({ value, onChange }) {
+    return (
+        <input
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            min="0"
+            max="20"
+            placeholder="0"
+            value={value}
+            onChange={e => {
+                const v = e.target.value;
+                if (v === '' || (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 20)) {
+                    onChange(v);
+                }
+            }}
+            className="w-full mt-1 rounded-xl bg-zinc-800 border border-white/10 text-white font-black text-3xl text-center py-3 focus:outline-none focus:ring-2 focus:ring-[#FCD116] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+    );
 }
 
 export default function ColombiaLanding() {
@@ -41,7 +60,6 @@ export default function ColombiaLanding() {
         obtenerPartidos()
             .then(d => {
                 if (!d?.success) { setSinPartido(true); return; }
-                // Buscar partido de Colombia activo (próximo o en menos de 24h)
                 const ahora = Date.now();
                 const col = d.partidos
                     .filter(p => p.estado === 'activo' && esColombia(p))
@@ -62,7 +80,12 @@ export default function ColombiaLanding() {
         if (!apellido.trim()) return setErrorMsg('Ingresa tu apellido.');
         const cel = celular.replace(/[^0-9]/g, '');
         if (cel.length < 7) return setErrorMsg('Ingresa tu número de WhatsApp válido.');
-        if (localGol === '' || visitanteGol === '') return setErrorMsg('Elige el marcador completo.');
+        if (localGol === '' || visitanteGol === '') return setErrorMsg('Ingresa el marcador completo.');
+        const predLocal = parseInt(localGol, 10);
+        const predVisitante = parseInt(visitanteGol, 10);
+        if (isNaN(predLocal) || isNaN(predVisitante) || predLocal < 0 || predVisitante < 0) {
+            return setErrorMsg('El marcador debe ser un número válido.');
+        }
 
         setEnviando(true);
         try {
@@ -74,8 +97,8 @@ export default function ColombiaLanding() {
                     apellido: apellido.trim(),
                     celular: cel,
                     partido_id: partido.id,
-                    pred_local: Number(localGol),
-                    pred_visitante: Number(visitanteGol),
+                    pred_local: predLocal,
+                    pred_visitante: predVisitante,
                 }),
             });
             const data = await res.json();
@@ -92,7 +115,7 @@ export default function ColombiaLanding() {
         }
     }
 
-    // ── Cargando ────────────────────────────────────────────────────────────
+    // ── Cargando ─────────────────────────────────────────────────────────────
     if (cargando) {
         return (
             <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
@@ -101,7 +124,7 @@ export default function ColombiaLanding() {
         );
     }
 
-    // ── Sin partido disponible ───────────────────────────────────────────────
+    // ── Sin partido ───────────────────────────────────────────────────────────
     if (sinPartido || !partido) {
         return (
             <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-6 text-center gap-4">
@@ -113,19 +136,16 @@ export default function ColombiaLanding() {
         );
     }
 
-    const esLocal = partido.equipo_local.toLowerCase() === 'colombia';
-    const rival = esLocal ? partido.equipo_visitante : partido.equipo_local;
     const ahoraMs = Date.now();
     const inicioMs = new Date(partido.fecha_hora_inicio).getTime();
     const cierraEn5min = inicioMs - ahoraMs < 5 * 60 * 1000;
 
-    // ── Resultado: mostrar card de compartir ────────────────────────────────
+    // ── Pantalla de éxito ─────────────────────────────────────────────────────
     if (resultado) {
         const equipoLocal = resultado.partido.equipo_local;
         const equipoVisitante = resultado.partido.equipo_visitante;
         return (
             <div className="min-h-screen bg-zinc-950 flex flex-col items-center pb-16">
-                {/* Barra Colombia */}
                 <div className="w-full h-1.5 flex">
                     <div className="flex-1 bg-[#FCD116]" />
                     <div className="flex-1 bg-[#003087]" />
@@ -133,7 +153,7 @@ export default function ColombiaLanding() {
                 </div>
 
                 <div className="w-full max-w-md px-4 mt-8 flex flex-col items-center gap-5">
-                    <img src={logoRetoucherie} alt="La Retoucherie" className="h-16 w-16 object-cover rounded-2xl ring-2 ring-[#FCD116]/50" />
+                    <img src={logoRetoucherie} alt="La Retoucherie" className="h-20 w-20 object-cover rounded-2xl ring-2 ring-[#FCD116]/50 shadow-xl" />
 
                     <div className="text-center">
                         <p className="text-[#FCD116] font-black text-xs uppercase tracking-widest mb-1">
@@ -145,7 +165,6 @@ export default function ColombiaLanding() {
                         </h1>
                     </div>
 
-                    {/* Card marcador */}
                     <div className="w-full rounded-2xl bg-zinc-900 border border-[#FCD116]/30 p-5">
                         <p className="text-zinc-500 text-xs text-center mb-3 uppercase tracking-widest">Tu marcador</p>
                         <div className="flex items-center justify-between gap-2">
@@ -165,7 +184,6 @@ export default function ColombiaLanding() {
                         </div>
                     </div>
 
-                    {/* Compartir */}
                     <div className="w-full">
                         <p className="text-white font-bold text-sm mb-2 text-center">Comparte tu pronóstico</p>
                         <CompartirPronostico
@@ -179,7 +197,6 @@ export default function ColombiaLanding() {
                         />
                     </div>
 
-                    {/* CTA comprar */}
                     <div className="w-full rounded-2xl bg-gradient-to-br from-[#FCD116]/10 to-[#FCD116]/5 border border-[#FCD116]/30 p-5 text-center">
                         <p className="text-[#FCD116] font-black text-sm mb-1">¿Quieres ganar parte del pozo?</p>
                         <p className="text-zinc-400 text-xs mb-4">
@@ -199,40 +216,42 @@ export default function ColombiaLanding() {
         );
     }
 
-    // ── Formulario ───────────────────────────────────────────────────────────
+    // ── Formulario ────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-zinc-950 pb-16 flex flex-col items-center">
-            {/* Barra Colombia */}
+            {/* Franja tricolor */}
             <div className="w-full h-1.5 flex">
                 <div className="flex-1 bg-[#FCD116]" />
                 <div className="flex-1 bg-[#003087]" />
                 <div className="flex-1 bg-[#CE1126]" />
             </div>
 
-            {/* Hero */}
-            <div className="w-full max-w-md px-4 mt-6 flex flex-col items-center gap-5">
+            <div className="w-full max-w-md px-4 mt-7 flex flex-col items-center gap-6">
 
-                {/* Logo + título */}
+                {/* Logo + marca */}
                 <div className="flex flex-col items-center text-center gap-2">
-                    <img src={logoRetoucherie} alt="La Retoucherie" className="h-16 w-16 object-cover rounded-2xl ring-2 ring-[#FCD116]/40 shadow-lg" />
-                    <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Polla Mundialista · La Retoucherie</p>
+                    <img
+                        src={logoRetoucherie}
+                        alt="La Retoucherie"
+                        className="h-24 w-24 object-cover rounded-2xl ring-2 ring-[#FCD116]/50 shadow-[0_0_24px_rgba(252,209,22,0.2)]"
+                    />
+                    <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mt-1">
+                        Polla Mundialista · La Retoucherie
+                    </p>
                 </div>
 
-                {/* Card del partido */}
+                {/* Card partido */}
                 <div className="w-full rounded-2xl bg-zinc-900 border border-white/5 overflow-hidden">
-                    {/* Fecha */}
-                    <div className="bg-[#FCD116]/10 border-b border-[#FCD116]/20 px-4 py-2 text-center">
+                    <div className="bg-[#FCD116]/10 border-b border-[#FCD116]/20 px-4 py-2.5 text-center">
                         <p className="text-[#FCD116] text-xs font-bold uppercase tracking-wide">
                             {formatFechaHora(partido.fecha_hora_inicio)} · Colombia hora
                         </p>
                     </div>
 
-                    <div className="px-4 py-6">
-                        <p className="text-zinc-500 text-[10px] text-center uppercase tracking-widest mb-4">
-                            {partido.fase?.replace('_', ' ') || 'Fase de grupos'} · Mundial 2026
+                    <div className="px-4 py-7">
+                        <p className="text-zinc-500 text-[10px] text-center uppercase tracking-widest mb-5">
+                            {partido.fase?.replace(/_/g, ' ') || 'Fase de grupos'} · Mundial 2026
                         </p>
-
-                        {/* Banderas y nombre */}
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex flex-col items-center gap-2 flex-1">
                                 <Bandera equipo={partido.equipo_local} className="w-16 h-16" />
@@ -262,38 +281,24 @@ export default function ColombiaLanding() {
                         <p className="text-zinc-400 text-sm mt-1">Las predicciones cierran 5 minutos antes del pitazo.</p>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-                        <div>
-                            <p className="text-white font-bold text-sm mb-3 text-center">
-                                🇨🇴 ¿Cuál crees que va a ser el marcador?
-                            </p>
+                    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
 
-                            {/* Marcador selector */}
-                            <div className="flex items-center justify-center gap-3 bg-zinc-900 border border-[#FCD116]/30 rounded-2xl px-4 py-5">
+                        {/* Selector de marcador */}
+                        <div className="rounded-2xl bg-zinc-900 border border-[#FCD116]/30 px-4 py-5">
+                            <p className="text-white font-bold text-sm text-center mb-4">
+                                ¿Cuál crees que va a ser el marcador?
+                            </p>
+                            <div className="flex items-center gap-3">
                                 <div className="flex flex-col items-center gap-1 flex-1">
                                     <Bandera equipo={partido.equipo_local} className="w-8 h-8" />
                                     <p className="text-zinc-400 text-[10px] text-center">{partido.equipo_local}</p>
-                                    <select
-                                        value={localGol}
-                                        onChange={e => setLocalGol(e.target.value)}
-                                        className="w-full mt-1 rounded-xl bg-zinc-800 border border-white/10 text-white font-black text-2xl text-center py-2 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
-                                    >
-                                        <option value="">–</option>
-                                        {SCORES.map(n => <option key={n} value={n}>{n}</option>)}
-                                    </select>
+                                    <GolInput value={localGol} onChange={setLocalGol} />
                                 </div>
-                                <span className="text-zinc-600 font-black text-3xl">:</span>
+                                <span className="text-zinc-600 font-black text-3xl pb-1">:</span>
                                 <div className="flex flex-col items-center gap-1 flex-1">
                                     <Bandera equipo={partido.equipo_visitante} className="w-8 h-8" />
                                     <p className="text-zinc-400 text-[10px] text-center">{partido.equipo_visitante}</p>
-                                    <select
-                                        value={visitanteGol}
-                                        onChange={e => setVisitanteGol(e.target.value)}
-                                        className="w-full mt-1 rounded-xl bg-zinc-800 border border-white/10 text-white font-black text-2xl text-center py-2 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
-                                    >
-                                        <option value="">–</option>
-                                        {SCORES.map(n => <option key={n} value={n}>{n}</option>)}
-                                    </select>
+                                    <GolInput value={visitanteGol} onChange={setVisitanteGol} />
                                 </div>
                             </div>
                         </div>
@@ -307,6 +312,7 @@ export default function ColombiaLanding() {
                                     <label className="block text-xs text-zinc-500 mb-1">Nombre</label>
                                     <input
                                         type="text"
+                                        autoComplete="given-name"
                                         placeholder="Ej: Juliana"
                                         value={nombre}
                                         onChange={e => setNombre(e.target.value)}
@@ -317,6 +323,7 @@ export default function ColombiaLanding() {
                                     <label className="block text-xs text-zinc-500 mb-1">Apellido</label>
                                     <input
                                         type="text"
+                                        autoComplete="family-name"
                                         placeholder="Ej: Pérez"
                                         value={apellido}
                                         onChange={e => setApellido(e.target.value)}
@@ -333,6 +340,8 @@ export default function ColombiaLanding() {
                                     </span>
                                     <input
                                         type="tel"
+                                        inputMode="numeric"
+                                        autoComplete="tel-national"
                                         placeholder="3001234567"
                                         value={celular}
                                         onChange={e => setCelular(e.target.value)}
@@ -353,7 +362,7 @@ export default function ColombiaLanding() {
                             disabled={enviando}
                             className="w-full py-4 rounded-xl font-black text-zinc-950 text-base bg-[#FCD116] shadow-[0_0_24px_rgba(252,209,22,0.35)] hover:bg-yellow-300 active:scale-95 transition-all disabled:opacity-60"
                         >
-                            {enviando ? 'Registrando...' : '🇨🇴 Registrar mi pronóstico'}
+                            {enviando ? 'Registrando...' : 'Registrar mi pronóstico'}
                         </button>
 
                         <p className="text-zinc-600 text-[10px] text-center leading-relaxed px-2">
@@ -364,7 +373,6 @@ export default function ColombiaLanding() {
                     </form>
                 )}
 
-                {/* Footer */}
                 <div className="w-full border-t border-white/5 pt-4 text-center">
                     <p className="text-zinc-600 text-[10px]">www.ganaconretoucherie.com</p>
                 </div>
