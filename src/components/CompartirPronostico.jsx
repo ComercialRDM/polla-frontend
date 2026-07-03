@@ -77,31 +77,33 @@ export default function CompartirPronostico({
         // ── FONDO: imagen plantilla diseñada ──
         if (imgFondo) ctx.drawImage(imgFondo, 0, 0, W, H);
 
+        // Coordenadas exactas medidas del template 1024×1536
+        const flagR = 70;
+        const lCX = 281, vCX = 745, flagCY = 693;
+
         // ── NOMBRE DEL USUARIO (entre "MI PASIÓN" y las banderas) ──
         if (nombreUsuario) {
-            ctx.fillStyle = 'rgba(0,0,0,0.48)';
-            ctx.fillRect(0, 468, W, 118);
-
-            let userSize = 52;
+            let userSize = 46;
             ctx.font = `bold ${userSize}px Arial`;
-            while (ctx.measureText(nombreUsuario).width > W - 60 && userSize > 24) {
+            while (ctx.measureText(nombreUsuario).width > W - 80 && userSize > 22) {
                 userSize -= 2;
                 ctx.font = `bold ${userSize}px Arial`;
             }
+            ctx.shadowColor = 'rgba(0,0,0,0.92)';
+            ctx.shadowBlur = 22;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 3;
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario.toUpperCase(), W / 2, 548);
+            ctx.fillText(nombreUsuario.toUpperCase(), W / 2, 550);
+            ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
         }
-
-        // Coordenadas exactas medidas del template 1024×1536
-        const flagR = 100;
-        const lCX = 281, vCX = 745, flagCY = 693;
 
         // Cubrir banderas placeholder con círculo oscuro
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 12, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 15, 0, Math.PI * 2);
             ctx.fill();
         });
 
@@ -132,16 +134,16 @@ export default function CompartirPronostico({
         else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR);
 
         // ── NOMBRES DE EQUIPOS ──
-        const nameY = 847;
+        const nameY = 830;
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
-            ctx.fillRect(cx - 200, nameY - 44, 400, 56);
+            ctx.fillRect(cx - 180, nameY - 40, 360, 52);
         });
 
         const drawFit = (text, cx, y, maxW) => {
-            let size = 52;
+            let size = 44;
             ctx.font = `bold ${size}px Arial`;
-            while (ctx.measureText(text).width > maxW && size > 22) {
+            while (ctx.measureText(text).width > maxW && size > 20) {
                 size -= 2;
                 ctx.font = `bold ${size}px Arial`;
             }
@@ -149,23 +151,21 @@ export default function CompartirPronostico({
             ctx.textAlign = 'center';
             ctx.fillText(text, cx, y);
         };
-        drawFit(equipoLocal.toUpperCase(), lCX, nameY, 380);
-        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 380);
+        drawFit(equipoLocal.toUpperCase(), lCX, nameY, 340);
+        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 340);
 
         // ── MARCADOR ──
-        // Cubre exactamente el score card del template (medido: top=878, bottom=1028)
         ctx.fillStyle = '#050505';
         ctx.fillRect(25, 878, 974, 150);
 
         ctx.shadowColor = 'rgba(252,209,22,0.65)';
-        ctx.shadowBlur = 28;
+        ctx.shadowBlur = 24;
         ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 130px monospace';
+        ctx.font = 'bold 108px monospace';
         ctx.textAlign = 'center';
-        // Números en posiciones exactas medidas del template
-        ctx.fillText(String(localPred),   297, 988);
-        ctx.fillText('–',                 W / 2, 988);
-        ctx.fillText(String(visitantePred), 724, 988);
+        ctx.fillText(String(localPred),     297, 982);
+        ctx.fillText('–',                   W / 2, 982);
+        ctx.fillText(String(visitantePred), 724, 982);
         ctx.shadowBlur = 0;
 
 
