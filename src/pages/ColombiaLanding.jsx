@@ -311,7 +311,7 @@ export default function ColombiaLanding() {
                                         placeholder="Ej: Juliana"
                                         value={nombre}
                                         onChange={e => setNombre(e.target.value)}
-                                        className="w-full rounded-xl bg-zinc-800 border border-white/10 px-3 py-2.5 text-white text-sm placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                                        className="w-full rounded-xl bg-zinc-800 border border-white/10 px-3 py-2.5 text-white text-base placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
                                     />
                                 </div>
                                 <div>
@@ -322,7 +322,7 @@ export default function ColombiaLanding() {
                                         placeholder="Ej: Pérez"
                                         value={apellido}
                                         onChange={e => setApellido(e.target.value)}
-                                        className="w-full rounded-xl bg-zinc-800 border border-white/10 px-3 py-2.5 text-white text-sm placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                                        className="w-full rounded-xl bg-zinc-800 border border-white/10 px-3 py-2.5 text-white text-base placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
                                     />
                                 </div>
                             </div>
@@ -340,7 +340,7 @@ export default function ColombiaLanding() {
                                         placeholder="3001234567"
                                         value={celular}
                                         onChange={e => setCelular(e.target.value)}
-                                        className="flex-1 rounded-r-xl bg-zinc-800 border border-white/10 px-3 py-2.5 text-white text-sm placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                                        className="flex-1 rounded-r-xl bg-zinc-800 border border-white/10 px-3 py-2.5 text-white text-base placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
                                     />
                                 </div>
                             </div>
