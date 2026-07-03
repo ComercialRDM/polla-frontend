@@ -138,16 +138,16 @@ export default function CompartirPronostico({
         drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 400);
 
         // ── MARCADOR ──
-        // Cubrir números placeholder dentro de la tarjeta
+        // Cubre placeholder score del template (~y=840-970) + texto "¿Y TÚ QUÉ..." (~y=1000-1080)
         ctx.fillStyle = '#050505';
-        ctx.fillRect(90, 976, 844, 152);
+        ctx.fillRect(80, 820, 864, 290);
 
         ctx.shadowColor = 'rgba(252,209,22,0.65)';
         ctx.shadowBlur = 26;
         ctx.fillStyle = '#FCD116';
         ctx.font = 'bold 158px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`${localPred}  –  ${visitantePred}`, W / 2, 1086);
+        ctx.fillText(`${localPred}  –  ${visitantePred}`, W / 2, 985);
         ctx.shadowBlur = 0;
 
         // ── NOMBRE DEL USUARIO ──
@@ -161,11 +161,11 @@ export default function CompartirPronostico({
             const nw = ctx.measureText(nombreUsuario).width + 48;
             const nx = (W - nw) / 2;
             ctx.fillStyle = 'rgba(0,0,0,0.60)';
-            rr(nx, 1156, nw, 48, 24);
+            rr(nx, 1050, nw, 48, 24);
             ctx.fill();
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario, W / 2, 1191);
+            ctx.fillText(nombreUsuario, W / 2, 1085);
         }
 
         return canvas;
