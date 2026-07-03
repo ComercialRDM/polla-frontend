@@ -932,4 +932,11 @@ export function adminEliminarPreseleccionado(token, id) {
     });
 }
 
+export function pronosticoLanding({ nombre, apellido, celular, partido_id, pred_local, pred_visitante }) {
+    return request('/api/polla/pronostico-landing', {
+        method: 'POST',
+        body: JSON.stringify({ nombre, apellido, celular, partido_id, pred_local, pred_visitante }),
+    });
+}
+
 export { API_BASE };

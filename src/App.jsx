@@ -27,6 +27,7 @@ const ComoFunciona = lazy(() => import('./pages/ComoFunciona'));
 const RegistroInfluencer = lazy(() => import('./pages/RegistroInfluencer'));
 const Grupo = lazy(() => import('./pages/Grupo'));
 const InvitacionInfluencer = lazy(() => import('./pages/InvitacionInfluencer'));
+const ColombiaLanding = lazy(() => import('./pages/ColombiaLanding'));
 
 import BotonWhatsApp from './components/BotonWhatsApp';
 import ThemeToggle from './components/ThemeToggle';
@@ -144,6 +145,7 @@ function AppRoutes() {
                     <Route path="/adminqr" element={<AdminQR />} />
                     <Route path="/grupo/:token" element={<Grupo />} />
                     <Route path="/invitacion/:token" element={<InvitacionInfluencer />} />
+                    <Route path="/colombia" element={<ColombiaLanding />} />
                 </Routes>
             </Suspense>
             <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />
