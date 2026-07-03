@@ -169,7 +169,7 @@ export default function ColombiaLanding() {
                         <p className="text-zinc-500 text-xs text-center mb-3 uppercase tracking-widest">Tu marcador</p>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col items-center flex-1 gap-1.5">
-                                <Bandera equipo={equipoLocal} className="w-10 h-10" />
+                                <Bandera equipo={equipoLocal} className="w-12 h-12" size="lg" />
                                 <p className="text-white font-bold text-xs text-center">{equipoLocal}</p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export default function ColombiaLanding() {
                                 <span className="text-white font-black text-4xl tabular-nums">{resultado.pred_visitante}</span>
                             </div>
                             <div className="flex flex-col items-center flex-1 gap-1.5">
-                                <Bandera equipo={equipoVisitante} className="w-10 h-10" />
+                                <Bandera equipo={equipoVisitante} className="w-12 h-12" size="lg" />
                                 <p className="text-white font-bold text-xs text-center">{equipoVisitante}</p>
                             </div>
                         </div>
@@ -240,68 +240,63 @@ export default function ColombiaLanding() {
                     </p>
                 </div>
 
-                {/* Card partido */}
+                {/* Card partido + marcador integrados */}
                 <div className="w-full rounded-2xl bg-zinc-900 border border-white/5 overflow-hidden">
+                    {/* Fecha */}
                     <div className="bg-[#FCD116]/10 border-b border-[#FCD116]/20 px-4 py-2.5 text-center">
                         <p className="text-[#FCD116] text-xs font-bold uppercase tracking-wide">
                             {formatFechaHora(partido.fecha_hora_inicio)} · Colombia hora
                         </p>
                     </div>
 
-                    <div className="px-4 py-7">
+                    <div className="px-4 pt-6 pb-5">
                         <p className="text-zinc-500 text-[10px] text-center uppercase tracking-widest mb-5">
                             {partido.fase?.replace(/_/g, ' ') || 'Fase de grupos'} · Mundial 2026
                         </p>
-                        <div className="flex items-center justify-between gap-3">
+
+                        {/* Banderas grandes */}
+                        <div className="flex items-start justify-between gap-3 mb-5">
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <Bandera equipo={partido.equipo_local} className="w-16 h-16" />
+                                <Bandera equipo={partido.equipo_local} className="w-20 h-20" size="lg" />
                                 <p className="text-white font-extrabold text-sm text-center leading-tight">
                                     {partido.equipo_local}
                                 </p>
                             </div>
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center gap-1 pt-5">
                                 <span className="text-[#FCD116] font-black text-2xl">VS</span>
-                                <span className="text-zinc-600 text-[10px] uppercase tracking-widest">Predice el marcador</span>
                             </div>
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <Bandera equipo={partido.equipo_visitante} className="w-16 h-16" />
+                                <Bandera equipo={partido.equipo_visitante} className="w-20 h-20" size="lg" />
                                 <p className="text-white font-extrabold text-sm text-center leading-tight">
                                     {partido.equipo_visitante}
                                 </p>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Formulario */}
-                {cierraEn5min ? (
-                    <div className="w-full rounded-2xl bg-red-900/20 border border-red-500/30 p-5 text-center">
-                        <p className="text-2xl mb-2">⏰</p>
-                        <p className="text-red-300 font-bold">La votación ya cerró</p>
-                        <p className="text-zinc-400 text-sm mt-1">Las predicciones cierran 5 minutos antes del pitazo.</p>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
-
-                        {/* Selector de marcador */}
-                        <div className="rounded-2xl bg-zinc-900 border border-[#FCD116]/30 px-4 py-5">
-                            <p className="text-white font-bold text-sm text-center mb-4">
-                                ¿Cuál crees que va a ser el marcador?
-                            </p>
-                            <div className="flex items-center gap-3">
-                                <div className="flex flex-col items-center gap-1 flex-1">
-                                    <Bandera equipo={partido.equipo_local} className="w-8 h-8" />
-                                    <p className="text-zinc-400 text-[10px] text-center">{partido.equipo_local}</p>
+                        {/* Divider + inputs de marcador */}
+                        {cierraEn5min ? (
+                            <div className="border-t border-white/5 pt-4 text-center">
+                                <p className="text-red-300 font-bold text-sm">⏰ La votación ya cerró</p>
+                                <p className="text-zinc-500 text-xs mt-1">Las predicciones cierran 5 minutos antes del pitazo.</p>
+                            </div>
+                        ) : (
+                            <div className="border-t border-white/5 pt-4">
+                                <p className="text-zinc-400 text-xs text-center mb-3 uppercase tracking-widest">
+                                    ¿Cuál crees que será el marcador?
+                                </p>
+                                <div className="flex items-center gap-3">
                                     <GolInput value={localGol} onChange={setLocalGol} />
-                                </div>
-                                <span className="text-zinc-600 font-black text-3xl pb-1">:</span>
-                                <div className="flex flex-col items-center gap-1 flex-1">
-                                    <Bandera equipo={partido.equipo_visitante} className="w-8 h-8" />
-                                    <p className="text-zinc-400 text-[10px] text-center">{partido.equipo_visitante}</p>
+                                    <span className="text-zinc-500 font-black text-3xl flex-shrink-0">:</span>
                                     <GolInput value={visitanteGol} onChange={setVisitanteGol} />
                                 </div>
                             </div>
-                        </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Formulario datos + botón */}
+                {!cierraEn5min && (
+                    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
 
                         {/* Datos personales */}
                         <div className="rounded-2xl bg-zinc-900 border border-white/5 p-4 flex flex-col gap-3">
