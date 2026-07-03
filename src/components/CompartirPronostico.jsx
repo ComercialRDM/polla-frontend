@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { registrarCompartida } from '../api';
 import { bandera, codigoPais } from '../utils/banderas';
-import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
+import imagenPlantilla from '../assets/DEFINITIVA PRONOSTICO COMPARTIR ----V1.0.png';
 
 export default function CompartirPronostico({
     equipoLocal, equipoVisitante, localPred, visitantePred,
@@ -45,7 +45,7 @@ export default function CompartirPronostico({
     }
 
     async function generarImagenStory() {
-        const W = 1080, H = 1920;
+        const W = 1024, H = 1536;
         const canvas = document.createElement('canvas');
         canvas.width = W;
         canvas.height = H;
@@ -68,264 +68,105 @@ export default function CompartirPronostico({
         const codeL = codigoPais(equipoLocal);
         const codeV = codigoPais(equipoVisitante);
 
-        const [imgL, imgV, imgLogo] = await Promise.all([
+        const [imgFondo, imgL, imgV] = await Promise.all([
+            loadImg(imagenPlantilla),
             codeL ? loadImg(`https://flagcdn.com/w320/${codeL}.png`) : Promise.resolve(null),
             codeV ? loadImg(`https://flagcdn.com/w320/${codeV}.png`) : Promise.resolve(null),
-            loadImg(logoRetoucherie),
         ]);
 
-        // ── FONDO: estadio oscuro ──
-        ctx.fillStyle = '#050508';
-        ctx.fillRect(0, 0, W, H);
+        // ── FONDO: imagen plantilla diseñada ──
+        if (imgFondo) ctx.drawImage(imgFondo, 0, 0, W, H);
 
-        // Ráfaga de luz superior (focos del estadio)
-        const topGlow = ctx.createRadialGradient(W / 2, -100, 0, W / 2, -100, 1100);
-        topGlow.addColorStop(0, 'rgba(255,140,0,0.9)');
-        topGlow.addColorStop(0.2, 'rgba(200,80,0,0.5)');
-        topGlow.addColorStop(0.5, 'rgba(252,209,22,0.10)');
-        topGlow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = topGlow;
-        ctx.fillRect(0, 0, W, H);
+        // Posiciones calibradas sobre la plantilla 1024×1536
+        const flagR = 158;
+        const lCX = 268, vCX = 756, flagCY = 736;
 
-        // Focos laterales
-        [[0, 200, 0.25], [W, 200, 0.25]].forEach(([x, y, a]) => {
-            const g = ctx.createRadialGradient(x, y, 0, x, y, 600);
-            g.addColorStop(0, `rgba(255,160,20,${a})`);
-            g.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, W, H);
+        // Cubrir banderas placeholder con círculo oscuro
+        [lCX, vCX].forEach((cx) => {
+            ctx.fillStyle = '#030b03';
+            ctx.beginPath();
+            ctx.arc(cx, flagCY, flagR + 14, 0, Math.PI * 2);
+            ctx.fill();
         });
 
-        // Halo dorado central (zona marcador)
-        const midGlow = ctx.createRadialGradient(W / 2, 980, 0, W / 2, 980, 500);
-        midGlow.addColorStop(0, 'rgba(252,209,22,0.15)');
-        midGlow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = midGlow;
-        ctx.fillRect(0, 0, W, H);
-
-        // Rayos diagonales de luz
-        ctx.save();
-        for (let i = 0; i < 12; i++) {
-            const x = i * 130 - 300;
-            const gRay = ctx.createLinearGradient(x + H * 0.18, H, x, 0);
-            gRay.addColorStop(0, 'rgba(252,209,22,0)');
-            gRay.addColorStop(0.5, `rgba(252,209,22,${i % 3 === 0 ? 0.045 : 0.022})`);
-            gRay.addColorStop(1, 'rgba(255,130,0,0.05)');
-            ctx.fillStyle = gRay;
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x + 90, 0);
-            ctx.lineTo(x + 90 + H * 0.18, H);
-            ctx.lineTo(x + H * 0.18, H);
-            ctx.closePath();
-            ctx.fill();
-        }
-        ctx.restore();
-
-        // Viñeta oscura cinematográfica
-        const vignette = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.82);
-        vignette.addColorStop(0, 'rgba(0,0,0,0)');
-        vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
-        ctx.fillStyle = vignette;
-        ctx.fillRect(0, 0, W, H);
-
-        // Franjas top/bottom
-        ctx.fillStyle = '#FCD116';
-        ctx.fillRect(0, 0, W, 14);
-        ctx.fillRect(0, H - 14, W, 14);
-
-        // ── LOGO ──
-        ctx.textAlign = 'center';
-        if (imgLogo) {
-            const logoSize = 110;
-            const logoAR = (imgLogo.naturalWidth || imgLogo.width) / (imgLogo.naturalHeight || imgLogo.height);
-            const logoW = logoSize * logoAR;
-            ctx.save();
-            rr((W - logoW) / 2, 22, logoW, logoSize, 16);
-            ctx.clip();
-            ctx.drawImage(imgLogo, (W - logoW) / 2, 22, logoW, logoSize);
-            ctx.restore();
-        }
-
-        // "POLLA MUNDIALISTA · MUNDIAL 2026"
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 38px Arial';
-        ctx.fillText('POLLA MUNDIALISTA  ·  MUNDIAL 2026', W / 2, 168);
-
-        // Separador dorado
-        const sep1 = ctx.createLinearGradient(60, 0, W - 60, 0);
-        sep1.addColorStop(0, 'rgba(252,209,22,0)');
-        sep1.addColorStop(0.5, 'rgba(252,209,22,0.65)');
-        sep1.addColorStop(1, 'rgba(252,209,22,0)');
-        ctx.strokeStyle = sep1;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(60, 195); ctx.lineTo(W - 60, 195); ctx.stroke();
-
-        // "MI PRONÓSTICO" (blanco)
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 108px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('MI PRONÓSTICO', W / 2, 308);
-
-        // "MI PASIÓN" (amarillo con glow)
-        ctx.shadowColor = 'rgba(252,209,22,0.55)';
-        ctx.shadowBlur = 28;
-        ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 108px Arial';
-        ctx.fillText('MI PASIÓN', W / 2, 428);
-        ctx.shadowBlur = 0;
-
-        // Nombre del usuario
-        if (nombreUsuario) {
-            const sepN = ctx.createLinearGradient(60, 0, W - 60, 0);
-            sepN.addColorStop(0, 'rgba(255,255,255,0)');
-            sepN.addColorStop(0.5, 'rgba(255,255,255,0.1)');
-            sepN.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.strokeStyle = sepN;
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(100, 464); ctx.lineTo(W - 100, 464); ctx.stroke();
-
-            let nameSize = 58;
-            ctx.font = `bold ${nameSize}px Arial`;
-            while (ctx.measureText(nombreUsuario).width > W - 120 && nameSize > 28) {
-                nameSize -= 2;
-                ctx.font = `bold ${nameSize}px Arial`;
-            }
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario, W / 2, 530);
-        }
-
-        // ── BANDERAS ──
-        const flagR = 128;
-        const lCX = 240, vCX = W - 240, flagCY = nombreUsuario ? 668 : 622;
-
+        // Aro dorado
         [lCX, vCX].forEach((cx) => {
-            ctx.shadowColor = 'rgba(252,209,22,0.55)';
-            ctx.shadowBlur = 32;
+            ctx.shadowColor = 'rgba(252,209,22,0.7)';
+            ctx.shadowBlur = 24;
             ctx.strokeStyle = '#FCD116';
             ctx.lineWidth = 8;
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 8, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 6, 0, Math.PI * 2);
             ctx.stroke();
             ctx.shadowBlur = 0;
         });
 
+        // Fondo interior bandera
         [lCX, vCX].forEach((cx) => {
-            ctx.fillStyle = '#12122a';
+            ctx.fillStyle = '#111118';
             ctx.beginPath();
             ctx.arc(cx, flagCY, flagR, 0, Math.PI * 2);
             ctx.fill();
         });
 
+        // Dibujar banderas reales
         if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR);
-        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, 122);
-
+        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR);
         if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR);
-        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, 122);
+        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR);
 
-        // VS
-        ctx.shadowColor = 'rgba(252,209,22,0.85)';
-        ctx.shadowBlur = 22;
-        ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 72px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('VS', W / 2, flagCY + 16);
-        ctx.shadowBlur = 0;
+        // ── NOMBRES DE EQUIPOS ──
+        // Cubrir nombres placeholder
+        const nameY = 936;
+        [lCX, vCX].forEach((cx) => {
+            ctx.fillStyle = '#030b03';
+            ctx.fillRect(cx - 210, nameY - 58, 420, 72);
+        });
 
-        // Nombres de equipos
-        const drawFit = (text, cx, y, maxW, color = '#ffffff') => {
-            let size = 60;
+        const drawFit = (text, cx, y, maxW) => {
+            let size = 54;
             ctx.font = `bold ${size}px Arial`;
-            while (ctx.measureText(text).width > maxW && size > 28) {
+            while (ctx.measureText(text).width > maxW && size > 24) {
                 size -= 2;
                 ctx.font = `bold ${size}px Arial`;
             }
-            ctx.fillStyle = color;
+            ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.fillText(text, cx, y);
         };
-        drawFit(equipoLocal.toUpperCase(), lCX, flagCY + 178, 430);
-        drawFit(equipoVisitante.toUpperCase(), vCX, flagCY + 178, 430);
+        drawFit(equipoLocal.toUpperCase(), lCX, nameY, 400);
+        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 400);
 
-        const scoreY = flagCY + 233;
+        // ── MARCADOR ──
+        // Cubrir números placeholder dentro de la tarjeta
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(90, 976, 844, 152);
 
-        // ── TARJETA MARCADOR ──
         ctx.shadowColor = 'rgba(252,209,22,0.65)';
-        ctx.shadowBlur = 55;
+        ctx.shadowBlur = 26;
         ctx.fillStyle = '#FCD116';
-        rr(60, scoreY, W - 120, 265, 40);
-        ctx.fill();
+        ctx.font = 'bold 158px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${localPred}  –  ${visitantePred}`, W / 2, 1086);
         ctx.shadowBlur = 0;
 
-        ctx.fillStyle = '#050508';
-        rr(70, scoreY + 10, W - 140, 245, 32);
-        ctx.fill();
-
-        ctx.shadowColor = 'rgba(252,209,22,0.6)';
-        ctx.shadowBlur = 28;
-        ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 190px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${localPred}  –  ${visitantePred}`, W / 2, scoreY + 203);
-        ctx.shadowBlur = 0;
-
-        const ctaY = scoreY + 323;
-
-        // ── CTA ──
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 70px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('¿Y TÚ, QUÉ MARCADOR', W / 2, ctaY);
-
-        ctx.shadowColor = 'rgba(252,209,22,0.5)';
-        ctx.shadowBlur = 18;
-        ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 70px Arial';
-        ctx.fillText('CREES QUE VA A QUEDAR?', W / 2, ctaY + 92);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = '#a0a0a0';
-        ctx.font = '40px Arial';
-        ctx.fillText('Compra tu bono y participa en la', W / 2, ctaY + 180);
-
-        // "Polla Mundialista " (gris) + "La Retoucherie" (amarillo) + " 2026" (gris)
-        ctx.font = '40px Arial';
-        const p1 = 'Polla Mundialista ', p2 = 'La Retoucherie', p3 = ' 2026';
-        const tw = ctx.measureText(p1).width + ctx.measureText(p2).width + ctx.measureText(p3).width;
-        const sx = (W - tw) / 2;
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#a0a0a0'; ctx.fillText(p1, sx, ctaY + 232);
-        ctx.fillStyle = '#FCD116'; ctx.fillText(p2, sx + ctx.measureText(p1).width, ctaY + 232);
-        ctx.fillStyle = '#a0a0a0'; ctx.fillText(p3, sx + ctx.measureText(p1).width + ctx.measureText(p2).width, ctaY + 232);
-        ctx.textAlign = 'center';
-
-        // Íconos: CO + ⚽ + 🏆
-        ctx.font = '74px sans-serif';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🇨🇴', W / 2 - 140, ctaY + 328);
-        ctx.fillText('⚽', W / 2, ctaY + 328);
-        ctx.fillText('🏆', W / 2 + 140, ctaY + 328);
-        ctx.textBaseline = 'alphabetic';
-
-        // ── BOTÓN URL ──
-        const btnY = ctaY + 412;
-        ctx.shadowColor = 'rgba(252,209,22,0.55)';
-        ctx.shadowBlur = 35;
-        ctx.fillStyle = '#FCD116';
-        rr(60, btnY, W - 120, 100, 30);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 50px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('www.ganaconretoucherie.com', W / 2, btnY + 65);
-
-        // Condiciones
-        ctx.fillStyle = '#606060';
-        ctx.font = '32px Arial';
-        ctx.fillText('*Aplican condiciones y restricciones.', W / 2, btnY + 150);
+        // ── NOMBRE DEL USUARIO ──
+        if (nombreUsuario) {
+            let nameSize = 38;
+            ctx.font = `bold ${nameSize}px Arial`;
+            while (ctx.measureText(nombreUsuario).width > W - 160 && nameSize > 20) {
+                nameSize -= 2;
+                ctx.font = `bold ${nameSize}px Arial`;
+            }
+            const nw = ctx.measureText(nombreUsuario).width + 48;
+            const nx = (W - nw) / 2;
+            ctx.fillStyle = 'rgba(0,0,0,0.60)';
+            rr(nx, 1156, nw, 48, 24);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(nombreUsuario, W / 2, 1191);
+        }
 
         return canvas;
     }
