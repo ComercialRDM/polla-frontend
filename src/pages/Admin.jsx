@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -31,9 +31,10 @@ const GRUPOS_NAV = [
         id: 'marketing', label: 'Marketing',
         color: 'purple',
         secciones: [
-            { id: 'influenciadores', label: '🎖️ Influenciadores' },
-            { id: 'bonoscolombia',   label: '🇨🇴 Bono Col' },
-            { id: 'simulador',       label: '📊 Simulador' },
+            { id: 'preseleccionados', label: '⭐ Preseleccionados' },
+            { id: 'influenciadores',  label: '🎖️ Influenciadores' },
+            { id: 'bonoscolombia',    label: '🇨🇴 Bono Col' },
+            { id: 'simulador',        label: '📊 Simulador' },
         ],
     },
     {
@@ -128,6 +129,16 @@ export default function Admin() {
     const [comisiones, setComisiones] = useState([]);
     const [cargandoComisiones, setCargandoComisiones] = useState(false);
     const [actualizandoComisionId, setActualizandoComisionId] = useState(null);
+
+    // ── CRM Preseleccionados ──────────────────────────────────────────────────
+    const [preseleccionados, setPreseleccionados] = useState([]);
+    const [cargandoPresel, setCargandoPresel] = useState(false);
+    const [mostrarFormPresel, setMostrarFormPresel] = useState(false);
+    const [formPresel, setFormPresel] = useState({ nombre_completo: '', celular: '', email: '', seguidores: '', tasa_engagement: '', red_social: '', notas: '' });
+    const [guardandoPresel, setGuardandoPresel] = useState(false);
+    const [errorPresel, setErrorPresel] = useState('');
+    const [copiadoPreselId, setCopiadoPreselId] = useState(null);
+    const [eliminandoPreselId, setEliminandoPreselId] = useState(null);
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -781,6 +792,70 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarPreseleccionados() {
+        setCargandoPresel(true);
+        try {
+            const data = await adminListarPreseleccionados(token);
+            if (data?.success) setPreseleccionados(data.preseleccionados);
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoPresel(false);
+        }
+    }
+
+    async function handleCrearPresel(e) {
+        e.preventDefault();
+        setErrorPresel('');
+        if (!formPresel.nombre_completo.trim()) { setErrorPresel('El nombre es requerido.'); return; }
+        setGuardandoPresel(true);
+        try {
+            const datos = {
+                nombre_completo: formPresel.nombre_completo.trim(),
+                celular: formPresel.celular.trim() || null,
+                email: formPresel.email.trim() || null,
+                seguidores: formPresel.seguidores ? Number(formPresel.seguidores) : null,
+                tasa_engagement: formPresel.tasa_engagement ? Number(formPresel.tasa_engagement) : null,
+                red_social: formPresel.red_social || null,
+                notas: formPresel.notas.trim() || null,
+            };
+            const data = await adminCrearPreseleccionado(token, datos);
+            if (data?.success) {
+                setPreseleccionados((prev) => [data.preseleccionado, ...prev]);
+                setFormPresel({ nombre_completo: '', celular: '', email: '', seguidores: '', tasa_engagement: '', red_social: '', notas: '' });
+                setMostrarFormPresel(false);
+            } else {
+                setErrorPresel(data?.error || 'Error al crear el registro');
+            }
+        } catch (err) {
+            setErrorPresel(err.message || 'Error inesperado');
+        } finally {
+            setGuardandoPresel(false);
+        }
+    }
+
+    async function handleEliminarPresel(id) {
+        if (!window.confirm('¿Eliminar este influencer pre-seleccionado? Esta acción no se puede deshacer.')) return;
+        setEliminandoPreselId(id);
+        try {
+            const data = await adminEliminarPreseleccionado(token, id);
+            if (data?.success) setPreseleccionados((prev) => prev.filter((p) => p.id !== id));
+            else window.alert(data?.error || 'No se pudo eliminar');
+        } catch (err) {
+            window.alert(err.message || 'Error');
+        } finally {
+            setEliminandoPreselId(null);
+        }
+    }
+
+    async function copiarPreselLink(texto, id) {
+        try {
+            await navigator.clipboard.writeText(texto);
+            setCopiadoPreselId(id);
+            setTimeout(() => setCopiadoPreselId(null), 2000);
+        } catch { /* silencioso */ }
+    }
+
     async function handleEditarPorcentaje(id, porcentajeActual) {
         const nuevo = window.prompt('Nuevo % de comisión para este afiliado:', porcentajeActual);
         if (nuevo == null || nuevo.trim() === '') return;
@@ -995,6 +1070,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
+        if (seccionActiva === 'preseleccionados' && token) cargarPreseleccionados();
         if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); cargarAfiliados(); cargarComisiones(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
         if (seccionActiva === 'redenciones' && token) cargarResumenDia(resumenDiaFecha);
@@ -2960,6 +3036,233 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                 {testWaResult.detalles && <pre className="mt-1 overflow-x-auto text-xs opacity-70">{JSON.stringify(testWaResult.detalles, null, 2)}</pre>}
                             </div>
                         )}
+                    </div>
+                </div>
+                )}
+
+                {/* ── CRM Influencers Pre-seleccionados ─────────────────────────────── */}
+                {seccionActiva === 'preseleccionados' && (
+                <div className="flex flex-col gap-5">
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between mb-1">
+                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">⭐ Influencers Pre-seleccionados</h2>
+                            <div className="flex gap-2">
+                                <button onClick={cargarPreseleccionados} disabled={cargandoPresel}
+                                    className="text-xs px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 font-bold hover:bg-zinc-300 dark:hover:bg-white/20 disabled:opacity-60">
+                                    {cargandoPresel ? 'Cargando...' : '↻ Actualizar'}
+                                </button>
+                                <button onClick={() => { setMostrarFormPresel(v => !v); setErrorPresel(''); }}
+                                    className="text-xs px-3 py-1.5 rounded-lg bg-[#FCD116] text-zinc-950 font-bold hover:bg-yellow-300">
+                                    {mostrarFormPresel ? 'Cancelar' : '+ Agregar influencer'}
+                                </button>
+                            </div>
+                        </div>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mb-4">
+                            Registra influencers que quieres invitar. El sistema crea su cuenta y genera los links automáticamente.
+                            Cuando el influencer acepta la invitación, queda activo en el ranking de creadores de contenido.
+                        </p>
+
+                        {/* Formulario de creación */}
+                        {mostrarFormPresel && (
+                            <form onSubmit={handleCrearPresel} className="rounded-xl border border-[#FCD116]/30 bg-amber-50 dark:bg-amber-900/10 p-4 mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Nombre completo *</label>
+                                    <input
+                                        required
+                                        placeholder="Ej: Juliana Pérez"
+                                        value={formPresel.nombre_completo}
+                                        onChange={e => setFormPresel(p => ({ ...p, nombre_completo: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Celular (WhatsApp)</label>
+                                    <input
+                                        placeholder="3001234567"
+                                        value={formPresel.celular}
+                                        onChange={e => setFormPresel(p => ({ ...p, celular: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        placeholder="correo@ejemplo.com"
+                                        value={formPresel.email}
+                                        onChange={e => setFormPresel(p => ({ ...p, email: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Seguidores</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ej: 45000"
+                                        value={formPresel.seguidores}
+                                        onChange={e => setFormPresel(p => ({ ...p, seguidores: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Tasa de engagement (%)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        placeholder="Ej: 3.5"
+                                        value={formPresel.tasa_engagement}
+                                        onChange={e => setFormPresel(p => ({ ...p, tasa_engagement: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Red social</label>
+                                    <select
+                                        value={formPresel.red_social}
+                                        onChange={e => setFormPresel(p => ({ ...p, red_social: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white"
+                                    >
+                                        <option value="">— Seleccionar —</option>
+                                        <option value="instagram">📸 Instagram</option>
+                                        <option value="tiktok">🎵 TikTok</option>
+                                        <option value="ambas">📸🎵 Ambas</option>
+                                    </select>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Notas internas</label>
+                                    <textarea
+                                        rows={2}
+                                        placeholder="Ej: Perfil de moda, nicho salud/bienestar, contactada por DM..."
+                                        value={formPresel.notas}
+                                        onChange={e => setFormPresel(p => ({ ...p, notas: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 resize-none"
+                                    />
+                                </div>
+                                {errorPresel && (
+                                    <p className="sm:col-span-2 text-red-600 dark:text-red-400 text-xs bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{errorPresel}</p>
+                                )}
+                                <div className="sm:col-span-2 flex gap-2 justify-end">
+                                    <button type="button" onClick={() => setMostrarFormPresel(false)}
+                                        className="px-4 py-2 rounded-lg text-xs font-bold bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-white/20">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" disabled={guardandoPresel}
+                                        className="px-5 py-2 rounded-lg text-xs font-black bg-[#FCD116] text-zinc-950 hover:bg-yellow-300 disabled:opacity-60">
+                                        {guardandoPresel ? 'Creando...' : 'Crear influencer + cuenta'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+
+                        {/* Tabla de preseleccionados */}
+                        {cargandoPresel && preseleccionados.length === 0 ? (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Cargando...</p>
+                        ) : preseleccionados.length === 0 ? (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Aún no hay influencers pre-seleccionados. Agrega el primero.</p>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-xs text-left min-w-[900px]">
+                                    <thead className="bg-white/60 dark:bg-white/5 text-zinc-500 dark:text-zinc-400">
+                                        <tr>
+                                            <th className="px-3 py-2">Nombre</th>
+                                            <th className="px-3 py-2">Contacto</th>
+                                            <th className="px-3 py-2">Red</th>
+                                            <th className="px-3 py-2">Seguidores</th>
+                                            <th className="px-3 py-2">Engagement</th>
+                                            <th className="px-3 py-2">Estado</th>
+                                            <th className="px-3 py-2">Links</th>
+                                            <th className="px-3 py-2"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-200/40 dark:divide-white/5">
+                                        {preseleccionados.map((p) => {
+                                            const linkInvitacion = `${window.location.origin}/invitacion/${p.token_invitacion}`;
+                                            const linkPerfil = `${window.location.origin}/polla?token=${p.token_acceso}`;
+                                            const linkCompartir = `${window.location.origin}/?aff=${p.codigo_afiliado}`;
+                                            return (
+                                                <tr key={p.id} className="hover:bg-zinc-100/50 dark:hover:bg-white/3">
+                                                    <td className="px-3 py-2.5">
+                                                        <p className="font-semibold text-zinc-900 dark:text-white">{p.nombre_completo}</p>
+                                                        {p.notas && <p className="text-zinc-400 text-[10px] mt-0.5 max-w-[160px] truncate">{p.notas}</p>}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400">
+                                                        {p.celular && <p>{p.celular}</p>}
+                                                        {p.email && <p className="text-[10px] truncate max-w-[140px]">{p.email}</p>}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400 capitalize">
+                                                        {p.red_social === 'instagram' ? '📸' : p.red_social === 'tiktok' ? '🎵' : p.red_social === 'ambas' ? '📸🎵' : '—'}
+                                                        {p.red_social && ` ${p.red_social}`}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-300 font-mono">
+                                                        {p.seguidores ? (p.seguidores >= 1000000 ? `${(p.seguidores/1000000).toFixed(1)}M` : p.seguidores >= 1000 ? `${(p.seguidores/1000).toFixed(0)}K` : p.seguidores) : '—'}
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-zinc-600 dark:text-zinc-300">
+                                                        {p.tasa_engagement ? `${p.tasa_engagement}%` : '—'}
+                                                    </td>
+                                                    <td className="px-3 py-2.5">
+                                                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black ${p.estado === 'aceptado' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                                                            {p.estado === 'aceptado' ? '✓ Activo' : '⏳ Pendiente'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-3 py-2.5">
+                                                        <div className="flex flex-col gap-1">
+                                                            <button
+                                                                onClick={() => copiarPreselLink(linkInvitacion, `inv-${p.id}`)}
+                                                                className="text-left px-2 py-1 rounded text-[10px] font-bold bg-[#FCD116]/20 text-[#FCD116] hover:bg-[#FCD116]/30 whitespace-nowrap"
+                                                            >
+                                                                {copiadoPreselId === `inv-${p.id}` ? '✓ Copiado' : '📨 Link invitación'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => copiarPreselLink(linkCompartir, `aff-${p.id}`)}
+                                                                className="text-left px-2 py-1 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 whitespace-nowrap"
+                                                            >
+                                                                {copiadoPreselId === `aff-${p.id}` ? '✓ Copiado' : '🔗 Link referido'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => copiarPreselLink(linkPerfil, `perfil-${p.id}`)}
+                                                                className="text-left px-2 py-1 rounded text-[10px] font-bold bg-zinc-500/20 text-zinc-400 hover:bg-zinc-500/30 whitespace-nowrap"
+                                                            >
+                                                                {copiadoPreselId === `perfil-${p.id}` ? '✓ Copiado' : '👤 Link perfil'}
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-2.5">
+                                                        {p.estado !== 'aceptado' && (
+                                                            <button
+                                                                onClick={() => handleEliminarPresel(p.id)}
+                                                                disabled={eliminandoPreselId === p.id}
+                                                                className="px-2 py-1 rounded text-[10px] font-bold bg-red-500/20 text-red-400 hover:bg-red-500/30 disabled:opacity-60"
+                                                            >
+                                                                {eliminandoPreselId === p.id ? '...' : '🗑️'}
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Leyenda de links */}
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-100 mb-3">¿Qué hace cada link?</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div className="rounded-lg bg-[#FCD116]/10 border border-[#FCD116]/20 p-3">
+                                <p className="font-black text-[#FCD116] mb-1">📨 Link de invitación</p>
+                                <p className="text-zinc-600 dark:text-zinc-300">Este es el que le envías al influencer. Al abrir ve su nombre, estadísticas y el botón para aceptar. Al hacer clic en "Aceptar", queda activo en el ranking de creadores.</p>
+                            </div>
+                            <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
+                                <p className="font-black text-blue-400 mb-1">🔗 Link de referido</p>
+                                <p className="text-zinc-600 dark:text-zinc-300">Este es el que el influencer comparte con sus seguidores en redes. Cada compra que llegue por este link le suma comisión y puntos.</p>
+                            </div>
+                            <div className="rounded-lg bg-zinc-500/10 border border-zinc-500/20 p-3">
+                                <p className="font-black text-zinc-300 mb-1">👤 Link de perfil</p>
+                                <p className="text-zinc-600 dark:text-zinc-300">Acceso directo a su dashboard en la Polla. Puede ver pronósticos, ranking y sus estadísticas. Válido una vez haya aceptado la invitación.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 )}

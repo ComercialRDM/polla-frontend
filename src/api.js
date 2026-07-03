@@ -903,4 +903,33 @@ export function adminRechazarFoto(token, usuarioId, razon) {
     });
 }
 
+// ── CRM Influencers Pre-seleccionados ────────────────────────────────────────
+
+export function adminListarPreseleccionados(token) {
+    return request('/api/admin/preseleccionados', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function adminCrearPreseleccionado(token, datos) {
+    return request('/api/admin/preseleccionados', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(datos),
+    });
+}
+
+export function adminEditarPreseleccionado(token, id, datos) {
+    return request(`/api/admin/preseleccionados/${id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify(datos),
+    });
+}
+
+export function adminEliminarPreseleccionado(token, id) {
+    return request(`/api/admin/preseleccionados/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export { API_BASE };
