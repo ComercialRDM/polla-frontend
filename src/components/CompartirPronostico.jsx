@@ -77,6 +77,22 @@ export default function CompartirPronostico({
         // ── FONDO: imagen plantilla diseñada ──
         if (imgFondo) ctx.drawImage(imgFondo, 0, 0, W, H);
 
+        // ── NOMBRE DEL USUARIO (entre "MI PASIÓN" y las banderas) ──
+        if (nombreUsuario) {
+            ctx.fillStyle = 'rgba(0,0,0,0.48)';
+            ctx.fillRect(0, 468, W, 118);
+
+            let userSize = 52;
+            ctx.font = `bold ${userSize}px Arial`;
+            while (ctx.measureText(nombreUsuario).width > W - 60 && userSize > 24) {
+                userSize -= 2;
+                ctx.font = `bold ${userSize}px Arial`;
+            }
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(nombreUsuario.toUpperCase(), W / 2, 548);
+        }
+
         // Coordenadas exactas medidas del template 1024×1536
         const flagR = 100;
         const lCX = 281, vCX = 745, flagCY = 693;
@@ -152,30 +168,6 @@ export default function CompartirPronostico({
         ctx.fillText(String(visitantePred), 724, 988);
         ctx.shadowBlur = 0;
 
-        // ── NOMBRE DEL USUARIO ──
-        if (nombreUsuario) {
-            let nameSize = 36;
-            ctx.font = `bold ${nameSize}px Arial`;
-            while (ctx.measureText(nombreUsuario).width > W - 200 && nameSize > 18) {
-                nameSize -= 2;
-                ctx.font = `bold ${nameSize}px Arial`;
-            }
-            const nw = ctx.measureText(nombreUsuario).width + 48;
-            const nx = (W - nw) / 2;
-            // Cubre la primera línea del texto "¿Y TÚ..." para poner el nombre
-            ctx.fillStyle = '#050505';
-            ctx.fillRect(0, 1030, 1024, 58);
-            ctx.fillStyle = 'rgba(252,209,22,0.12)';
-            rr(nx, 1036, nw, 46, 23);
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(252,209,22,0.45)';
-            ctx.lineWidth = 1.5;
-            rr(nx, 1036, nw, 46, 23);
-            ctx.stroke();
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario, W / 2, 1069);
-        }
 
         return canvas;
     }
