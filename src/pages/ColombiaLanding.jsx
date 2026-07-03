@@ -372,9 +372,14 @@ export default function ColombiaLanding() {
                             <span className="text-zinc-400 text-xs leading-relaxed">
                                 Acepto los{' '}
                                 <a href="/terminos" target="_blank" className="text-[#FCD116] underline">Términos y Condiciones</a>{' '}
-                                de la Polla Mundialista. Tu pronóstico es gratuito — comprar el bono te da opciones a los premios en efectivo.
+                                de la Polla Mundialista. Tu pronóstico es gratuito — comprar el bono te da opciones a los premios en bono.
                             </span>
                         </label>
+
+                        <p className="text-zinc-600 text-[10px] text-center leading-relaxed px-1">
+                            Se sorteará entre todos los registrados y que acierten el marcador $1MM · Aplican condiciones y restricciones en{' '}
+                            <span className="text-zinc-500">www.GanaConRetoucherie.com</span>
+                        </p>
                     </form>
                 )}
 
