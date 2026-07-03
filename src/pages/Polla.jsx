@@ -12,6 +12,7 @@ import PartidosFavoritos from '../components/PartidosFavoritos';
 import CompartirPronostico from '../components/CompartirPronostico';
 import { cerrarSesion } from '../utils/sesion';
 import PozoPremios from '../components/PozoPremios';
+import MisPronosticos from '../components/MisPronosticos';
 
 
 const UNA_HORA_MS = 60 * 60 * 1000;
@@ -603,6 +604,9 @@ export default function Polla() {
                     );
                 })()}
 
+                {/* Historial de pronósticos */}
+                <MisPronosticos tokenAcceso={token} />
+
                 {/* Texto descriptivo influencers */}
                 {info.es_influencer && (
                     <p className="text-zinc-400 text-sm mb-4 mt-2">Predice los marcadores y demuestra tu habilidad. Como creador de contenido, tus bonos especiales no compiten por los premios monetarios.</p>
@@ -621,8 +625,19 @@ export default function Polla() {
                     }
                     return (
                         <div className="rounded-2xl bg-zinc-900 border border-white/10 px-4 py-3 mb-4">
-                            <p className="text-white font-bold text-sm mb-0.5">🏆 Reta a un amigo y gana puntos</p>
-                            <p className="text-zinc-400 text-sm mb-3">Comparte con tu grupo de fútbol y compitan juntos por los premios.</p>
+                            <div className="flex items-start justify-between mb-0.5">
+                                <p className="text-white font-bold text-sm">🏆 Reta a un amigo y gana puntos</p>
+                                {info.amigos_compraron > 0 && (
+                                    <span className="flex-shrink-0 ml-2 bg-amber-400/20 text-amber-400 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                        {info.amigos_compraron} {info.amigos_compraron === 1 ? 'amigo compró' : 'amigos compraron'} ✓
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-zinc-400 text-sm mb-3">
+                                {info.amigos_compraron > 0
+                                    ? `¡Ganaste +${info.amigos_compraron * 20} pts y +${info.amigos_compraron} ${info.amigos_compraron === 1 ? 'intento' : 'intentos'} extra! Sigue compartiendo 🔥`
+                                    : 'Cuando un amigo compre usando tu link, tú y él ganan 1 intento extra y tú sumas 20 puntos.'}
+                            </p>
                             <div className="flex gap-2">
                                 <button onClick={compartirAmigo} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform">
                                     📲 Compartir

@@ -49,6 +49,10 @@ export function obtenerMisPronosticos() {
     return request('/api/polla/mis-pronosticos', { headers: authHeader() });
 }
 
+export function obtenerMisPronosticosToken(tokenAcceso) {
+    return request(`/api/polla/mis-pronosticos-token?token_acceso=${encodeURIComponent(tokenAcceso)}`);
+}
+
 export function cerrarSesionRemota() {
     return request('/api/auth/logout', { method: 'POST' });
 }

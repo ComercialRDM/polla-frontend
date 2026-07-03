@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { obtenerMisPronosticos } from '../api';
+import { obtenerMisPronosticos, obtenerMisPronosticosToken } from '../api';
 import Bandera from './Bandera';
 
 const ESTADO_CONFIG = {
@@ -14,18 +14,24 @@ function formatFecha(isoStr) {
     return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
 }
 
-export default function MisPronosticos({ usuarioId }) {
+export default function MisPronosticos({ usuarioId, tokenAcceso }) {
     const [pronosticos, setPronosticos] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [expandido, setExpandido] = useState(false);
 
     useEffect(() => {
-        if (!usuarioId) return;
-        obtenerMisPronosticos()
-            .then(d => { if (d?.success) setPronosticos(d.pronosticos); })
-            .catch(() => {})
-            .finally(() => setCargando(false));
-    }, [usuarioId]);
+        if (tokenAcceso) {
+            obtenerMisPronosticosToken(tokenAcceso)
+                .then(d => { if (d?.success) setPronosticos(d.pronosticos); })
+                .catch(() => {})
+                .finally(() => setCargando(false));
+        } else if (usuarioId) {
+            obtenerMisPronosticos()
+                .then(d => { if (d?.success) setPronosticos(d.pronosticos); })
+                .catch(() => {})
+                .finally(() => setCargando(false));
+        }
+    }, [usuarioId, tokenAcceso]);
 
     if (cargando) return null;
     if (pronosticos.length === 0) return null;
@@ -36,12 +42,12 @@ export default function MisPronosticos({ usuarioId }) {
     const cerrados = pronosticos.filter(p => p.estado === 'cerrado').length;
 
     return (
-        <div className="w-full max-w-md px-4 mt-4">
+        <div className="w-full mb-4">
             {/* Encabezado */}
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-5 bg-[#FCD116] rounded-full" />
-                    <p className="text-zinc-900 dark:text-white font-bold text-sm">Mis pronósticos</p>
+                    <p className="text-white font-bold text-sm">Mis pronósticos</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-[#FCD116] font-black text-xs">{totalPuntos} pts</span>
