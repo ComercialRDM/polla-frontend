@@ -52,7 +52,6 @@ export default function ColombiaLanding() {
     const [localGol, setLocalGol] = useState('');
     const [visitanteGol, setVisitanteGol] = useState('');
 
-    const [aceptaTerminos, setAceptaTerminos] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [resultado, setResultado] = useState(null);
@@ -82,7 +81,6 @@ export default function ColombiaLanding() {
         const cel = celular.replace(/[^0-9]/g, '');
         if (cel.length !== 10 || !cel.startsWith('3')) return setErrorMsg('Ingresa un celular colombiano válido (10 dígitos, empieza por 3).');
         if (localGol === '' || visitanteGol === '') return setErrorMsg('Ingresa el marcador completo.');
-        if (!aceptaTerminos) return setErrorMsg('Debes aceptar los términos y condiciones.');
         const predLocal = parseInt(localGol, 10);
         const predVisitante = parseInt(visitanteGol, 10);
         if (isNaN(predLocal) || isNaN(predVisitante) || predLocal < 0 || predVisitante < 0) {
@@ -362,19 +360,11 @@ export default function ColombiaLanding() {
                             {enviando ? 'Registrando...' : 'Registrar mi pronóstico'}
                         </button>
 
-                        <label className="flex items-start gap-3 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={aceptaTerminos}
-                                onChange={e => setAceptaTerminos(e.target.checked)}
-                                className="mt-0.5 w-5 h-5 flex-shrink-0 accent-[#FCD116] cursor-pointer"
-                            />
-                            <span className="text-zinc-400 text-xs leading-relaxed">
-                                Acepto los{' '}
-                                <a href="/terminos" target="_blank" className="text-[#FCD116] underline">Términos y Condiciones</a>{' '}
-                                de la Polla Mundialista. Tu pronóstico es gratuito — comprar el bono te da opciones a los premios en bono.
-                            </span>
-                        </label>
+                        <p className="text-zinc-400 text-xs leading-relaxed text-center">
+                            Al registrar aceptas los{' '}
+                            <a href="/terminos" target="_blank" className="text-[#FCD116] underline">Términos y Condiciones</a>{' '}
+                            de la Polla Mundialista. Tu pronóstico es gratuito — comprar el bono te da opciones a los premios en bono.
+                        </p>
 
                         <p className="text-zinc-600 text-[10px] text-center leading-relaxed px-1">
                             Se sorteará entre todos los registrados y que acierten el marcador $1MM · Aplican condiciones y restricciones en{' '}
