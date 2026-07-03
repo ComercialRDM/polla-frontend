@@ -1,44 +1,91 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { iniciarSesion } from '../api';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { solicitarCodigoTelefono, verificarCodigoTelefono } from '../api';
 import { guardarSesion } from '../utils/sesion';
 import BiometriaLogin from '../components/BiometriaLogin';
 import logoCopaFifa from '../assets/Logo_Copa_Fifa.webp';
 
+const REENVIO_SEGUNDOS = 60;
+
 export default function IniciarSesion() {
     const navigate = useNavigate();
     const [celular, setCelular] = useState('');
-    const [password, setPassword] = useState('');
+    const [codigo, setCodigo] = useState('');
+    const [paso, setPaso] = useState(1);
+    const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState('');
-    const [sinCuenta, setSinCuenta] = useState(false);
-    const [cargando, setCargando] = useState(false);
+    const [segundos, setSegundos] = useState(0);
+    const timerRef = useRef(null);
 
-    async function handleSubmit(e) {
+    useEffect(() => {
+        if (segundos <= 0) return;
+        timerRef.current = setTimeout(() => setSegundos((s) => s - 1), 1000);
+        return () => clearTimeout(timerRef.current);
+    }, [segundos]);
+
+    async function handleEnviarCodigo(e) {
         e.preventDefault();
         setError('');
-        setSinCuenta(false);
-
-        if (!celular.trim() || !password) {
-            setError('Ingresa tu celular y contraseña.');
+        const cel = celular.replace(/[^0-9]/g, '');
+        if (cel.length !== 10) {
+            setError('Ingresa los 10 dígitos de tu celular colombiano.');
             return;
         }
-
-        setCargando(true);
+        setEnviando(true);
         try {
-            const data = await iniciarSesion({ celular: celular.trim(), password });
+            const data = await solicitarCodigoTelefono(cel);
             if (data?.success) {
-                guardarSesion({ ...data.usuario, token: data.token });
-                const tokenAcceso = localStorage.getItem('polla_token_acceso');
-                navigate(tokenAcceso ? '/polla' : '/landing');
-            } else if (data?.error?.includes('No encontramos')) {
-                setSinCuenta(true);
+                setPaso(2);
+                setSegundos(REENVIO_SEGUNDOS);
             } else {
-                setError(data?.error || 'No se pudo iniciar sesión.');
+                setError(data?.error || 'No se pudo enviar el código.');
             }
         } catch {
             setError('Error de conexión con el servidor.');
         } finally {
-            setCargando(false);
+            setEnviando(false);
+        }
+    }
+
+    async function handleVerificarCodigo(e) {
+        e.preventDefault();
+        setError('');
+        if (codigo.length !== 6) {
+            setError('El código tiene 6 dígitos.');
+            return;
+        }
+        setEnviando(true);
+        try {
+            const cel = celular.replace(/[^0-9]/g, '');
+            const data = await verificarCodigoTelefono({ celular: cel, codigo });
+            if (data?.success && !data.nuevo) {
+                guardarSesion({ ...data.usuario, token: data.token });
+                const tokenAcceso = localStorage.getItem('polla_token_acceso');
+                navigate(tokenAcceso ? '/polla' : '/landing');
+            } else if (data?.success && data.nuevo) {
+                navigate('/registro');
+            } else {
+                setError(data?.error || 'Código incorrecto o vencido.');
+            }
+        } catch {
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setEnviando(false);
+        }
+    }
+
+    async function handleReenviar() {
+        setError('');
+        const cel = celular.replace(/[^0-9]/g, '');
+        setEnviando(true);
+        try {
+            const data = await solicitarCodigoTelefono(cel);
+            if (data?.success) setSegundos(REENVIO_SEGUNDOS);
+            else setError(data?.error || 'No se pudo reenviar el código.');
+        } catch {
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setEnviando(false);
         }
     }
 
@@ -52,9 +99,13 @@ export default function IniciarSesion() {
             </div>
 
             <div className="relative z-10 w-full max-w-md mt-6">
-                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">Inicia sesión</h1>
+                <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-1">
+                    {paso === 1 ? 'Inicia sesión' : 'Ingresa el código'}
+                </h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-                    Ingresa con tu número de celular y tu contraseña.
+                    {paso === 1
+                        ? 'Te enviaremos un código por SMS para verificar tu identidad.'
+                        : `Enviamos un SMS al +57 ${celular}. Ingresa el código de 6 dígitos.`}
                 </p>
 
                 <BiometriaLogin onExito={() => {
@@ -64,88 +115,90 @@ export default function IniciarSesion() {
 
                 <div className="flex items-center gap-3 my-4">
                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o</span>
+                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o continúa con SMS</span>
                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <div>
-                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
-                        <input
-                            type="tel"
-                            value={celular}
-                            onChange={(e) => setCelular(e.target.value)}
-                            placeholder="Ej: 3001234567"
-                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        />
-                    </div>
+                {paso === 1 ? (
+                    <form onSubmit={handleEnviarCodigo} className="flex flex-col gap-4">
+                        <div>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
+                            <div className="flex">
+                                <span className="flex items-center gap-1 rounded-l-lg border border-r-0 border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 px-3 text-zinc-600 dark:text-zinc-300 text-sm font-semibold select-none whitespace-nowrap">
+                                    🇨🇴 +57
+                                </span>
+                                <input
+                                    type="tel"
+                                    inputMode="numeric"
+                                    autoComplete="tel-national"
+                                    value={celular}
+                                    onChange={(e) => setCelular(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
+                                    placeholder="3001234567"
+                                    className="flex-1 rounded-r-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                />
+                            </div>
+                        </div>
 
-                    <div>
-                        <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Contraseña</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Tu contraseña"
-                            className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        />
-                    </div>
+                        {error && <p className="text-red-400 text-sm">{error}</p>}
 
-                    {error && <p className="text-red-400 text-sm">{error}</p>}
-
-                    <button
-                        type="submit"
-                        disabled={cargando}
-                        className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
-                    >
-                        {cargando ? 'Ingresando...' : 'Ingresar'}
-                    </button>
-
-                    <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
-                        ¿No tienes cuenta?{' '}
-                        <Link to="/registro" className="text-amber-500 dark:text-amber-400 font-semibold underline">
-                            Regístrate
-                        </Link>
-                    </p>
-
-                    <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm">
-                        <Link to="/recuperar-password" className="text-amber-500 dark:text-amber-400 font-semibold underline">
-                            ¿Olvidaste tu contraseña?
-                        </Link>
-                    </p>
-                </form>
-
-                <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-50/80 dark:bg-amber-900/10 backdrop-blur-lg p-5 text-center">
-                    <p className="text-2xl mb-1">🏆</p>
-                    <p className="text-zinc-900 dark:text-white font-extrabold text-base mb-1">
-                        ¿Aún no estás en la Polla Mundialista?
-                    </p>
-                    <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-3">
-                        Acumula puntos con cada partido, gana premios exclusivos y participa por hasta{' '}
-                        <span className="font-black text-amber-500">$5.000.000 en bonos</span>{' '}
-                        para servicios de La Retoucherie. ¡El Mundial 2026 empieza ahora! 🇨🇴⚽
-                    </p>
-                    <Link
-                        to="/registro"
-                        className="inline-block w-full py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_16px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
-                    >
-                        ¡Quiero inscribirme ahora!
-                    </Link>
-                </div>
-
-                {sinCuenta && (
-                    <div className="mt-6 rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.12)] backdrop-blur-lg p-5 text-center">
-                        <p className="text-zinc-900 dark:text-white font-semibold mb-2">No encontramos una cuenta con este celular 😕</p>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-                            Si ya compraste tu bono antes, crea tu contraseña para activar tu cuenta.
-                        </p>
-                        <Link
-                            to="/registro"
-                            className="inline-block w-full py-3 rounded-xl font-bold text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500"
+                        <button
+                            type="submit"
+                            disabled={enviando || celular.replace(/[^0-9]/g, '').length !== 10}
+                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
                         >
-                            Crear contraseña / Registrarme
-                        </Link>
-                    </div>
+                            {enviando ? 'Enviando código...' : 'Enviar código por SMS'}
+                        </button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerificarCodigo} className="flex flex-col gap-4">
+                        <div>
+                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Código de 6 dígitos</label>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                value={codigo}
+                                onChange={(e) => setCodigo(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                                placeholder="123456"
+                                className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400 text-center text-2xl tracking-[0.4em] font-mono"
+                            />
+                        </div>
+
+                        {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                        <button
+                            type="submit"
+                            disabled={enviando || codigo.length !== 6}
+                            className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
+                        >
+                            {enviando ? 'Verificando...' : 'Verificar e ingresar'}
+                        </button>
+
+                        <div className="text-center">
+                            {segundos > 0 ? (
+                                <p className="text-zinc-400 dark:text-zinc-500 text-sm">
+                                    Reenviar código en <span className="font-bold text-zinc-900 dark:text-white">{segundos}s</span>
+                                </p>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleReenviar}
+                                    disabled={enviando}
+                                    className="text-amber-500 dark:text-amber-400 text-sm font-semibold underline disabled:opacity-60"
+                                >
+                                    Reenviar código por SMS
+                                </button>
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => { setPaso(1); setCodigo(''); setError(''); }}
+                            className="text-center text-zinc-500 dark:text-zinc-400 text-sm underline"
+                        >
+                            Cambiar número
+                        </button>
+                    </form>
                 )}
             </div>
         </div>
