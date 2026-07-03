@@ -77,15 +77,15 @@ export default function CompartirPronostico({
         // ── FONDO: imagen plantilla diseñada ──
         if (imgFondo) ctx.drawImage(imgFondo, 0, 0, W, H);
 
-        // Posiciones calibradas sobre la plantilla 1024×1536
-        const flagR = 158;
-        const lCX = 268, vCX = 756, flagCY = 736;
+        // Coordenadas exactas medidas del template 1024×1536
+        const flagR = 100;
+        const lCX = 281, vCX = 745, flagCY = 693;
 
         // Cubrir banderas placeholder con círculo oscuro
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 14, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 12, 0, Math.PI * 2);
             ctx.fill();
         });
 
@@ -116,17 +116,16 @@ export default function CompartirPronostico({
         else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR);
 
         // ── NOMBRES DE EQUIPOS ──
-        // Cubrir nombres placeholder
-        const nameY = 936;
+        const nameY = 847;
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
-            ctx.fillRect(cx - 210, nameY - 58, 420, 72);
+            ctx.fillRect(cx - 200, nameY - 44, 400, 56);
         });
 
         const drawFit = (text, cx, y, maxW) => {
-            let size = 54;
+            let size = 52;
             ctx.font = `bold ${size}px Arial`;
-            while (ctx.measureText(text).width > maxW && size > 24) {
+            while (ctx.measureText(text).width > maxW && size > 22) {
                 size -= 2;
                 ctx.font = `bold ${size}px Arial`;
             }
@@ -134,38 +133,48 @@ export default function CompartirPronostico({
             ctx.textAlign = 'center';
             ctx.fillText(text, cx, y);
         };
-        drawFit(equipoLocal.toUpperCase(), lCX, nameY, 400);
-        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 400);
+        drawFit(equipoLocal.toUpperCase(), lCX, nameY, 380);
+        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 380);
 
         // ── MARCADOR ──
-        // Cubre placeholder score del template (~y=840-970) + texto "¿Y TÚ QUÉ..." (~y=1000-1080)
+        // Cubre exactamente el score card del template (medido: top=878, bottom=1028)
         ctx.fillStyle = '#050505';
-        ctx.fillRect(80, 820, 864, 290);
+        ctx.fillRect(25, 878, 974, 150);
 
         ctx.shadowColor = 'rgba(252,209,22,0.65)';
-        ctx.shadowBlur = 26;
+        ctx.shadowBlur = 28;
         ctx.fillStyle = '#FCD116';
-        ctx.font = 'bold 158px monospace';
+        ctx.font = 'bold 130px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(`${localPred}  –  ${visitantePred}`, W / 2, 985);
+        // Números en posiciones exactas medidas del template
+        ctx.fillText(String(localPred),   297, 988);
+        ctx.fillText('–',                 W / 2, 988);
+        ctx.fillText(String(visitantePred), 724, 988);
         ctx.shadowBlur = 0;
 
         // ── NOMBRE DEL USUARIO ──
         if (nombreUsuario) {
-            let nameSize = 38;
+            let nameSize = 36;
             ctx.font = `bold ${nameSize}px Arial`;
-            while (ctx.measureText(nombreUsuario).width > W - 160 && nameSize > 20) {
+            while (ctx.measureText(nombreUsuario).width > W - 200 && nameSize > 18) {
                 nameSize -= 2;
                 ctx.font = `bold ${nameSize}px Arial`;
             }
             const nw = ctx.measureText(nombreUsuario).width + 48;
             const nx = (W - nw) / 2;
-            ctx.fillStyle = 'rgba(0,0,0,0.60)';
-            rr(nx, 1050, nw, 48, 24);
+            // Cubre la primera línea del texto "¿Y TÚ..." para poner el nombre
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 1030, 1024, 58);
+            ctx.fillStyle = 'rgba(252,209,22,0.12)';
+            rr(nx, 1036, nw, 46, 23);
             ctx.fill();
+            ctx.strokeStyle = 'rgba(252,209,22,0.45)';
+            ctx.lineWidth = 1.5;
+            rr(nx, 1036, nw, 46, 23);
+            ctx.stroke();
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario, W / 2, 1085);
+            ctx.fillText(nombreUsuario, W / 2, 1069);
         }
 
         return canvas;

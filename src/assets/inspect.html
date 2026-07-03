@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Inspector de Coordenadas</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #111; display: flex; flex-direction: column; align-items: center; padding: 20px; font-family: monospace; }
+    h2 { color: #FCD116; margin-bottom: 10px; }
+    p { color: #aaa; font-size: 13px; margin-bottom: 12px; text-align: center; }
+    #wrap { position: relative; display: inline-block; }
+    canvas { cursor: crosshair; display: block; max-width: 90vw; max-height: 80vh; }
+    #info { position: fixed; top: 14px; left: 14px; background: rgba(0,0,0,0.85);
+            color: #FCD116; font-size: 15px; padding: 8px 14px;
+            border: 1.5px solid #FCD116; border-radius: 8px; z-index: 10; }
+    #panel { margin-top: 14px; background: #1a1a1a; border: 1px solid #333;
+             border-radius: 10px; padding: 14px; width: 100%; max-width: 620px; }
+    #panel h3 { color: #fff; margin-bottom: 8px; font-size: 14px; }
+    #log { color: #0f0; font-size: 13px; line-height: 1.8; white-space: pre; }
+    button { margin-top: 10px; background: #FCD116; color: #000; border: none;
+             border-radius: 6px; padding: 6px 14px; cursor: pointer; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Inspector de Coordenadas del Template</h2>
+  <p>Mueve el mouse para ver coordenadas. <b>Haz clic</b> en: centro bandera izquierda, centro bandera derecha, centro texto equipo local, centro texto equipo visitante, número "3" (score), número "0" (score). Luego copia el log.</p>
+  <div id="info">x: 0  y: 0</div>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+  </div>
+  <div id="panel">
+    <h3>Clics registrados (copia esto):</h3>
+    <div id="log">—</div>
+    <button onclick="copyLog()">Copiar</button>
+    <button onclick="clearLog()" style="background:#555;color:#fff;margin-left:8px">Limpiar</button>
+  </div>
+  <script>
+    const img = new Image();
+    const c = document.getElementById('c');
+    const ctx = c.getContext('2d');
+    const infoEl = document.getElementById('info');
+    const logEl = document.getElementById('log');
+    const records = [];
+    const labels = [
+      'Bandera local (centro)',
+      'Bandera visitante (centro)',
+      'Nombre equipo local (centro texto)',
+      'Nombre equipo visitante (centro texto)',
+      'Score "3" (centro número)',
+      'Score "0" (centro número)',
+      'Línea superior score card',
+      'Línea inferior score card',
+    ];
+    let clickCount = 0;
+
+    img.onload = () => {
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+    };
+    img.onerror = () => {
+      ctx.fillStyle = '#f00';
+      ctx.font = '24px monospace';
+      ctx.fillText('No se pudo cargar la imagen', 50, 100);
+    };
+    img.src = 'DEFINITIVA PRONOSTICO COMPARTIR ----V1.0.png';
+
+    function getPos(e) {
+      const r = c.getBoundingClientRect();
+      const sx = c.width / r.width;
+      const sy = c.height / r.height;
+      return {
+        x: Math.round((e.clientX - r.left) * sx),
+        y: Math.round((e.clientY - r.top)  * sy),
+      };
+    }
+
+    c.addEventListener('mousemove', e => {
+      const {x, y} = getPos(e);
+      infoEl.textContent = `x: ${x}   y: ${y}`;
+    });
+
+    c.addEventListener('click', e => {
+      const {x, y} = getPos(e);
+      const label = labels[clickCount] || `Punto ${clickCount + 1}`;
+      records.push(`${label}: x=${x}, y=${y}`);
+      clickCount++;
+      logEl.textContent = records.join('\n');
+
+      // Marcar el punto en el canvas
+      ctx.save();
+      ctx.strokeStyle = '#ff0';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ff0';
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(clickCount, x + 15, y + 7);
+      ctx.restore();
+    });
+
+    function copyLog() {
+      navigator.clipboard.writeText(records.join('\n'))
+        .then(() => alert('Copiado!'));
+    }
+    function clearLog() {
+      records.length = 0;
+      clickCount = 0;
+      logEl.textContent = '—';
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0);
+    }
+  </script>
+</body>
+</html>
