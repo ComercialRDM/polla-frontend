@@ -126,6 +126,7 @@ export default function Polla() {
                     setPendienteVerificacion(true);
                     setNombrePendiente(data.nombre || '');
                 } else if (!data?.acceso) {
+                    localStorage.removeItem('polla_token_acceso');
                     setError('No encontramos un bono activo asociado a este link.');
                 } else {
                     setInfo(data);
