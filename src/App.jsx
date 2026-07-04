@@ -3,12 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation } 
 import Splash from './pages/Splash';
 import Home from './pages/Home';
 import Comprar from './pages/Comprar';
-import Polla from './pages/Polla';
 
 // Code-splitting: estas rutas se descargan solo cuando el usuario navega a
 // ellas, en vez de ir todas en el bundle inicial (la mayoría son de bajo
-// tráfico: admin, legales, resultados, etc.). Home, Comprar y Polla quedan
-// eager porque son las páginas críticas del embudo de compra y de Mi Cuenta.
+// tráfico: admin, legales, resultados, etc.). Home y Comprar quedan eager
+// porque son las rutas de entrada del embudo de compra.
 const Premios = lazy(() => import('./pages/Premios'));
 const ComoParticipo = lazy(() => import('./pages/ComoParticipo'));
 const Nosotros = lazy(() => import('./pages/Nosotros'));
@@ -17,6 +16,7 @@ const Ingresar = lazy(() => import('./pages/Ingresar'));
 const Registro = lazy(() => import('./pages/Registro'));
 const IniciarSesion = lazy(() => import('./pages/IniciarSesion'));
 const RecuperarPassword = lazy(() => import('./pages/RecuperarPassword'));
+const Polla = lazy(() => import('./pages/Polla'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminQR = lazy(() => import('./pages/AdminQR'));
 const Terminos = lazy(() => import('./pages/Terminos'));
