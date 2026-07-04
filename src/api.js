@@ -637,6 +637,15 @@ export function adminMarcarReclamado(token, id) {
     });
 }
 
+export function adminPronosticosLanding(token, { partido_id, busqueda } = {}) {
+    const qs = new URLSearchParams();
+    if (partido_id) qs.set('partido_id', partido_id);
+    if (busqueda)   qs.set('busqueda', busqueda);
+    return request(`/api/admin/pronosticos-landing?${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
 export function local2faEstado(token) {
     return request('/api/local/2fa/estado', { headers: { Authorization: `Bearer ${token}` } });
 }

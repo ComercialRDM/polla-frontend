@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado, adminPronosticosLanding } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -22,6 +22,7 @@ const GRUPOS_NAV = [
             { id: 'transacciones',  label: '💳 Transacciones' },
             { id: 'usuarios',       label: '👥 Usuarios' },
             { id: 'pronosticos',    label: '⚽ Pronósticos' },
+            { id: 'landing',        label: '📲 Landing Col' },
             { id: 'redenciones',    label: '🧾 Redenciones' },
             { id: 'regalos',        label: '🎁 Regalos' },
             { id: 'fotos',          label: '📸 Fotos' },
@@ -96,6 +97,12 @@ export default function Admin() {
     const [bonosCol, setBonosCol]             = useState([]);
     const [cargandoBonosCol, setCargandoBonosCol] = useState(false);
     const [reclamandoId, setReclamandoId]     = useState(null);
+
+    const [landingProns, setLandingProns]         = useState([]);
+    const [landingTotal, setLandingTotal]         = useState(0);
+    const [cargandoLanding, setCargandoLanding]   = useState(false);
+    const [landingBusqueda, setLandingBusqueda]   = useState('');
+    const [landingPartidoId, setLandingPartidoId] = useState('');
 
     const [flashGanadores, setFlashGanadores]     = useState([]);
     const [cargandoFlash, setCargandoFlash]       = useState(false);
@@ -643,6 +650,18 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    async function cargarLanding(partidoId = landingPartidoId, busq = landingBusqueda) {
+        setCargandoLanding(true);
+        try {
+            const data = await adminPronosticosLanding(token, { partido_id: partidoId || undefined, busqueda: busq || undefined });
+            if (data?.success) { setLandingProns(data.pronosticos); setLandingTotal(data.total); }
+        } catch (err) {
+            // silencioso
+        } finally {
+            setCargandoLanding(false);
+        }
+    }
+
     async function cargarFlashGanadores() {
         setCargandoFlash(true);
         try {
@@ -1070,6 +1089,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'usuarios' && token) cargarUsuarios();
         if (seccionActiva === 'ranking' && token) { cargarBonosColombia(); cargarFlashGanadores(); }
         if (seccionActiva === 'bonoscolombia' && token) cargarBonosColombia();
+        if (seccionActiva === 'landing' && token) cargarLanding();
         if (seccionActiva === 'preseleccionados' && token) cargarPreseleccionados();
         if (seccionActiva === 'influenciadores' && token) { cargarEspeciales(); cargarRankingEspeciales(); cargarRegistrosInfluencer(); cargarAfiliados(); cargarComisiones(); }
         if (seccionActiva === 'localesqr' && token) cargarLocalesQR();
@@ -3834,6 +3854,95 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             </div>
                         )}
                     </div>
+                </div>
+                )}
+
+                {/* Pronósticos del Landing de Colombia */}
+                {seccionActiva === 'landing' && (
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <select
+                            value={landingPartidoId}
+                            onChange={e => setLandingPartidoId(e.target.value)}
+                            className="flex-1 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        >
+                            <option value="">— Todos los partidos —</option>
+                            {partidos.map(p => (
+                                <option key={p.id} value={p.id}>
+                                    {p.equipo_local} vs {p.equipo_visitante} ({p.estado})
+                                </option>
+                            ))}
+                        </select>
+                        <input
+                            type="text"
+                            value={landingBusqueda}
+                            onChange={e => setLandingBusqueda(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && cargarLanding(landingPartidoId, landingBusqueda)}
+                            placeholder="Buscar por nombre o celular..."
+                            className="flex-1 rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        <button
+                            onClick={() => cargarLanding(landingPartidoId, landingBusqueda)}
+                            disabled={cargandoLanding}
+                            className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-orange-500 disabled:opacity-60"
+                        >
+                            {cargandoLanding ? 'Cargando...' : 'Buscar'}
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            {cargandoLanding ? 'Cargando...' : `${landingTotal} pronósticos en el landing`}
+                        </p>
+                    </div>
+
+                    {landingProns.length > 0 ? (
+                    <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10">
+                        <table className="w-full text-xs text-left">
+                            <thead className="bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                <tr>
+                                    <th className="px-3 py-2">Nombre</th>
+                                    <th className="px-3 py-2">Celular</th>
+                                    <th className="px-3 py-2">Partido</th>
+                                    <th className="px-3 py-2 text-center">Pronóstico</th>
+                                    <th className="px-3 py-2 text-center">Resultado</th>
+                                    <th className="px-3 py-2 text-center">Pts</th>
+                                    <th className="px-3 py-2">Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                {landingProns.map((r, i) => {
+                                    const esExacto = r.estado === 'cerrado' && r.goles_local === r.resultado_local && r.goles_visitante === r.resultado_visitante;
+                                    return (
+                                        <tr key={i} className="hover:bg-zinc-50 dark:hover:bg-white/[0.03] text-zinc-800 dark:text-zinc-200">
+                                            <td className="px-3 py-2 font-medium">{r.nombre}</td>
+                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{r.celular}</td>
+                                            <td className="px-3 py-2">{r.equipo_local} vs {r.equipo_visitante}</td>
+                                            <td className="px-3 py-2 text-center font-bold font-scoreboard">{r.goles_local}-{r.goles_visitante}</td>
+                                            <td className="px-3 py-2 text-center">
+                                                {r.estado === 'cerrado'
+                                                    ? <span className={esExacto ? 'text-green-400 font-bold' : 'text-zinc-400'}>{r.resultado_local}-{r.resultado_visitante}</span>
+                                                    : <span className="text-zinc-500">—</span>
+                                                }
+                                            </td>
+                                            <td className="px-3 py-2 text-center">
+                                                {r.puntos_obtenidos > 0
+                                                    ? <span className="text-amber-400 font-bold">{r.puntos_obtenidos}</span>
+                                                    : <span className="text-zinc-500">—</span>
+                                                }
+                                            </td>
+                                            <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                                                {new Date(r.created_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    ) : !cargandoLanding && (
+                        <p className="text-center text-zinc-500 dark:text-zinc-400 py-8">No hay pronósticos del landing aún.</p>
+                    )}
                 </div>
                 )}
 
