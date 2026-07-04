@@ -76,8 +76,7 @@ export default function IniciarSesion() {
             }
             if (data?.success && !data.nuevo) {
                 guardarSesion({ ...data.usuario, token: data.token });
-                const tokenAcceso = data.token_acceso || localStorage.getItem('polla_token_acceso');
-                navigate(tokenAcceso ? `/polla?token=${tokenAcceso}` : '/landing');
+                navigate(data.token_acceso ? `/polla?token=${data.token_acceso}` : '/landing');
             } else if (data?.success && data.nuevo) {
                 navigate('/registro');
             } else {
