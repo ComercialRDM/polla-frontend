@@ -715,7 +715,7 @@ export default function Comprar() {
                     <input
                         type="checkbox"
                         checked={aceptaTerminos}
-                        onChange={(e) => setAceptaTerminos(e.target.checked)}
+                        onChange={(e) => { setAceptaTerminos(e.target.checked); if (e.target.checked) setError(''); }}
                         className="sr-only"
                     />
                     <div className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${aceptaTerminos ? 'border-amber-400 bg-amber-400' : 'border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800'}`}>
