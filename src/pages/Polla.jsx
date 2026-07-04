@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, solicitarRegalo, misSolicitudesRegalo, cerrarSesionRemota } from '../api';
+import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, confirmarRegalo, solicitarRegalo, misSolicitudesRegalo, cerrarSesionRemota } from '../api';
 import InstalarApp from '../components/InstalarApp';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
@@ -94,6 +94,9 @@ export default function Polla() {
     const [regaloEnviando, setRegaloEnviando] = useState(false);
     const [regaloMensaje, setRegaloMensaje] = useState('');
     const [regaloError, setRegaloError] = useState('');
+    const [regaloOtpPaso, setRegaloOtpPaso] = useState(false);
+    const [regaloOtp, setRegaloOtp] = useState('');
+    const [regaloOtpDestino, setRegaloOtpDestino] = useState('');
     const [misSolicitudes, setMisSolicitudes] = useState([]);
 
     const [mostrarDemoBanner, setMostrarDemoBanner] = useState(false);
@@ -200,18 +203,38 @@ export default function Polla() {
         if (!regaloAcepta) { setRegaloError('Debes aceptar los términos'); return; }
         setRegaloEnviando(true);
         try {
+            const res = await confirmarRegalo(token);
+            if (res?.success) {
+                setRegaloOtpDestino(res.destino || '');
+                setRegaloOtpPaso(true);
+                setRegaloOtp('');
+            } else {
+                setRegaloError(res?.error || 'Error al enviar el código de confirmación');
+            }
+        } catch { setRegaloError('Error de conexión'); }
+        finally { setRegaloEnviando(false); }
+    }
+
+    async function handleConfirmarRegaloOtp(e) {
+        e.preventDefault();
+        setRegaloError('');
+        if (regaloOtp.length !== 6) { setRegaloError('El código tiene 6 dígitos'); return; }
+        setRegaloEnviando(true);
+        try {
             const res = await solicitarRegalo(token, {
                 ...regaloForm,
                 receptor_celular: `+57${regaloForm.receptor_celular.replace(/[^0-9]/g, '')}`,
                 acepta_terminos: true,
-            });
+            }, regaloOtp);
             if (res?.success) {
                 setRegaloMensaje('✅ Solicitud enviada. Nuestro equipo la revisará y te confirmaremos.');
                 setRegaloForm({ receptor_nombre: '', receptor_cedula: '', receptor_celular: '', receptor_correo: '' });
                 setRegaloAcepta(false);
+                setRegaloOtpPaso(false);
+                setRegaloOtp('');
                 misSolicitudesRegalo(token).then((d) => { if (d?.success) setMisSolicitudes(d.solicitudes); }).catch(() => {});
             } else {
-                setRegaloError(res?.error || 'Error al enviar la solicitud');
+                setRegaloError(res?.error || 'Error al confirmar la solicitud');
             }
         } catch { setRegaloError('Error de conexión'); }
         finally { setRegaloEnviando(false); }
@@ -832,6 +855,28 @@ export default function Polla() {
                         </p>
                         {regaloMensaje ? (
                             <p className="text-green-600 dark:text-green-400 text-sm font-bold text-center py-4">{regaloMensaje}</p>
+                        ) : regaloOtpPaso ? (
+                            <form onSubmit={handleConfirmarRegaloOtp} className="flex flex-col gap-3">
+                                <p className="text-zinc-600 dark:text-zinc-400 text-xs text-center">
+                                    Enviamos un código de confirmación a <strong>{regaloOtpDestino}</strong>. Ingrésalo para autorizar el regalo.
+                                </p>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    value={regaloOtp}
+                                    onChange={e => setRegaloOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                                    placeholder="123456"
+                                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-4 py-3 text-center text-2xl tracking-[0.4em] font-mono text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                />
+                                {regaloError && <p className="text-red-500 text-xs">{regaloError}</p>}
+                                <button type="submit" disabled={regaloEnviando || regaloOtp.length !== 6} className="w-full py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 transition-colors">
+                                    {regaloEnviando ? 'Verificando...' : 'Confirmar y enviar solicitud'}
+                                </button>
+                                <button type="button" onClick={() => { setRegaloOtpPaso(false); setRegaloOtp(''); setRegaloError(''); }} className="text-xs text-zinc-500 underline text-center">
+                                    Volver al formulario
+                                </button>
+                            </form>
                         ) : (
                             <form onSubmit={handleEnviarRegalo} className="flex flex-col gap-3">
                                 <div>
@@ -861,7 +906,7 @@ export default function Polla() {
                                 </label>
                                 {regaloError && <p className="text-red-500 text-xs">{regaloError}</p>}
                                 <button type="submit" disabled={regaloEnviando} className="w-full py-2.5 rounded-xl font-bold text-sm text-zinc-950 bg-amber-400 hover:bg-amber-300 disabled:opacity-50 transition-colors">
-                                    {regaloEnviando ? 'Enviando...' : 'Enviar solicitud'}
+                                    {regaloEnviando ? 'Enviando código...' : 'Continuar →'}
                                 </button>
                             </form>
                         )}

@@ -864,10 +864,16 @@ export function checklistHistorial(token, tipo, limit = 7) {
 }
 
 // ── Regalo de Bono ────────────────────────────────────────────────────────────
-export function solicitarRegalo(token_acceso, datos) {
+export function confirmarRegalo(token_acceso) {
+    return request('/api/polla/confirmar-regalo', {
+        method: 'POST',
+        body: JSON.stringify({ token_acceso }),
+    });
+}
+export function solicitarRegalo(token_acceso, datos, codigo_confirmacion) {
     return request('/api/polla/regalo/solicitar', {
         method: 'POST',
-        body: JSON.stringify({ token_acceso, ...datos }),
+        body: JSON.stringify({ token_acceso, ...datos, codigo_confirmacion }),
     });
 }
 export function misSolicitudesRegalo(token_acceso) {
