@@ -115,7 +115,7 @@ function AppRoutes() {
     // /como-funciona tiene su propio boton fijo de compra en movil (CTAFijoMovil);
     // se desplaza el de WhatsApp hacia arriba para que no se encimen.
     const conCTAFijo = location.pathname === '/' || location.pathname === '/como-funciona';
-    const ocultarWhatsApp = location.pathname === '/colombia';
+    const ocultarWhatsApp = location.pathname === '/colombia' || location.pathname.startsWith('/dashboardpollardm') || location.pathname.startsWith('/adminqr');
 
     return (
         <>
