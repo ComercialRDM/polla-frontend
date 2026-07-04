@@ -77,11 +77,22 @@ export default function CompartirPronostico({
         // ── FONDO: imagen plantilla diseñada ──
         if (imgFondo) ctx.drawImage(imgFondo, 0, 0, W, H);
 
-        // Coordenadas exactas medidas del template 1024×1536
-        const flagR = 70;
-        const lCX = 281, vCX = 745, flagCY = 693;
+        // Posiciones — flags desplazadas hacia abajo para crear espacio al nombre
+        const lCX = 281, vCX = 745;
+        const tplFlagCY = 693;   // posición original en el template (para tapar)
+        const flagCY   = 760;    // nueva posición de las banderas (más abajo)
+        const flagR    = 52;
 
-        // ── NOMBRE DEL USUARIO (entre "MI PASIÓN" y las banderas) ──
+        // ── Tapar banderas y VS originales del template ──
+        ctx.fillStyle = '#030b03';
+        [lCX, vCX].forEach((cx) => {
+            ctx.beginPath();
+            ctx.arc(cx, tplFlagCY, 110, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        ctx.fillRect(435, 648, 155, 86); // tapa el "VS" del template
+
+        // ── NOMBRE DEL USUARIO (entre "MI PASIÓN" y las banderas nuevas) ──
         if (nombreUsuario) {
             let userSize = 46;
             ctx.font = `bold ${userSize}px Arial`;
@@ -89,36 +100,40 @@ export default function CompartirPronostico({
                 userSize -= 2;
                 ctx.font = `bold ${userSize}px Arial`;
             }
-            ctx.shadowColor = 'rgba(0,0,0,0.92)';
-            ctx.shadowBlur = 22;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 3;
+            ctx.shadowColor = 'rgba(0,0,0,0.95)';
+            ctx.shadowBlur = 26;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 2;
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            ctx.fillText(nombreUsuario.toUpperCase(), W / 2, 550);
+            ctx.fillText(nombreUsuario.toUpperCase(), W / 2, 580);
             ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
         }
 
-        // Cubrir banderas placeholder con círculo oscuro
+        // ── Banderas nuevas (más abajo) ──
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 15, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 14, 0, Math.PI * 2);
             ctx.fill();
         });
+        // VS entre banderas nuevas
+        ctx.fillStyle = 'rgba(255,255,255,0.80)';
+        ctx.font = 'bold 26px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('VS', W / 2, 765);
 
         // Aro dorado
         [lCX, vCX].forEach((cx) => {
             ctx.shadowColor = 'rgba(252,209,22,0.7)';
-            ctx.shadowBlur = 24;
+            ctx.shadowBlur = 20;
             ctx.strokeStyle = '#FCD116';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 7;
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 6, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 5, 0, Math.PI * 2);
             ctx.stroke();
             ctx.shadowBlur = 0;
         });
-
         // Fondo interior bandera
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#111118';
@@ -126,24 +141,21 @@ export default function CompartirPronostico({
             ctx.arc(cx, flagCY, flagR, 0, Math.PI * 2);
             ctx.fill();
         });
-
-        // Dibujar banderas reales
         if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR);
         else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR);
         if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR);
         else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR);
 
         // ── NOMBRES DE EQUIPOS ──
-        const nameY = 830;
+        const nameY = 843;
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
-            ctx.fillRect(cx - 180, nameY - 40, 360, 52);
+            ctx.fillRect(cx - 170, nameY - 38, 340, 48);
         });
-
         const drawFit = (text, cx, y, maxW) => {
-            let size = 44;
+            let size = 40;
             ctx.font = `bold ${size}px Arial`;
-            while (ctx.measureText(text).width > maxW && size > 20) {
+            while (ctx.measureText(text).width > maxW && size > 18) {
                 size -= 2;
                 ctx.font = `bold ${size}px Arial`;
             }
@@ -151,8 +163,8 @@ export default function CompartirPronostico({
             ctx.textAlign = 'center';
             ctx.fillText(text, cx, y);
         };
-        drawFit(equipoLocal.toUpperCase(), lCX, nameY, 340);
-        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 340);
+        drawFit(equipoLocal.toUpperCase(),    lCX, nameY, 320);
+        drawFit(equipoVisitante.toUpperCase(), vCX, nameY, 320);
 
         // ── MARCADOR ──
         ctx.fillStyle = '#050505';
