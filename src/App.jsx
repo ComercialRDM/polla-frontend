@@ -29,6 +29,7 @@ const Grupo = lazy(() => import('./pages/Grupo'));
 const InvitacionInfluencer = lazy(() => import('./pages/InvitacionInfluencer'));
 const ColombiaLanding = lazy(() => import('./pages/ColombiaLanding'));
 
+import ErrorBoundary from './components/ErrorBoundary';
 import BotonWhatsApp from './components/BotonWhatsApp';
 import ThemeToggle from './components/ThemeToggle';
 import BottomNav from './components/BottomNav';
@@ -184,11 +185,13 @@ export default function App() {
 
     return (
         <ThemeProvider>
-            <BrowserRouter>
-                <AppRoutes />
-            </BrowserRouter>
-            {backendCaido && <BackendDown />}
-            <NotificacionActividad />
+            <ErrorBoundary>
+                <BrowserRouter>
+                    <AppRoutes />
+                </BrowserRouter>
+                {backendCaido && <BackendDown />}
+                <NotificacionActividad />
+            </ErrorBoundary>
         </ThemeProvider>
     );
 }

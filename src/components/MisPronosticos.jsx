@@ -2,12 +2,26 @@ import { useEffect, useState } from 'react';
 import { obtenerMisPronosticos, obtenerMisPronosticosToken } from '../api';
 import Bandera from './Bandera';
 
-const ESTADO_CONFIG = {
-    3:    { label: 'EXACTO',   clase: 'bg-green-500/15 border-green-500/40 text-green-400',  icono: '🎯' },
-    1:    { label: '+1 PT',    clase: 'bg-yellow-500/15 border-yellow-500/40 text-yellow-400', icono: '✅' },
-    0:    { label: 'FALLÓ',    clase: 'bg-red-500/15 border-red-500/40 text-red-400',          icono: '❌' },
-    null: { label: 'PENDIENTE', clase: 'bg-amber-500/10 border-amber-400/40 text-amber-400',  icono: '⏳' },
+// Espejo de puntajesFase.js del backend — única fuente de verdad en Render.
+// Si se cambian allá, actualizar acá también.
+const EXACTO_POR_FASE = {
+    grupos: 100, dieciseisavos: 200, octavos: 200,
+    cuartos: 600, semifinal: 600, final: 2000,
 };
+
+const ESTADO_CONFIG = {
+    exacto:    { label: 'EXACTO',    clase: 'bg-green-500/15 border-green-500/40 text-green-400',    icono: '🎯' },
+    tendencia: { label: '+PUNTOS',   clase: 'bg-yellow-500/15 border-yellow-500/40 text-yellow-400', icono: '✅' },
+    fallo:     { label: 'FALLÓ',     clase: 'bg-red-500/15 border-red-500/40 text-red-400',          icono: '❌' },
+    pendiente: { label: 'PENDIENTE', clase: 'bg-amber-500/10 border-amber-400/40 text-amber-400',   icono: '⏳' },
+};
+
+function clasificarPronostico(puntos, fase) {
+    if (puntos === null || puntos === undefined) return ESTADO_CONFIG.pendiente;
+    if (Number(puntos) === 0) return ESTADO_CONFIG.fallo;
+    const maxExacto = EXACTO_POR_FASE[fase] ?? 100;
+    return Number(puntos) >= maxExacto ? ESTADO_CONFIG.exacto : ESTADO_CONFIG.tendencia;
+}
 
 function formatFecha(isoStr) {
     const d = new Date(isoStr);
@@ -22,12 +36,12 @@ export default function MisPronosticos({ usuarioId, tokenAcceso }) {
     useEffect(() => {
         if (tokenAcceso) {
             obtenerMisPronosticosToken(tokenAcceso)
-                .then(d => { if (d?.success) setPronosticos(d.pronosticos); })
+                .then(d => { if (d?.success) setPronosticos(d.pronosticos ?? []); })
                 .catch(() => {})
                 .finally(() => setCargando(false));
         } else if (usuarioId) {
             obtenerMisPronosticos()
-                .then(d => { if (d?.success) setPronosticos(d.pronosticos); })
+                .then(d => { if (d?.success) setPronosticos(d.pronosticos ?? []); })
                 .catch(() => {})
                 .finally(() => setCargando(false));
         }
@@ -37,13 +51,12 @@ export default function MisPronosticos({ usuarioId, tokenAcceso }) {
     if (pronosticos.length === 0) return null;
 
     const visibles = expandido ? pronosticos : pronosticos.slice(0, 4);
-    const totalPuntos = pronosticos.reduce((acc, p) => acc + (p.puntos_partido || 0), 0);
-    const exactos = pronosticos.filter(p => p.puntos_partido === 3).length;
+    const totalPuntos = pronosticos.reduce((acc, p) => acc + (Number(p.puntos_partido) || 0), 0);
+    const exactos = pronosticos.filter(p => p.puntos_partido !== null && p.puntos_partido !== undefined && Number(p.puntos_partido) >= (EXACTO_POR_FASE[p.fase] ?? 100)).length;
     const cerrados = pronosticos.filter(p => p.estado === 'cerrado').length;
 
     return (
         <div className="w-full mb-4">
-            {/* Encabezado */}
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-5 bg-[#FCD116] rounded-full" />
@@ -58,8 +71,8 @@ export default function MisPronosticos({ usuarioId, tokenAcceso }) {
             </div>
 
             <div className="flex flex-col gap-2">
-                {visibles.map((p) => {
-                    const cfg = ESTADO_CONFIG[p.puntos_partido];
+                {visibles.filter(Boolean).map((p) => {
+                    const cfg = clasificarPronostico(p.puntos_partido, p.fase);
                     const cerrado = p.estado === 'cerrado';
 
                     return (
@@ -67,13 +80,11 @@ export default function MisPronosticos({ usuarioId, tokenAcceso }) {
                             key={p.id}
                             className="rounded-xl bg-zinc-900 border border-white/5 px-3 py-2.5 flex items-center gap-3"
                         >
-                            {/* Badge de resultado */}
                             <div className={`flex-shrink-0 rounded-xl border px-2.5 py-2 text-center min-w-[64px] ${cfg.clase}`}>
                                 <p className="text-lg leading-none">{cfg.icono}</p>
                                 <p className="font-black text-[10px] leading-tight mt-1 uppercase tracking-wide">{cfg.label}</p>
                             </div>
 
-                            {/* Partido info */}
                             <div className="flex-1 min-w-0">
                                 <p className="text-white text-xs font-semibold truncate flex items-center gap-1">
                                     <Bandera equipo={p.equipo_local} className="w-4 h-4 flex-shrink-0" />
@@ -89,7 +100,7 @@ export default function MisPronosticos({ usuarioId, tokenAcceso }) {
                                         <>
                                             <span className="text-zinc-600 text-[10px]">·</span>
                                             <span className="text-zinc-400 text-[10px]">
-                                                Resultado: <span className={`font-bold ${p.puntos_partido === 3 ? 'text-green-400' : p.puntos_partido === 1 ? 'text-yellow-400' : 'text-zinc-300'}`}>
+                                                Resultado: <span className={`font-bold ${cfg === ESTADO_CONFIG.exacto ? 'text-green-400' : cfg === ESTADO_CONFIG.tendencia ? 'text-yellow-400' : 'text-zinc-300'}`}>
                                                     {p.res_local}–{p.res_visitante}
                                                 </span>
                                             </span>
@@ -98,7 +109,6 @@ export default function MisPronosticos({ usuarioId, tokenAcceso }) {
                                 </div>
                             </div>
 
-                            {/* Fecha */}
                             <span className="flex-shrink-0 text-zinc-600 text-[10px]">{formatFecha(p.fecha_hora_inicio)}</span>
                         </div>
                     );
