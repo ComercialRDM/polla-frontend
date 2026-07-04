@@ -36,6 +36,15 @@ function cargarWidgetWompi() {
     });
 }
 
+// Rechaza si la promesa no resuelve en ms milisegundos.
+function conTimeout(promesa, ms = 15000) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('TIMEOUT')), ms);
+    });
+    return Promise.race([promesa, timeout]).finally(() => clearTimeout(timer));
+}
+
 const CUENTA_TRANSFERENCIA = {
     banco: 'Bancolombia',
     tipo: 'Ahorros',
@@ -235,6 +244,10 @@ export default function Comprar() {
                 return;
             }
         }
+        if (mostrarTransferencia && !comprobante) {
+            setError('Debes adjuntar el comprobante de pago antes de enviarlo.');
+            return;
+        }
 
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
         const affToken = localStorage.getItem(AFF_STORAGE_KEY) || '';
@@ -251,7 +264,7 @@ export default function Comprar() {
         try {
             if (!mostrarTransferencia && metodoPago === 'pse') {
                 trackAddPaymentInfo(planParaEvento, { metodoPago: 'pse' });
-                const data = await crearPSE({
+                const data = await conTimeout(crearPSE({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
                     celular: form.celular.trim(),
@@ -264,7 +277,7 @@ export default function Comprar() {
                     aff_token: affToken,
                     atribucion,
                     acepta_terminos: aceptaTerminos,
-                });
+                }));
                 if (data?.success && data.redirect_url) {
                     guardarSesionDePago(data);
                     window.location.href = data.redirect_url;
@@ -276,7 +289,7 @@ export default function Comprar() {
 
             if (!mostrarTransferencia && metodoPago === 'bancolombia') {
                 trackAddPaymentInfo(planParaEvento, { metodoPago: 'bancolombia' });
-                const data = await crearBancolombia({
+                const data = await conTimeout(crearBancolombia({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
                     celular: form.celular.trim(),
@@ -286,7 +299,7 @@ export default function Comprar() {
                     aff_token: affToken,
                     atribucion,
                     acepta_terminos: aceptaTerminos,
-                });
+                }));
                 if (data?.success && data.redirect_url) {
                     guardarSesionDePago(data);
                     window.location.href = data.redirect_url;
@@ -297,13 +310,8 @@ export default function Comprar() {
             }
 
             if (mostrarTransferencia) {
-                if (!comprobante) {
-                    setError('Adjunta la foto o captura del comprobante de pago.');
-                    setCargando(false);
-                    return;
-                }
                 trackAddPaymentInfo(planParaEvento, { metodoPago: 'transferencia' });
-                const data = await crearTransferencia({
+                const data = await conTimeout(crearTransferencia({
                     nombre: form.nombre.trim(),
                     correo: form.correo.trim(),
                     celular: form.celular.trim(),
@@ -314,7 +322,7 @@ export default function Comprar() {
                     aff_token: affToken,
                     atribucion,
                     acepta_terminos: aceptaTerminos,
-                });
+                }));
                 if (data?.success) {
                     guardarSesionDePago(data);
                     if (data.token_acceso) {
@@ -330,7 +338,7 @@ export default function Comprar() {
             }
 
             trackAddPaymentInfo(planParaEvento, { metodoPago: 'wompi' });
-            const data = await crearLinkPago({
+            const data = await conTimeout(crearLinkPago({
                 nombre: form.nombre.trim(),
                 correo: form.correo.trim(),
                 celular: form.celular.trim(),
@@ -340,7 +348,7 @@ export default function Comprar() {
                 aff_token: affToken,
                 atribucion,
                 acepta_terminos: aceptaTerminos,
-            });
+            }));
 
             if (data?.success && data.widget) {
                 guardarSesionDePago(data);
@@ -359,8 +367,12 @@ export default function Comprar() {
             } else {
                 setError(data?.error || 'No se pudo iniciar el pago.');
             }
-        } catch {
-            setError('Error de conexión con el servidor. Intenta de nuevo.');
+        } catch (err) {
+            if (err?.message === 'TIMEOUT') {
+                setError('El servidor tardó en responder. Intenta de nuevo o usa Transferencia Bancolombia.');
+            } else {
+                setError('Error de conexión con el servidor. Intenta de nuevo.');
+            }
         } finally {
             if (!widgetAbierto) {
                 enviandoRef.current = false;
@@ -469,7 +481,7 @@ export default function Comprar() {
                                     <button
                                         key={plan.valor}
                                         type="button"
-                                        onClick={() => { setSelectValor(String(plan.valor)); setMontoCustom(''); }}
+                                        onClick={() => { setSelectValor(String(plan.valor)); setMontoCustom(''); setCargando(false); enviandoRef.current = false; setError(''); }}
                                         className={`relative flex flex-col items-center rounded-xl border-2 px-2 py-3 transition-all text-center ${sel ? 'border-[#FCD116] bg-amber-400/10' : 'border-zinc-200 dark:border-white/10 hover:border-amber-300'}`}
                                     >
                                         {plan.destacado === 'popular' && (
@@ -487,7 +499,7 @@ export default function Comprar() {
                         {/* Otro monto */}
                         <button
                             type="button"
-                            onClick={() => setSelectValor(VALOR_OTRO)}
+                            onClick={() => { setSelectValor(VALOR_OTRO); setCargando(false); enviandoRef.current = false; setError(''); }}
                             className={`w-full py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${esOtroMonto ? 'border-[#FCD116] bg-amber-400/10 text-zinc-900 dark:text-white' : 'border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:border-amber-300'}`}
                         >
                             + Otro monto personalizado
@@ -798,7 +810,7 @@ export default function Comprar() {
                     </button>
                     <button
                         type="button"
-                        onClick={() => setMostrarTransferencia((v) => !v)}
+                        onClick={() => { setMostrarTransferencia((v) => !v); setCargando(false); enviandoRef.current = false; setError(''); }}
                         className="w-full py-2.5 rounded-xl font-semibold text-xs text-zinc-500 dark:text-zinc-400 text-center border border-zinc-200 dark:border-white/10 hover:border-zinc-400 dark:hover:border-white/20 transition-colors"
                     >
                         {mostrarTransferencia ? '← Pagar con Wompi / PSE / Bancolombia' : 'Pagar con Transferencia Bancolombia'}
