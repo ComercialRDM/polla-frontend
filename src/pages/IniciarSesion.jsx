@@ -60,8 +60,8 @@ export default function IniciarSesion() {
             const data = await verificarCodigoTelefono({ celular: cel, codigo });
             if (data?.success && !data.nuevo) {
                 guardarSesion({ ...data.usuario, token: data.token });
-                const tokenAcceso = localStorage.getItem('polla_token_acceso');
-                navigate(tokenAcceso ? '/polla' : '/landing');
+                const tokenAcceso = data.token_acceso || localStorage.getItem('polla_token_acceso');
+                navigate(tokenAcceso ? `/polla?token=${tokenAcceso}` : '/landing');
             } else if (data?.success && data.nuevo) {
                 navigate('/registro');
             } else {
