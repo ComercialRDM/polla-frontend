@@ -112,7 +112,7 @@ export default function CompartirPronostico({
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 14, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 16, 0, Math.PI * 2);
             ctx.fill();
         });
         // VS entre banderas nuevas
@@ -125,14 +125,14 @@ export default function CompartirPronostico({
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#111118';
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 4, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 12, 0, Math.PI * 2);
             ctx.fill();
         });
-        // Banderas rellenando hasta el borde del aro
-        if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR + 4);
-        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR + 4);
-        if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR + 4);
-        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR + 4);
+        // Banderas rellenando el círculo completo
+        if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR + 12);
+        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR + 12);
+        if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR + 12);
+        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR + 12);
 
         // Aro dorado encima de la bandera
         [lCX, vCX].forEach((cx) => {
@@ -141,7 +141,7 @@ export default function CompartirPronostico({
             ctx.strokeStyle = '#FCD116';
             ctx.lineWidth = 7;
             ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 5, 0, Math.PI * 2);
+            ctx.arc(cx, flagCY, flagR + 13, 0, Math.PI * 2);
             ctx.stroke();
             ctx.shadowBlur = 0;
         });
