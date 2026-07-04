@@ -86,14 +86,14 @@ function camposAtribucion(atribucion) {
     };
 }
 
-export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref, aff_token, atribucion }) {
+export function crearLinkPago({ nombre, correo, celular, partido_id, valor, ref, aff_token, atribucion, acepta_terminos }) {
     return request('/api/transacciones/crear-link', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token, ...camposAtribucion(atribucion) }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token, acepta_terminos, ...camposAtribucion(atribucion) }),
     });
 }
 
-export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, metodo, ref, aff_token, atribucion }) {
+export async function crearTransferencia({ nombre, correo, celular, partido_id, valor, comprobante, metodo, ref, aff_token, atribucion, acepta_terminos }) {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('correo', correo);
@@ -104,6 +104,7 @@ export async function crearTransferencia({ nombre, correo, celular, partido_id, 
     if (metodo) formData.append('metodo', metodo);
     if (ref) formData.append('ref', ref);
     if (aff_token) formData.append('aff_token', aff_token);
+    formData.append('acepta_terminos', acepta_terminos ? 'true' : '');
     Object.entries(camposAtribucion(atribucion)).forEach(([clave, valorCampo]) => {
         if (valorCampo) formData.append(clave, valorCampo);
     });
@@ -131,17 +132,17 @@ export function obtenerBancosPse() {
     return request('/api/transacciones/bancos-pse');
 }
 
-export function crearPSE({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token, atribucion }) {
+export function crearPSE({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token, atribucion, acepta_terminos }) {
     return request('/api/transacciones/crear-pse', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token, ...camposAtribucion(atribucion) }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, tipo_documento, documento, financial_institution_code, ref, aff_token, acepta_terminos, ...camposAtribucion(atribucion) }),
     });
 }
 
-export function crearBancolombia({ nombre, correo, celular, partido_id, valor, ref, aff_token, atribucion }) {
+export function crearBancolombia({ nombre, correo, celular, partido_id, valor, ref, aff_token, atribucion, acepta_terminos }) {
     return request('/api/transacciones/crear-bancolombia', {
         method: 'POST',
-        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token, ...camposAtribucion(atribucion) }),
+        body: JSON.stringify({ nombre, correo, celular, partido_id, valor, ref, aff_token, acepta_terminos, ...camposAtribucion(atribucion) }),
     });
 }
 

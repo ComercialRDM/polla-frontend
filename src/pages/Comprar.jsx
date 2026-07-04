@@ -103,6 +103,13 @@ export default function Comprar() {
     const [error, setError] = useState('');
     const [aceptaTerminos, setAceptaTerminos] = useState(false);
     const enviandoRef = useRef(false);
+    const errorRef = useRef(null);
+
+    useEffect(() => {
+        if (error && errorRef.current) {
+            errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, [error]);
 
     const esOtroMonto = selectValor === VALOR_OTRO;
     const montoCustomNumero = Number(montoCustom) || 0;
@@ -738,16 +745,28 @@ export default function Comprar() {
                 {/* Banner bonos limitados — al final para que el cliente lo vea antes de irse */}
                 <CuposRestantes />
 
+                {error && (
+                    <div ref={errorRef} className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 px-4 py-3 flex flex-col gap-2">
+                        <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                            ¿Necesitas ayuda?{' '}
+                            <a
+                                href="https://wa.me/573103963708?text=Hola%2C+tuve+un+problema+al+intentar+pagar+en+la+Polla+Mundialista"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-600 dark:text-green-400 underline font-semibold"
+                            >
+                                Escríbenos por WhatsApp
+                            </a>{' '}
+                            o intenta con <strong>Transferencia Bancolombia</strong> (selecciona ese método más arriba).
+                        </p>
+                    </div>
+                )}
+
                 {/* Trust badges */}
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 p-3">
                     <TrustBadges />
                 </div>
-
-                {error && (
-                    <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 px-4 py-3">
-                        <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
-                    </div>
-                )}
 
             </div>
             </form>
