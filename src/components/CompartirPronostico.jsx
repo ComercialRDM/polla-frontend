@@ -90,8 +90,6 @@ export default function CompartirPronostico({
             ctx.arc(cx, tplFlagCY, 110, 0, Math.PI * 2);
             ctx.fill();
         });
-        ctx.fillRect(435, 648, 155, 86); // tapa el "VS" del template
-
         // ── NOMBRE DEL USUARIO (entre "MI PASIÓN" y las banderas nuevas) ──
         if (nombreUsuario) {
             let userSize = 46;
@@ -123,7 +121,20 @@ export default function CompartirPronostico({
         ctx.textAlign = 'center';
         ctx.fillText('VS', W / 2, 765);
 
-        // Aro dorado
+        // Fondo interior bandera (fallback si no carga la imagen)
+        [lCX, vCX].forEach((cx) => {
+            ctx.fillStyle = '#111118';
+            ctx.beginPath();
+            ctx.arc(cx, flagCY, flagR + 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        // Banderas rellenando hasta el borde del aro
+        if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR + 4);
+        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR + 4);
+        if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR + 4);
+        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR + 4);
+
+        // Aro dorado encima de la bandera
         [lCX, vCX].forEach((cx) => {
             ctx.shadowColor = 'rgba(252,209,22,0.7)';
             ctx.shadowBlur = 20;
@@ -134,17 +145,6 @@ export default function CompartirPronostico({
             ctx.stroke();
             ctx.shadowBlur = 0;
         });
-        // Fondo interior bandera
-        [lCX, vCX].forEach((cx) => {
-            ctx.fillStyle = '#111118';
-            ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR, 0, Math.PI * 2);
-            ctx.fill();
-        });
-        if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR);
-        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR);
-        if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR);
-        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR);
 
         // ── NOMBRES DE EQUIPOS ──
         const nameY = 843;
