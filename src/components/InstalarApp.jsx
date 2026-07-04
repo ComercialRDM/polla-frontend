@@ -120,7 +120,7 @@ export default function InstalarApp({ delayMs = 30000 }) {
                     </div>
                     <button
                         onClick={cerrar}
-                        className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-2xl leading-none shrink-0 -mt-0.5"
+                        className="w-11 h-11 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-2xl shrink-0"
                         aria-label="Cerrar"
                     >
                         ×

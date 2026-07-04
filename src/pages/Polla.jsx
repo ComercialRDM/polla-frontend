@@ -161,7 +161,10 @@ export default function Polla() {
 
     useEffect(() => {
         if (!info || info.fecha_nacimiento || demoReminderDismissed()) return;
-        const timer = setTimeout(() => setMostrarDemoBanner(true), 8000);
+        const timer = setTimeout(() => {
+            setMostrarDemoBanner(true);
+            setMostrarFotoReminder(false); // demo tiene prioridad, cierra foto si estaba abierto
+        }, 8000);
         return () => clearTimeout(timer);
     }, [info]);
 
@@ -777,11 +780,11 @@ export default function Polla() {
                                     <>
                                         <div className="flex items-center justify-between gap-2">
                                             <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                                <input type="text" inputMode="numeric" value={m.local} onChange={(e) => actualizarMarcador(p.partido_id, 'local', e.target.value)} className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
+                                                <input type="text" inputMode="numeric" placeholder="0" value={m.local} onChange={(e) => actualizarMarcador(p.partido_id, 'local', e.target.value)} className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/60 text-lime-400 neon-green font-scoreboard placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
                                             </div>
                                             <span className="text-amber-400 font-black text-xl sm:text-2xl font-scoreboard">VS</span>
                                             <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                                                <input type="text" inputMode="numeric" value={m.visitante} onChange={(e) => actualizarMarcador(p.partido_id, 'visitante', e.target.value)} className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/40 text-lime-400 neon-green font-scoreboard focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
+                                                <input type="text" inputMode="numeric" placeholder="0" value={m.visitante} onChange={(e) => actualizarMarcador(p.partido_id, 'visitante', e.target.value)} className="w-16 h-16 sm:w-20 sm:h-20 text-center text-3xl sm:text-4xl font-black rounded-lg bg-black border-2 border-amber-400/60 text-lime-400 neon-green font-scoreboard placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
                                             </div>
                                         </div>
                                         {info.cupos_disponibles < (p.cupos_costo || 1) && !encolados[p.partido_id] && (
@@ -915,98 +918,104 @@ export default function Polla() {
                 </div>
             )}
 
-            {/* Banner datos demográficos — todos los usuarios sin fecha de nacimiento */}
+            {/* Modal datos demográficos — centrado con overlay, no cubre controles al scroll */}
             {mostrarDemoBanner && (
-                <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 bg-white dark:bg-zinc-800 border border-violet-400/50 rounded-xl shadow-xl p-4">
-                    <button
-                        onClick={dismissDemoBanner}
-                        className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-600 text-lg leading-none"
-                    >
-                        ×
-                    </button>
-                    {demoGuardado ? (
-                        <p className="text-sm text-green-600 dark:text-green-400 font-bold py-2">✅ ¡Datos guardados!</p>
-                    ) : (
-                        <>
-                            <p className="text-sm font-bold text-zinc-900 dark:text-white mb-0.5">⚡ Completa tu perfil</p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
-                                Necesitamos estos datos para los <strong>premios flash</strong>. Solo toma 10 segundos.
-                            </p>
-                            <form onSubmit={handleGuardarDemo} className="space-y-3">
-                                <div>
-                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Fecha de nacimiento</label>
-                                    <input
-                                        type="date"
-                                        value={demoFecha}
-                                        onChange={(e) => setDemoFecha(e.target.value)}
-                                        max={new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000).toISOString().split('T')[0]}
-                                        className="w-full bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Género</label>
-                                    <div className="flex flex-col gap-1">
-                                        {[
-                                            { value: 'masculino', label: 'Masculino' },
-                                            { value: 'femenino', label: 'Femenino' },
-                                            { value: 'prefiero_no_decirlo', label: 'Prefiero no decirlo' },
-                                        ].map((op) => (
-                                            <label key={op.value} className="flex items-center gap-2 cursor-pointer text-xs text-zinc-700 dark:text-zinc-300">
-                                                <input
-                                                    type="radio"
-                                                    name="sexo_demo"
-                                                    value={op.value}
-                                                    checked={demoSexo === op.value}
-                                                    onChange={() => setDemoSexo(op.value)}
-                                                    className="accent-violet-500"
-                                                />
-                                                {op.label}
-                                            </label>
-                                        ))}
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 px-4 pb-4 sm:pb-0">
+                    <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-violet-400/40 rounded-2xl shadow-2xl p-5 relative">
+                        <button
+                            onClick={dismissDemoBanner}
+                            className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl"
+                            aria-label="Cerrar"
+                        >
+                            ×
+                        </button>
+                        {demoGuardado ? (
+                            <p className="text-sm text-green-600 dark:text-green-400 font-bold py-4 text-center">✅ ¡Datos guardados!</p>
+                        ) : (
+                            <>
+                                <p className="text-sm font-bold text-zinc-900 dark:text-white mb-0.5 pr-8">⚡ Completa tu perfil</p>
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+                                    Necesitamos estos datos para los <strong>premios flash</strong>. Solo toma 10 segundos.
+                                </p>
+                                <form onSubmit={handleGuardarDemo} className="space-y-3">
+                                    <div>
+                                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Fecha de nacimiento</label>
+                                        <input
+                                            type="date"
+                                            value={demoFecha}
+                                            onChange={(e) => setDemoFecha(e.target.value)}
+                                            max={new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000).toISOString().split('T')[0]}
+                                            className="w-full bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-white"
+                                        />
                                     </div>
-                                </div>
-                                {errorDemo && <p className="text-xs text-red-500">{errorDemo}</p>}
-                                <button
-                                    type="submit"
-                                    disabled={guardandoDemo}
-                                    className="w-full py-2 rounded-lg text-sm font-bold bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white"
-                                >
-                                    {guardandoDemo ? 'Guardando...' : 'Guardar'}
-                                </button>
-                            </form>
-                        </>
-                    )}
+                                    <div>
+                                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Género</label>
+                                        <div className="flex flex-col gap-2">
+                                            {[
+                                                { value: 'masculino', label: 'Masculino' },
+                                                { value: 'femenino', label: 'Femenino' },
+                                                { value: 'prefiero_no_decirlo', label: 'Prefiero no decirlo' },
+                                            ].map((op) => (
+                                                <label key={op.value} className="flex items-center gap-2 cursor-pointer text-xs text-zinc-700 dark:text-zinc-300 py-1">
+                                                    <input
+                                                        type="radio"
+                                                        name="sexo_demo"
+                                                        value={op.value}
+                                                        checked={demoSexo === op.value}
+                                                        onChange={() => setDemoSexo(op.value)}
+                                                        className="accent-violet-500 w-4 h-4"
+                                                    />
+                                                    {op.label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    {errorDemo && <p className="text-xs text-red-500">{errorDemo}</p>}
+                                    <button
+                                        type="submit"
+                                        disabled={guardandoDemo}
+                                        className="w-full py-3 rounded-xl text-sm font-bold bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white"
+                                    >
+                                        {guardandoDemo ? 'Guardando...' : 'Guardar'}
+                                    </button>
+                                </form>
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
 
-            {/* Banner foto de perfil — solo influencers sin foto */}
-            {mostrarFotoReminder && (
-                <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50 bg-white dark:bg-zinc-800 border border-amber-400/50 rounded-xl shadow-xl p-4">
-                    <button
-                        onClick={dismissFotoReminder}
-                        className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-600 text-lg leading-none"
-                    >
-                        ×
-                    </button>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-white mb-1">📸 Agrega tu foto de perfil</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
-                        Aparece en el ranking de creadores de contenido con tu foto.
-                    </p>
-                    {fotoSubidaOk ? (
-                        <p className="text-xs text-green-600 dark:text-green-400 font-bold">✅ ¡Foto guardada!</p>
-                    ) : (
-                        <label className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-sm font-bold cursor-pointer ${subiendoFoto ? 'bg-zinc-200 text-zinc-400' : 'bg-amber-400 text-zinc-950 hover:bg-amber-300'}`}>
-                            {subiendoFoto ? 'Subiendo...' : '📸 Seleccionar foto'}
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                onChange={handleSubirFoto}
-                                className="hidden"
-                                disabled={subiendoFoto}
-                            />
-                        </label>
-                    )}
-                    {errorFoto && <p className="text-xs text-red-500 mt-2">{errorFoto}</p>}
+            {/* Modal foto de perfil — solo influencers sin foto; solo se muestra si demo no está activo */}
+            {mostrarFotoReminder && !mostrarDemoBanner && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 px-4 pb-4 sm:pb-0">
+                    <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-amber-400/40 rounded-2xl shadow-2xl p-5 relative">
+                        <button
+                            onClick={dismissFotoReminder}
+                            className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl"
+                            aria-label="Cerrar"
+                        >
+                            ×
+                        </button>
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white mb-1 pr-8">📸 Agrega tu foto de perfil</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+                            Aparece en el ranking de creadores de contenido con tu foto.
+                        </p>
+                        {fotoSubidaOk ? (
+                            <p className="text-xs text-green-600 dark:text-green-400 font-bold text-center py-2">✅ ¡Foto guardada!</p>
+                        ) : (
+                            <label className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-bold cursor-pointer ${subiendoFoto ? 'bg-zinc-200 text-zinc-400' : 'bg-amber-400 text-zinc-950 hover:bg-amber-300'}`}>
+                                {subiendoFoto ? 'Subiendo...' : '📸 Seleccionar foto'}
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={handleSubirFoto}
+                                    className="hidden"
+                                    disabled={subiendoFoto}
+                                />
+                            </label>
+                        )}
+                        {errorFoto && <p className="text-xs text-red-500 mt-2">{errorFoto}</p>}
+                    </div>
                 </div>
             )}
 
