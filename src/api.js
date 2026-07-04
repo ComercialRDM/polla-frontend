@@ -301,6 +301,14 @@ export function admin2faDesactivar(token, code) {
     });
 }
 
+export function admin2faVerificar(token, code) {
+    return request('/api/admin/2fa/verificar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code }),
+    });
+}
+
 export function adminPendientes(token) {
     return request('/api/admin/pendientes', {
         headers: { Authorization: `Bearer ${token}` },

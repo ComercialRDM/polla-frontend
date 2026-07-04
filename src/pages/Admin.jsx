@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado, adminPronosticosLanding } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, admin2faVerificar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado, adminPronosticosLanding } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -73,6 +73,10 @@ export default function Admin() {
     const [usuarioInput, setUsuarioInput] = useState('');
     const [passwordInput, setPasswordInput] = useState('');
     const [autenticado, setAutenticado] = useState(false);
+    const [totpVerificado, setTotpVerificado] = useState(() => !!sessionStorage.getItem('admin_totp_ok'));
+    const [totpOverlayCodigo, setTotpOverlayCodigo] = useState('');
+    const [totpOverlayError, setTotpOverlayError] = useState('');
+    const [totpOverlayCargando, setTotpOverlayCargando] = useState(false);
     const [transacciones, setTransacciones] = useState([]);
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
@@ -346,6 +350,7 @@ export default function Admin() {
                 setTransacciones(data.transacciones);
                 setAutenticado(true);
                 localStorage.setItem(TOKEN_STORAGE_KEY, tok);
+                admin2faEstado(tok).then(r => { if (r?.success) setTotp2faEnabled(r.totp_enabled); }).catch(() => {});
             } else {
                 setError('Token inválido.');
                 setAutenticado(false);
@@ -1110,6 +1115,27 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         return () => clearInterval(intervalo);
     }, [seccionActiva, token]);
 
+    async function handleTotpOverlay(e) {
+        e.preventDefault();
+        if (totpOverlayCodigo.length !== 6) return;
+        setTotpOverlayCargando(true);
+        setTotpOverlayError('');
+        try {
+            const data = await admin2faVerificar(token, totpOverlayCodigo);
+            if (data?.success) {
+                sessionStorage.setItem('admin_totp_ok', '1');
+                setTotpVerificado(true);
+                setTotpOverlayCodigo('');
+            } else {
+                setTotpOverlayError(data?.error || 'Código incorrecto');
+            }
+        } catch {
+            setTotpOverlayError('Error de conexión');
+        } finally {
+            setTotpOverlayCargando(false);
+        }
+    }
+
     async function handleLogin(e) {
         e.preventDefault();
         if (!usuarioInput.trim() || !passwordInput.trim()) return;
@@ -1123,6 +1149,8 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 setPasswordInput('');
                 setLoginPaso2fa(false);
                 setLoginTotpCode('');
+                sessionStorage.setItem('admin_totp_ok', '1');
+                setTotpVerificado(true);
                 cargarDatos(data.token);
                 cargarPartidos();
                 cargarSimulador(data.token);
@@ -1448,6 +1476,43 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    if (autenticado && totp2faEnabled && !totpVerificado) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 px-6">
+                <form onSubmit={handleTotpOverlay} className="w-full max-w-sm flex flex-col gap-4">
+                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white text-center mb-2">Panel Admin</h1>
+                    <div className="rounded-xl bg-amber-50 dark:bg-amber-400/10 border border-amber-200 dark:border-amber-400/20 px-4 py-3 text-center">
+                        <p className="text-2xl mb-1">🔐</p>
+                        <p className="font-bold text-zinc-900 dark:text-white text-sm">Verificación en dos pasos</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-1">Ingresa el código de Google Authenticator</p>
+                    </div>
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={totpOverlayCodigo}
+                        onChange={(e) => setTotpOverlayCodigo(e.target.value.replace(/\D/g, ''))}
+                        placeholder="000000"
+                        autoFocus
+                        className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    {totpOverlayError && <p className="text-red-500 text-sm text-center">{totpOverlayError}</p>}
+                    <button
+                        type="submit"
+                        disabled={totpOverlayCargando || totpOverlayCodigo.length !== 6}
+                        className="w-full py-3 rounded-lg font-black text-slate-950 bg-amber-400 active:scale-95 transition-transform disabled:opacity-60"
+                    >
+                        {totpOverlayCargando ? 'Verificando...' : 'Verificar e ingresar'}
+                    </button>
+                    <button type="button" onClick={() => { localStorage.removeItem(TOKEN_STORAGE_KEY); sessionStorage.removeItem('admin_totp_ok'); setToken(''); setAutenticado(false); setTotpVerificado(false); }}
+                        className="text-center text-zinc-500 dark:text-zinc-400 text-sm underline">
+                        Cambiar cuenta
+                    </button>
+                </form>
+            </div>
+        );
+    }
+
     if (!autenticado) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 px-6">
@@ -1530,7 +1595,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white">Panel Admin - Polla Mundialista</h1>
                     <button
-                        onClick={() => { localStorage.removeItem(TOKEN_STORAGE_KEY); setToken(''); setAutenticado(false); }}
+                        onClick={() => { localStorage.removeItem(TOKEN_STORAGE_KEY); sessionStorage.removeItem('admin_totp_ok'); setToken(''); setAutenticado(false); setTotpVerificado(false); }}
                         className="text-sm text-zinc-500 border border-zinc-200 dark:border-white/10 rounded-lg px-3 py-1.5 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-white/30 transition-colors"
                     >
                         Cerrar sesión
