@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PLANES, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, MULTIPLO_PERSONALIZADO, CUPO_VALOR_PERSONALIZADO, calcularCupos, calcularSaldoBono, calcularMontoPorPredicciones, formatoPesos } from '../config/planes';
-import { obtenerPartidos, crearLinkPago, crearTransferencia, obtenerBancosPse, crearPSE, crearBancolombia } from '../api';
+import { obtenerPartidos, crearLinkPago, obtenerBancosPse, crearPSE, crearBancolombia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
 import Footer from '../components/Footer';
 import Bandera from '../components/Bandera';
@@ -45,14 +45,6 @@ function conTimeout(promesa, ms = 15000) {
     return Promise.race([promesa, timeout]).finally(() => clearTimeout(timer));
 }
 
-const CUENTA_TRANSFERENCIA = {
-    banco: 'Bancolombia',
-    tipo: 'Ahorros',
-    numero: '44200008248',
-    titular: 'La Retoucherie de Manuela',
-    nit: '901765354',
-};
-
 // Bre-B no tiene integración automática todavía (no existe API/webhook
 // público para comercio electrónico, solo la "llave" para transferencias
 
@@ -78,8 +70,6 @@ export default function Comprar() {
         String(planUrlValido ?? PLAN_DEFAULT)
     );
     const [montoCustom, setMontoCustom] = useState('');
-    const [mostrarTransferencia, setMostrarTransferencia] = useState(false);
-    const [comprobante, setComprobante] = useState(null);
 
     // Método de pago: 'wompi' abre el Widget (tarjeta/Nequi/Daviplata/etc, lo
     // que esté activo en la cuenta de Wompi). 'pse' y 'bancolombia' van por la
@@ -105,9 +95,6 @@ export default function Comprar() {
         };
     });
 
-    const [enviado, setEnviado] = useState(false);
-    const [mensajeExito, setMensajeExito] = useState('');
-    const [tokenTransferencia, setTokenTransferencia] = useState('');
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState('');
     const [aceptaTerminos, setAceptaTerminos] = useState(false);
@@ -194,7 +181,6 @@ export default function Comprar() {
     async function handleSubmit(e) {
         e.preventDefault();
         setError('');
-        let widgetAbierto = false;
 
         // Guarda sincrónico (no depende del re-render de `disabled`) para que un
         // doble clic/doble tap no dispare dos veces la creación del link de pago.
@@ -234,7 +220,7 @@ export default function Comprar() {
                 return;
             }
         }
-        if (!mostrarTransferencia && metodoPago === 'pse') {
+        if (metodoPago === 'pse') {
             if (!form.documento.trim()) {
                 setError('Ingresa tu número de documento (lo exige PSE).');
                 return;
@@ -243,10 +229,6 @@ export default function Comprar() {
                 setError('Selecciona tu banco para pagar con PSE.');
                 return;
             }
-        }
-        if (mostrarTransferencia && !comprobante) {
-            setError('Debes adjuntar el comprobante de pago antes de enviarlo.');
-            return;
         }
 
         const ref = localStorage.getItem(REF_STORAGE_KEY) || '';
@@ -262,7 +244,7 @@ export default function Comprar() {
         enviandoRef.current = true;
         setCargando(true);
         try {
-            if (!mostrarTransferencia && metodoPago === 'pse') {
+            if (metodoPago === 'pse') {
                 trackAddPaymentInfo(planParaEvento, { metodoPago: 'pse' });
                 const data = await conTimeout(crearPSE({
                     nombre: form.nombre.trim(),
@@ -287,7 +269,7 @@ export default function Comprar() {
                 return;
             }
 
-            if (!mostrarTransferencia && metodoPago === 'bancolombia') {
+            if (metodoPago === 'bancolombia') {
                 trackAddPaymentInfo(planParaEvento, { metodoPago: 'bancolombia' });
                 const data = await conTimeout(crearBancolombia({
                     nombre: form.nombre.trim(),
@@ -309,34 +291,6 @@ export default function Comprar() {
                 return;
             }
 
-            if (mostrarTransferencia) {
-                trackAddPaymentInfo(planParaEvento, { metodoPago: 'transferencia' });
-                const data = await conTimeout(crearTransferencia({
-                    nombre: form.nombre.trim(),
-                    correo: form.correo.trim(),
-                    celular: form.celular.trim(),
-                    partido_id: partidoId,
-                    valor: valorAPagar,
-                    comprobante,
-                    ref,
-                    aff_token: affToken,
-                    atribucion,
-                    acepta_terminos: aceptaTerminos,
-                }));
-                if (data?.success) {
-                    guardarSesionDePago(data);
-                    if (data.token_acceso) {
-                        setTokenTransferencia(data.token_acceso);
-                        localStorage.setItem('polla_token_acceso', data.token_acceso);
-                    }
-                    setMensajeExito(data.mensaje || 'Comprobante recibido. Ya puedes explorar tu cuenta — te notificamos por correo en cuanto confirmemos el pago.');
-                    setEnviado(true);
-                } else {
-                    setError(data?.error || 'No se pudo registrar el pago.');
-                }
-                return;
-            }
-
             trackAddPaymentInfo(planParaEvento, { metodoPago: 'wompi' });
             const data = await conTimeout(crearLinkPago({
                 nombre: form.nombre.trim(),
@@ -354,10 +308,7 @@ export default function Comprar() {
                 guardarSesionDePago(data);
                 await cargarWidgetWompi();
                 const checkout = new window.WidgetCheckout(data.widget);
-                widgetAbierto = true;
                 checkout.open((result) => {
-                    enviandoRef.current = false;
-                    setCargando(false);
                     if (result?.transaction?.id) {
                         window.location.href = data.widget.redirectUrl;
                     } else {
@@ -369,67 +320,14 @@ export default function Comprar() {
             }
         } catch (err) {
             if (err?.message === 'TIMEOUT') {
-                setError('El servidor tardó en responder. Intenta de nuevo o usa Transferencia Bancolombia.');
+                setError('El servidor tardó en responder. Intenta de nuevo.');
             } else {
                 setError('Error de conexión con el servidor. Intenta de nuevo.');
             }
         } finally {
-            if (!widgetAbierto) {
-                enviandoRef.current = false;
-                setCargando(false);
-            }
+            enviandoRef.current = false;
+            setCargando(false);
         }
-    }
-
-    if (enviado) {
-        return (
-            <div className="min-h-screen bg-white dark:bg-zinc-950 stadium-glow px-6 py-10 flex flex-col items-center">
-                <div className="absolute top-0 left-0 right-0 h-2 flex">
-                    <div className="flex-1 bg-colombia-yellow" />
-                    <div className="flex-1 bg-colombia-blue" />
-                    <div className="flex-1 bg-colombia-red" />
-                </div>
-                <div className="w-full max-w-md mt-12 flex flex-col items-center text-center">
-                    <span className="text-6xl block mb-4">🎉</span>
-                    <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-white mb-2">¡Comprobante recibido!</h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8">{mensajeExito}</p>
-
-                    {/* Ya quedó con sesión iniciada (guardarSesionDePago) — no necesita
-                        registrarse aparte, solo lo mandamos a su dashboard. */}
-                    <div className="w-full rounded-2xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/10 p-6 mb-4 text-left">
-                        <p className="text-2xl mb-2">🏆</p>
-                        <p className="text-zinc-900 dark:text-white font-extrabold text-lg mb-2">¡Ya quedaste registrado!</p>
-                        <p className="text-zinc-600 dark:text-zinc-300 text-sm mb-4">Desde tu cuenta puedes:</p>
-                        <ul className="flex flex-col gap-2 mb-5">
-                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
-                                Ver resultados de partidos de Colombia en tiempo real
-                            </li>
-                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
-                                Ingresar tu pronóstico antes de cada partido
-                            </li>
-                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
-                                Saber si ganaste un premio y cómo reclamarlo
-                            </li>
-                            <li className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                <span className="text-amber-500 font-bold mt-0.5">✓</span>
-                                Recibir notificaciones por WhatsApp de tus partidos
-                            </li>
-                        </ul>
-                        <Link
-                            to={tokenTransferencia ? `/polla?token=${tokenTransferencia}` : '/'}
-                            className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
-                        >
-                            Ir a mi cuenta →
-                        </Link>
-                    </div>
-
-                    <Link to="/" className="text-xs text-zinc-400 underline">Volver al inicio</Link>
-                </div>
-            </div>
-        );
     }
 
     return (
@@ -617,7 +515,6 @@ export default function Comprar() {
                 </div>
 
                 {/* ── PASO 3: Método de pago ── */}
-                {!mostrarTransferencia && (
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-hidden">
                     <div className="px-4 pt-4 pb-3 border-b border-zinc-100 dark:border-white/5 flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-[#FCD116] flex items-center justify-center shrink-0">
@@ -690,44 +587,6 @@ export default function Comprar() {
                     )}
 
                 </div>
-                )}
-
-                {/* Transferencia bancaria */}
-                {mostrarTransferencia && (
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-hidden">
-                        <div className="px-4 pt-4 pb-3 border-b border-zinc-100 dark:border-white/5 flex items-center gap-2">
-                            <span className="text-lg">🏦</span>
-                            <h2 className="font-bold text-zinc-900 dark:text-white text-sm">Datos de transferencia</h2>
-                        </div>
-                        <div className="p-4 flex flex-col gap-2">
-                            {[
-                                { label: 'Banco', value: CUENTA_TRANSFERENCIA.banco },
-                                { label: `Cuenta ${CUENTA_TRANSFERENCIA.tipo}`, value: CUENTA_TRANSFERENCIA.numero },
-                                { label: 'Titular', value: CUENTA_TRANSFERENCIA.titular },
-                                { label: 'NIT', value: CUENTA_TRANSFERENCIA.nit },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex justify-between items-center py-1.5 border-b border-zinc-100 dark:border-white/5 last:border-0">
-                                    <span className="text-zinc-400 text-sm">{label}</span>
-                                    <span className="font-semibold text-zinc-900 dark:text-white text-sm text-right">{value}</span>
-                                </div>
-                            ))}
-                            <div className="flex justify-between items-center pt-2 mt-1 border-t border-zinc-200 dark:border-white/10">
-                                <span className="text-zinc-500 font-bold text-sm">Total a transferir</span>
-                                <span className="font-black text-amber-500 text-xl">{valorAPagar > 0 ? formatoPesos(valorAPagar) : '—'}</span>
-                            </div>
-                            <p className="text-xs text-zinc-400 mt-1">Verificamos el comprobante en menos de 24 h (generalmente el mismo día). Puedes ingresar a tu cuenta de inmediato.</p>
-                        </div>
-                        <div className="px-4 pb-4">
-                            <label className="block text-xs text-zinc-400 uppercase tracking-wider font-bold mb-2">Comprobante de pago</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setComprobante(e.target.files?.[0] || null)}
-                                className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-800 px-3 py-2.5 text-zinc-600 dark:text-zinc-300 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-[#FCD116] file:text-zinc-950 file:font-bold file:text-xs file:cursor-pointer focus:outline-none"
-                            />
-                        </div>
-                    </div>
-                )}
 
                 {/* Términos — justo después del método de pago para que no se olvide */}
                 <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${aceptaTerminos ? 'border-amber-400 bg-amber-50 dark:bg-amber-400/10' : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900'}`}>
@@ -769,8 +628,7 @@ export default function Comprar() {
                                 className="text-green-600 dark:text-green-400 underline font-semibold"
                             >
                                 Escríbenos por WhatsApp
-                            </a>{' '}
-                            o intenta con <strong>Transferencia Bancolombia</strong> (selecciona ese método más arriba).
+                            </a>.
                         </p>
                     </div>
                 )}
@@ -795,25 +653,16 @@ export default function Comprar() {
                     <button
                         type="submit"
                         form="comprar-form"
-                        disabled={cargando || (!mostrarTransferencia && esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
+                        disabled={cargando || (esOtroMonto && montoCustomNumero < MONTO_PERSONALIZADO_MIN)}
                         className="w-full py-3 rounded-2xl font-black text-zinc-950 text-base bg-[#FCD116] hover:bg-amber-300 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-amber-400/20"
                     >
                         {cargando
-                            ? (mostrarTransferencia ? 'Enviando comprobante...' : 'Procesando pago...')
-                            : mostrarTransferencia
-                                ? 'Enviar comprobante'
-                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
-                                    metodoPago === 'pse' ? ' · PSE'
-                                        : metodoPago === 'bancolombia' ? ' · Bancolombia'
-                                            : ''
-                                )}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => { setMostrarTransferencia((v) => !v); setCargando(false); enviandoRef.current = false; setError(''); }}
-                        className="w-full py-2.5 rounded-xl font-semibold text-xs text-zinc-500 dark:text-zinc-400 text-center border border-zinc-200 dark:border-white/10 hover:border-zinc-400 dark:hover:border-white/20 transition-colors"
-                    >
-                        {mostrarTransferencia ? '← Pagar con Wompi / PSE / Bancolombia' : 'Pagar con Transferencia Bancolombia'}
+                            ? 'Procesando pago...'
+                            : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
+                                metodoPago === 'pse' ? ' · PSE'
+                                    : metodoPago === 'bancolombia' ? ' · Bancolombia'
+                                        : ''
+                            )}
                     </button>
                 </div>
             </div>
