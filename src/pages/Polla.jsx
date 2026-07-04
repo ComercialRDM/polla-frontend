@@ -400,7 +400,7 @@ export default function Polla() {
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm">{error}</p>
                 </div>
                 <Link
-                    to="/ingresar"
+                    to="/iniciar-sesion"
                     className="w-full max-w-xs py-3.5 rounded-2xl font-black text-zinc-950 text-base bg-[#FCD116] text-center block shadow-lg shadow-amber-400/20"
                 >
                     Ingresar con mi correo o celular

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function CTAFijoMovil() {
     const [visible, setVisible] = useState(false);
-    const [linkCuenta, setLinkCuenta] = useState('/ingresar');
+    const [linkCuenta, setLinkCuenta] = useState('/iniciar-sesion');
 
     useEffect(() => {
         // Si el usuario ya compró y tiene token guardado, llevarlo directo a su cuenta.
