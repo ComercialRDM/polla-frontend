@@ -51,6 +51,8 @@ export default function IniciarSesion() {
             if (data?.success) {
                 setPaso(2);
                 setSegundos(REENVIO_SEGUNDOS);
+                // Precarga el chunk de Polla.jsx mientras el usuario espera/ingresa el SMS
+                import('./Polla').catch(() => {});
             } else {
                 setError(data?.error || 'No se pudo enviar el código.');
             }
@@ -131,7 +133,7 @@ export default function IniciarSesion() {
 
                 <BiometriaLogin onExito={() => {
                     const tokenAcceso = localStorage.getItem('polla_token_acceso');
-                    navigate(tokenAcceso ? '/polla' : '/landing');
+                    navigate(tokenAcceso ? `/polla?token=${tokenAcceso}` : '/landing');
                 }} />
 
                 <div className="flex items-center gap-3 my-4">
