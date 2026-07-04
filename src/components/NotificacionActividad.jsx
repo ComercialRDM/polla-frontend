@@ -74,7 +74,7 @@ export default function NotificacionActividad() {
                         {actual.primer_nombre} compró su bono
                     </p>
                     <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-0.5">
-                        {formatoCompacto(actual.saldo_bono)} · {tiempoRelativo(actual.fecha_creacion)}
+                        {actual.saldo_bono > 0 ? `${formatoCompacto(actual.saldo_bono)} · ` : ''}{tiempoRelativo(actual.fecha_creacion)}
                     </p>
                 </div>
                 <button

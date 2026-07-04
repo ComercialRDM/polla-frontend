@@ -33,7 +33,7 @@ export default function FAQComoFunciona() {
                             variants={fadeUp}
                             className="cf-card print:break-inside-avoid group rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-5 [&_summary::-webkit-details-marker]:hidden"
                         >
-                            <summary className="flex items-center justify-between gap-3 cursor-pointer list-none text-zinc-950 dark:text-white font-bold text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116] rounded-md">
+                            <summary className="flex items-center justify-between gap-3 cursor-pointer list-none text-zinc-950 dark:text-white font-bold text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116] rounded-md pr-14 sm:pr-0">
                                 {item.pregunta}
                                 <span className="text-[#CE1126] transition-transform duration-300 group-open:rotate-45 text-2xl leading-none shrink-0" aria-hidden="true">+</span>
                             </summary>

@@ -39,19 +39,20 @@ function LogoWhatsApp({ className }) {
 
 const ICONOS = { Instagram: LogoInstagram, WhatsApp: LogoWhatsApp };
 
-// La fase "actual" es la del partido sin cerrar mas proximo (el siguiente en
-// jugarse). Si ya no queda ninguno sin cerrar, el torneo termino: se toma la
-// fase del ultimo partido jugado, para que la Gran Final quede marcada.
+// La fase "actual" es la del próximo partido que aún no ha comenzado (según
+// fecha_hora_inicio real, no el campo estado que puede estar desactualizado).
+// Si ya no quedan partidos futuros, se marca la fase del último partido jugado.
 function calcularFaseActual(partidos) {
     if (!partidos || partidos.length === 0) return null;
+    const ahora = new Date();
 
-    const pendientes = partidos
-        .filter((p) => p.estado !== 'cerrado')
+    const futuros = partidos
+        .filter((p) => new Date(p.fecha_hora_inicio) > ahora)
         .sort((a, b) => new Date(a.fecha_hora_inicio) - new Date(b.fecha_hora_inicio));
-    if (pendientes.length > 0) return pendientes[0].fase;
+    if (futuros.length > 0) return futuros[0].fase;
 
-    const jugados = [...partidos].sort((a, b) => new Date(b.fecha_hora_inicio) - new Date(a.fecha_hora_inicio));
-    return jugados[0]?.fase ?? null;
+    const todos = [...partidos].sort((a, b) => new Date(b.fecha_hora_inicio) - new Date(a.fecha_hora_inicio));
+    return todos[0]?.fase ?? null;
 }
 
 export default function PuntosFasesSection() {
