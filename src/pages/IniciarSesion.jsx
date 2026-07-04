@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { solicitarCodigoTelefono, verificarCodigoTelefono } from '../api';
+import { solicitarCodigoTelefono, verificarCodigoTelefono, solicitarCodigoCorreo, verificarCodigoCorreo } from '../api';
 import { guardarSesion } from '../utils/sesion';
 import BiometriaLogin from '../components/BiometriaLogin';
 import logoCopaFifa from '../assets/Logo_Copa_Fifa.webp';
@@ -9,7 +9,9 @@ const REENVIO_SEGUNDOS = 60;
 
 export default function IniciarSesion() {
     const navigate = useNavigate();
+    const [metodo, setMetodo] = useState('sms'); // 'sms' | 'correo'
     const [celular, setCelular] = useState('');
+    const [correo, setCorreo] = useState('');
     const [codigo, setCodigo] = useState('');
     const [paso, setPaso] = useState(1);
     const [enviando, setEnviando] = useState(false);
@@ -23,17 +25,29 @@ export default function IniciarSesion() {
         return () => clearTimeout(timerRef.current);
     }, [segundos]);
 
+    function cambiarMetodo(nuevo) {
+        setMetodo(nuevo);
+        setPaso(1);
+        setCodigo('');
+        setError('');
+        setSegundos(0);
+    }
+
     async function handleEnviarCodigo(e) {
         e.preventDefault();
         setError('');
-        const cel = celular.replace(/[^0-9]/g, '');
-        if (cel.length !== 10) {
-            setError('Ingresa los 10 dígitos de tu celular colombiano.');
-            return;
-        }
         setEnviando(true);
         try {
-            const data = await solicitarCodigoTelefono(cel);
+            let data;
+            if (metodo === 'sms') {
+                const cel = celular.replace(/[^0-9]/g, '');
+                if (cel.length !== 10) { setError('Ingresa los 10 dígitos de tu celular colombiano.'); return; }
+                data = await solicitarCodigoTelefono(cel);
+            } else {
+                const c = correo.trim().toLowerCase();
+                if (!c || !c.includes('@')) { setError('Ingresa un correo electrónico válido.'); return; }
+                data = await solicitarCodigoCorreo(c);
+            }
             if (data?.success) {
                 setPaso(2);
                 setSegundos(REENVIO_SEGUNDOS);
@@ -50,14 +64,16 @@ export default function IniciarSesion() {
     async function handleVerificarCodigo(e) {
         e.preventDefault();
         setError('');
-        if (codigo.length !== 6) {
-            setError('El código tiene 6 dígitos.');
-            return;
-        }
+        if (codigo.length !== 6) { setError('El código tiene 6 dígitos.'); return; }
         setEnviando(true);
         try {
-            const cel = celular.replace(/[^0-9]/g, '');
-            const data = await verificarCodigoTelefono({ celular: cel, codigo });
+            let data;
+            if (metodo === 'sms') {
+                const cel = celular.replace(/[^0-9]/g, '');
+                data = await verificarCodigoTelefono({ celular: cel, codigo });
+            } else {
+                data = await verificarCodigoCorreo({ correo: correo.trim().toLowerCase(), codigo });
+            }
             if (data?.success && !data.nuevo) {
                 guardarSesion({ ...data.usuario, token: data.token });
                 const tokenAcceso = data.token_acceso || localStorage.getItem('polla_token_acceso');
@@ -76,10 +92,14 @@ export default function IniciarSesion() {
 
     async function handleReenviar() {
         setError('');
-        const cel = celular.replace(/[^0-9]/g, '');
         setEnviando(true);
         try {
-            const data = await solicitarCodigoTelefono(cel);
+            let data;
+            if (metodo === 'sms') {
+                data = await solicitarCodigoTelefono(celular.replace(/[^0-9]/g, ''));
+            } else {
+                data = await solicitarCodigoCorreo(correo.trim().toLowerCase());
+            }
             if (data?.success) setSegundos(REENVIO_SEGUNDOS);
             else setError(data?.error || 'No se pudo reenviar el código.');
         } catch {
@@ -104,8 +124,10 @@ export default function IniciarSesion() {
                 </h1>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
                     {paso === 1
-                        ? 'Te enviaremos un código por SMS para verificar tu identidad.'
-                        : `Enviamos un SMS al +57 ${celular}. Ingresa el código de 6 dígitos.`}
+                        ? 'Te enviaremos un código de verificación de 6 dígitos.'
+                        : metodo === 'sms'
+                            ? `Enviamos un SMS al +57 ${celular}. Ingresa el código de 6 dígitos.`
+                            : `Enviamos un correo a ${correo}. Ingresa el código de 6 dígitos.`}
                 </p>
 
                 <BiometriaLogin onExito={() => {
@@ -115,38 +137,73 @@ export default function IniciarSesion() {
 
                 <div className="flex items-center gap-3 my-4">
                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
-                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o continúa con SMS</span>
+                    <span className="text-zinc-400 dark:text-zinc-500 text-xs uppercase">o continúa con código</span>
                     <div className="flex-1 h-px bg-zinc-200 dark:bg-white/10" />
                 </div>
 
+                {/* Tab SMS / Correo */}
+                {paso === 1 && (
+                    <div className="flex rounded-xl border border-zinc-200 dark:border-white/10 overflow-hidden mb-4">
+                        <button
+                            type="button"
+                            onClick={() => cambiarMetodo('sms')}
+                            className={`flex-1 py-2.5 text-sm font-bold transition-colors ${metodo === 'sms' ? 'bg-amber-400 text-zinc-900' : 'bg-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
+                        >
+                            📱 SMS
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => cambiarMetodo('correo')}
+                            className={`flex-1 py-2.5 text-sm font-bold transition-colors ${metodo === 'correo' ? 'bg-amber-400 text-zinc-900' : 'bg-transparent text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
+                        >
+                            📧 Correo
+                        </button>
+                    </div>
+                )}
+
                 {paso === 1 ? (
                     <form onSubmit={handleEnviarCodigo} className="flex flex-col gap-4">
-                        <div>
-                            <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
-                            <div className="flex">
-                                <span className="flex items-center gap-1 rounded-l-lg border border-r-0 border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 px-3 text-zinc-600 dark:text-zinc-300 text-sm font-semibold select-none whitespace-nowrap">
-                                    🇨🇴 +57
-                                </span>
+                        {metodo === 'sms' ? (
+                            <div>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Número de celular</label>
+                                <div className="flex">
+                                    <span className="flex items-center gap-1 rounded-l-lg border border-r-0 border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-900 px-3 text-zinc-600 dark:text-zinc-300 text-sm font-semibold select-none whitespace-nowrap">
+                                        🇨🇴 +57
+                                    </span>
+                                    <input
+                                        type="tel"
+                                        inputMode="numeric"
+                                        autoComplete="tel-national"
+                                        value={celular}
+                                        onChange={(e) => setCelular(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
+                                        placeholder="3001234567"
+                                        className="flex-1 rounded-r-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <label className="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Correo electrónico</label>
                                 <input
-                                    type="tel"
-                                    inputMode="numeric"
-                                    autoComplete="tel-national"
-                                    value={celular}
-                                    onChange={(e) => setCelular(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
-                                    placeholder="3001234567"
-                                    className="flex-1 rounded-r-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                    type="email"
+                                    inputMode="email"
+                                    autoComplete="email"
+                                    value={correo}
+                                    onChange={(e) => setCorreo(e.target.value)}
+                                    placeholder="tucorreo@gmail.com"
+                                    className="w-full rounded-lg bg-zinc-50 dark:bg-slate-900/60 backdrop-blur-lg border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                                 />
                             </div>
-                        </div>
+                        )}
 
                         {error && <p className="text-red-400 text-sm">{error}</p>}
 
                         <button
                             type="submit"
-                            disabled={enviando || celular.replace(/[^0-9]/g, '').length !== 10}
+                            disabled={enviando || (metodo === 'sms' ? celular.replace(/[^0-9]/g, '').length !== 10 : !correo.includes('@'))}
                             className="w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60"
                         >
-                            {enviando ? 'Enviando código...' : 'Enviar código por SMS'}
+                            {enviando ? 'Enviando código...' : metodo === 'sms' ? 'Enviar código por SMS' : 'Enviar código por correo'}
                         </button>
                     </form>
                 ) : (
@@ -196,7 +253,7 @@ export default function IniciarSesion() {
                             onClick={() => { setPaso(1); setCodigo(''); setError(''); }}
                             className="text-center text-zinc-500 dark:text-zinc-400 text-sm underline"
                         >
-                            Cambiar número
+                            {metodo === 'sms' ? 'Cambiar número' : 'Cambiar correo'}
                         </button>
                     </form>
                 )}

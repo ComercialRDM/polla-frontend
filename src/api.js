@@ -221,6 +221,20 @@ export function verificarCodigoTelefono({ celular, codigo }) {
     });
 }
 
+export function solicitarCodigoCorreo(correo) {
+    return request('/api/auth/correo/solicitar-codigo', {
+        method: 'POST',
+        body: JSON.stringify({ correo }),
+    });
+}
+
+export function verificarCodigoCorreo({ correo, codigo }) {
+    return request('/api/auth/correo/verificar-codigo', {
+        method: 'POST',
+        body: JSON.stringify({ correo, codigo }),
+    });
+}
+
 export function completarRegistroTelefono({ celular, registro_token, nombre, equipos_favoritos }) {
     return request('/api/auth/telefono/completar', {
         method: 'POST',
