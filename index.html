@@ -2,6 +2,24 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- Aplica dark mode ANTES del primer render de React para evitar el flash blanco.
+         Espejo exacto de la lógica de ThemeContext.jsx (polla_tema + franja horaria). -->
+    <script>
+      (function() {
+        try {
+          var g = localStorage.getItem('polla_tema');
+          var modo = (g === 'light' || g === 'dark' || g === 'auto') ? g : 'light';
+          var dark = false;
+          if (modo === 'dark') {
+            dark = true;
+          } else if (modo === 'auto') {
+            var h = new Date().getHours();
+            dark = h >= 19 || h < 6;
+          }
+          if (dark) document.documentElement.classList.add('dark');
+        } catch(e) {}
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f59e0b" />
