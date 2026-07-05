@@ -14,25 +14,9 @@ import { trackViewItem, trackBeginCheckout, trackAddPaymentInfo } from '../lib/a
 import TrustBadges from '../components/TrustBadges';
 import CuposRestantes from '../components/CuposRestantes';
 import PageHeader from '../components/PageHeader';
-const LOGOS_PAGO = {
-    wompi: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 62 22" height="20" aria-hidden="true">
-            <text x="31" y="17" fontFamily="Arial,Helvetica,sans-serif" fontWeight="700" fontSize="16" fill="#7C3AED" textAnchor="middle">wompi</text>
-        </svg>
-    ),
-    pse: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 24" height="24" aria-hidden="true">
-            <rect width="44" height="24" rx="3" fill="#CC0000"/>
-            <text x="22" y="17" fontFamily="Arial,Helvetica,sans-serif" fontWeight="800" fontSize="12" fill="white" textAnchor="middle" letterSpacing="0.8">PSE</text>
-        </svg>
-    ),
-    bancolombia: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" height="20" width="20" aria-hidden="true">
-            <rect width="20" height="20" rx="4" fill="#FFB600"/>
-            <text x="10" y="15" fontFamily="Arial,Helvetica,sans-serif" fontWeight="900" fontSize="13" fill="#1A1A1A" textAnchor="middle">B</text>
-        </svg>
-    ),
-};
+import wompiOptImg from '../assets/wompi_opt.png';
+import pseOptImg from '../assets/pse_opt.png';
+import bancolombiaOptImg from '../assets/bancolombia_opt.png';
 
 const REF_STORAGE_KEY = 'polla_ref_token';
 const AFF_STORAGE_KEY = 'polla_aff_token';
@@ -559,9 +543,9 @@ export default function Comprar() {
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {[
-                            { id: 'wompi',       label: 'Tarjeta / Nequi / Daviplata', sub: 'Pago inmediato',        logo: LOGOS_PAGO.wompi       },
-                            { id: 'pse',         label: 'PSE',                          sub: 'Débito bancario',       logo: LOGOS_PAGO.pse         },
-                            { id: 'bancolombia', label: 'Botón Bancolombia',             sub: 'Transferencia directa', logo: LOGOS_PAGO.bancolombia },
+                            { id: 'wompi',       label: 'Tarjeta / Nequi / Daviplata', sub: 'Pago inmediato',        logo: wompiOptImg,       logoClass: 'h-5' },
+                            { id: 'pse',         label: 'PSE',                          sub: 'Débito bancario',       logo: pseOptImg,         logoClass: 'h-6' },
+                            { id: 'bancolombia', label: 'Botón Bancolombia',             sub: 'Transferencia directa', logo: bancolombiaOptImg, logoClass: 'h-5 w-5' },
                         ].map(({ id, label, sub, logo, logoClass }) => (
                             <button
                                 key={id}
@@ -572,7 +556,7 @@ export default function Comprar() {
                                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${metodoPago === id ? 'border-[#FCD116]' : 'border-zinc-300 dark:border-zinc-600'}`}>
                                     {metodoPago === id && <div className="w-2.5 h-2.5 rounded-full bg-[#FCD116]" />}
                                 </div>
-                                <span className="shrink-0">{logo}</span>
+                                <img src={logo} alt={label} className={`${logoClass} w-auto object-contain shrink-0`} />
                                 <div className="min-w-0">
                                     <p className={`text-base font-bold leading-tight ${metodoPago === id ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300'}`}>{label}</p>
                                     <p className="text-xs text-zinc-400 leading-tight">{sub}</p>
