@@ -543,9 +543,9 @@ export default function Comprar() {
                     </div>
                     <div className="divide-y divide-zinc-100 dark:divide-white/5">
                         {[
-                            { id: 'wompi',       label: 'Tarjeta / Nequi / Daviplata', sub: 'Pago inmediato',        logo: wompiOptImg,       logoClass: 'h-5' },
-                            { id: 'pse',         label: 'PSE',                          sub: 'Débito bancario',       logo: pseOptImg,         logoClass: 'h-6' },
-                            { id: 'bancolombia', label: 'Botón Bancolombia',             sub: 'Transferencia directa', logo: bancolombiaOptImg, logoClass: 'h-5 w-5' },
+                            { id: 'wompi',       label: 'Tarjeta / Nequi / Daviplata', sub: 'Pago inmediato',        logo: wompiOptImg,       logoClass: 'h-8' },
+                            { id: 'pse',         label: 'PSE',                          sub: 'Débito bancario',       logo: pseOptImg,         logoClass: 'h-8' },
+                            { id: 'bancolombia', label: 'Botón Bancolombia',             sub: 'Transferencia directa', logo: bancolombiaOptImg, logoClass: 'h-8 w-auto' },
                         ].map(({ id, label, sub, logo, logoClass }) => (
                             <button
                                 key={id}
