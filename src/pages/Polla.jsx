@@ -675,10 +675,10 @@ export default function Polla() {
                                     : 'Cuando un amigo compre usando tu link, tú y él ganan 1 intento extra y tú sumas 20 puntos.'}
                             </p>
                             <div className="flex gap-2">
-                                <button onClick={compartirAmigo} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform">
+                                <button onClick={compartirAmigo} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform">
                                     📲 Compartir
                                 </button>
-                                <button onClick={() => { navigator.clipboard.writeText(urlRef); setMensajeCopiado(true); setTimeout(() => setMensajeCopiado(false), 2200); }} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-zinc-300 border border-white/10 bg-white/5 active:scale-95 transition-transform">
+                                <button onClick={() => { navigator.clipboard.writeText(urlRef); setMensajeCopiado(true); setTimeout(() => setMensajeCopiado(false), 2200); }} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-zinc-300 border border-white/10 bg-white/5 active:scale-95 transition-transform">
                                     {mensajeCopiado ? '✅ ¡Copiado!' : '🔗 Copiar link'}
                                 </button>
                             </div>

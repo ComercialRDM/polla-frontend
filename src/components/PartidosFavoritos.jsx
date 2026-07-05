@@ -34,7 +34,7 @@ export default function PartidosFavoritos({ equipos }) {
                     <Link
                         key={p.id}
                         to={`/comprar?partido=${p.id}`}
-                        className="flex items-center justify-between gap-2 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/5 px-3 py-2 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
+                        className="flex items-center justify-between gap-2 rounded-xl bg-zinc-50 dark:bg-white/5 border border-zinc-100 dark:border-white/5 px-3 py-3 hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors"
                     >
                         <span className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200 text-sm font-medium truncate">
                             <Bandera equipo={p.equipo_local} className="w-5 h-5" />
