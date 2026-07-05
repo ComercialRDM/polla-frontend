@@ -981,4 +981,43 @@ export function pronosticoLanding({ nombre, apellido, celular, partido_id, pred_
     });
 }
 
+// ── Marcas Participantes ──────────────────────────────────────────────────────
+
+export function adminListarMarcas(token) {
+    return request('/api/admin/marcas', { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function adminCrearMarca(token, formData) {
+    return fetch(`${API_BASE}/api/admin/marcas`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+    }).then((r) => r.json());
+}
+
+export function adminEditarMarca(token, id, formData) {
+    return fetch(`${API_BASE}/api/admin/marcas/${id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+    }).then((r) => r.json());
+}
+
+export function adminEliminarMarca(token, id) {
+    return request(`/api/admin/marcas/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+}
+
+export function registrarMarcaPublica(formData, registroToken) {
+    return fetch(`${API_BASE}/api/marcas/registro?token=${encodeURIComponent(registroToken)}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+    }).then((r) => r.json());
+}
+
 export { API_BASE };

@@ -28,6 +28,7 @@ const RegistroInfluencer = lazy(() => import('./pages/RegistroInfluencer'));
 const Grupo = lazy(() => import('./pages/Grupo'));
 const InvitacionInfluencer = lazy(() => import('./pages/InvitacionInfluencer'));
 const ColombiaLanding = lazy(() => import('./pages/ColombiaLanding'));
+const MarcasRegistro = lazy(() => import('./pages/MarcasRegistro'));
 
 import ErrorBoundary from './components/ErrorBoundary';
 import BotonWhatsApp from './components/BotonWhatsApp';
@@ -148,6 +149,7 @@ function AppRoutes() {
                     <Route path="/grupo/:token" element={<Grupo />} />
                     <Route path="/invitacion/:token" element={<InvitacionInfluencer />} />
                     <Route path="/colombia" element={<ColombiaLanding />} />
+                    <Route path="/marcas/registro/:token" element={<MarcasRegistro />} />
                 </Routes>
             </Suspense>
             {!ocultarWhatsApp && <BotonWhatsApp mostrarBottomNav={mostrarBottomNav} desplazado={conCTAFijo} />}

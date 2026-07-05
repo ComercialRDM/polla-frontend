@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, admin2faVerificar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado, adminPronosticosLanding } from '../api';
+import { adminLogin, adminPendientes, adminAprobar, adminRechazar, adminCrearPartido, adminActualizarPartido, adminEliminarPartido, adminAbrirComprobante, adminNotificarRecompra, adminSimuladorMetricas, obtenerPartidos, adminApuestas, adminApuestasExport, adminRankingGlobal, adminMarcarUsuarioTest, adminBonosColombia, adminMarcarReclamado, adminTestWhatsapp, adminLocalUsuarios, adminCrearLocalUsuario, adminResetLocalPassword, adminToggleLocalUsuario, admin2faEstado, admin2faSetup, admin2faConfirmar, admin2faDesactivar, admin2faVerificar, adminReportes, adminUsuarios, adminEliminarUsuario, adminCrearEspeciales, adminListarEspeciales, adminInvitarEspecial, adminReenviarBono, adminRankingEspeciales, adminFlashGanadores, adminRankingFinal, adminListarRegistrosInfluencer, adminMarcarRegistroInfluencer, adminAbrirFotoRegistroInfluencer, adminListarAfiliados, adminEditarAfiliado, adminListarComisiones, adminActualizarEstadoComision, adminRedencionesResumen, adminRedencionesExport, adminDemograficos, adminDispositivos, adminMarketingResumen, adminMarketingAgregarGasto, adminMarketingEliminarGasto, adminVentasPorCanal, adminVentasPorCampana, checklistCategorias, checklistMatriz, checklistResumenDia, checklistMarcarCheck, checklistGetNota, checklistGuardarNota, checklistCrearCategoria, checklistEditarCategoria, checklistCrearActividad, checklistEditarActividad, checklistHistorial, API_BASE, adminListarRegalos, adminAprobarRegalo, adminRechazarRegalo, adminDescargarReporteRegalos, adminListarFotosPendientes, adminPreviewFotoUrl, adminAprobarFoto, adminRechazarFoto, adminListarPreseleccionados, adminCrearPreseleccionado, adminEditarPreseleccionado, adminEliminarPreseleccionado, adminPronosticosLanding, adminListarMarcas, adminCrearMarca, adminEditarMarca, adminEliminarMarca } from '../api';
 import { formatoPesos } from '../config/planes';
 import { META_INGRESOS, FECHA_META, PRECIO_SIMULADOR_MIN, PRECIO_SIMULADOR_MAX, PRECIO_SIMULADOR_PASO, PRECIO_REFERENCIA, calcularProyeccion } from '../config/elasticidad';
 
@@ -52,6 +52,16 @@ const GRUPOS_NAV = [
         color: 'red',
         secciones: [
             { id: 'seguridad', label: '🔐 Seguridad' },
+        ],
+    },
+    // Módulo oculto — no aparece en la nav principal; accesible vía URL o búsqueda interna
+    // Activar cuando se quieran mostrar marcas a los clientes: VITE_SHOW_MARCAS_PARTICIPANTES=true
+    {
+        id: 'oculto', label: null,
+        color: 'zinc',
+        oculto: true,
+        secciones: [
+            { id: 'marcas', label: '🏪 Marcas' },
         ],
     },
 ];
@@ -150,6 +160,18 @@ export default function Admin() {
     const [errorPresel, setErrorPresel] = useState('');
     const [copiadoPreselId, setCopiadoPreselId] = useState(null);
     const [eliminandoPreselId, setEliminandoPreselId] = useState(null);
+
+    // ── Marcas Participantes (módulo oculto) ─────────────────────────────────
+    const [marcas, setMarcas] = useState([]);
+    const [cargandoMarcas, setCargandoMarcas] = useState(false);
+    const [errorMarcas, setErrorMarcas] = useState('');
+    const [mostrarFormMarca, setMostrarFormMarca] = useState(false);
+    const [formMarca, setFormMarca] = useState({ nombre: '', contacto: '', status: 'pendiente' });
+    const [logoMarca, setLogoMarca] = useState(null);
+    const [guardandoMarca, setGuardandoMarca] = useState(false);
+    const [editandoMarcaId, setEditandoMarcaId] = useState(null);
+    const [eliminandoMarcaId, setEliminandoMarcaId] = useState(null);
+    const [mensajeMarcas, setMensajeMarcas] = useState('');
 
     const [testWaCelular, setTestWaCelular]   = useState('');
     const [testWaResult, setTestWaResult]     = useState(null);
@@ -816,6 +838,66 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         }
     }
 
+    // ── Marcas Participantes ──────────────────────────────────────────────────
+    async function cargarMarcas() {
+        setCargandoMarcas(true);
+        setErrorMarcas('');
+        try {
+            const data = await adminListarMarcas(token);
+            if (data?.success) setMarcas(data.marcas);
+            else setErrorMarcas(data?.error || 'Error al cargar marcas');
+        } catch {
+            setErrorMarcas('Error de conexión');
+        } finally {
+            setCargandoMarcas(false);
+        }
+    }
+
+    async function handleGuardarMarca(e) {
+        e.preventDefault();
+        if (!formMarca.nombre.trim()) return;
+        setGuardandoMarca(true);
+        setMensajeMarcas('');
+        try {
+            const fd = new FormData();
+            fd.append('nombre', formMarca.nombre.trim());
+            fd.append('contacto', formMarca.contacto.trim());
+            fd.append('status', formMarca.status);
+            if (logoMarca) fd.append('logo', logoMarca);
+            let data;
+            if (editandoMarcaId) {
+                data = await adminEditarMarca(token, editandoMarcaId, fd);
+            } else {
+                data = await adminCrearMarca(token, fd);
+            }
+            if (data?.success) {
+                setMensajeMarcas(editandoMarcaId ? 'Marca actualizada' : 'Marca creada');
+                setMostrarFormMarca(false);
+                setEditandoMarcaId(null);
+                setFormMarca({ nombre: '', contacto: '', status: 'pendiente' });
+                setLogoMarca(null);
+                cargarMarcas();
+            } else {
+                setMensajeMarcas(data?.error || 'Error al guardar');
+            }
+        } catch {
+            setMensajeMarcas('Error de conexión');
+        } finally {
+            setGuardandoMarca(false);
+        }
+    }
+
+    async function handleEliminarMarca(id) {
+        if (!window.confirm('¿Eliminar esta marca?')) return;
+        setEliminandoMarcaId(id);
+        try {
+            const data = await adminEliminarMarca(token, id);
+            if (data?.success) setMarcas((prev) => prev.filter((m) => m.id !== id));
+        } catch { /* silencioso */ } finally {
+            setEliminandoMarcaId(null);
+        }
+    }
+
     async function cargarPreseleccionados() {
         setCargandoPresel(true);
         try {
@@ -1101,6 +1183,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
         if (seccionActiva === 'redenciones' && token) cargarResumenDia(resumenDiaFecha);
         if (seccionActiva === 'regalos' && token) cargarRegalos('PENDIENTE');
         if (seccionActiva === 'fotos' && token) cargarFotosPendientes();
+        if (seccionActiva === 'marcas' && token) cargarMarcas();
         if (seccionActiva === 'checklist' && token) { cargarChecklist(); cargarChecklistMatriz(); }
         if (seccionActiva === 'seguridad' && token) {
             admin2faEstado(token).then(d => { if (d?.success) setTotp2faEnabled(d.totp_enabled); }).catch(() => {});
@@ -1624,7 +1707,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                     return (
                         <div className="mb-6">
                             <div className="flex items-stretch gap-1.5 flex-wrap">
-                                {GRUPOS_NAV.map((grupo, gi) => {
+                                {GRUPOS_NAV.filter((g) => !g.oculto).map((grupo, gi) => {
                                     const esteGrupoActivo = grupoActivo?.id === grupo.id;
                                     return (
                                         <div key={grupo.id} className={`flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all ${esteGrupoActivo ? `border-transparent ring-2 ${RING[grupo.color]}` : 'border-zinc-200 dark:border-white/10'}`}>
@@ -4397,6 +4480,156 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                             ))}
                         </div>
                     )}
+                </div>
+                )}
+
+                {/* ── Marcas Participantes (módulo oculto) ── */}
+                {seccionActiva === 'marcas' && (
+                <div className="flex flex-col gap-5">
+                    <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 p-4">
+                        <div className="flex items-center justify-between mb-1">
+                            <div>
+                                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">🏪 Marcas Participantes</h2>
+                                <p className="text-zinc-500 dark:text-zinc-400 text-xs mt-0.5">Módulo oculto — los clientes no lo ven aún. Actívalo con <code className="bg-zinc-200 dark:bg-zinc-800 px-1 rounded">VITE_SHOW_MARCAS_PARTICIPANTES=true</code></p>
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={cargarMarcas} disabled={cargandoMarcas}
+                                    className="text-xs px-3 py-1.5 rounded-lg bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-200 font-bold hover:bg-zinc-300 dark:hover:bg-white/20 disabled:opacity-60">
+                                    {cargandoMarcas ? 'Cargando...' : '↻ Actualizar'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setMostrarFormMarca((v) => !v);
+                                        setEditandoMarcaId(null);
+                                        setFormMarca({ nombre: '', contacto: '', status: 'pendiente' });
+                                        setLogoMarca(null);
+                                        setMensajeMarcas('');
+                                    }}
+                                    className="text-xs px-3 py-1.5 rounded-lg bg-[#FCD116] text-zinc-950 font-bold hover:bg-yellow-300">
+                                    {mostrarFormMarca ? 'Cancelar' : '+ Nueva marca'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {mensajeMarcas && (
+                            <p className={`text-xs font-bold mb-3 ${mensajeMarcas.includes('Error') || mensajeMarcas.includes('error') ? 'text-red-400' : 'text-green-400'}`}>
+                                {mensajeMarcas}
+                            </p>
+                        )}
+                        {errorMarcas && <p className="text-red-400 text-xs mb-3">{errorMarcas}</p>}
+
+                        {/* Link de inscripción pública */}
+                        <div className="mb-4 rounded-lg border border-amber-400/30 bg-amber-50 dark:bg-amber-900/10 px-3 py-2 flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">🔗 Link de registro externo:</span>
+                            <code className="text-xs text-amber-600 dark:text-amber-300 break-all">{window.location.origin}/marcas/registro/rdm-marcas-2026-xk9p</code>
+                            <button
+                                onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/marcas/registro/rdm-marcas-2026-xk9p`); setMensajeMarcas('Link copiado'); }}
+                                className="text-xs px-2 py-1 rounded bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200 font-bold hover:bg-amber-300 dark:hover:bg-amber-700">
+                                Copiar
+                            </button>
+                        </div>
+
+                        {/* Formulario crear/editar */}
+                        {mostrarFormMarca && (
+                            <form onSubmit={handleGuardarMarca} className="rounded-xl border border-[#FCD116]/30 bg-amber-50 dark:bg-amber-900/10 p-4 mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Nombre de la marca *</label>
+                                    <input required value={formMarca.nombre} onChange={(e) => setFormMarca((p) => ({ ...p, nombre: e.target.value }))}
+                                        placeholder="Ej: Nike, Rappi, Éxito…"
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Contacto (email / teléfono)</label>
+                                    <input value={formMarca.contacto} onChange={(e) => setFormMarca((p) => ({ ...p, contacto: e.target.value }))}
+                                        placeholder="contacto@marca.com o 300 000 0000"
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Estado</label>
+                                    <select value={formMarca.status} onChange={(e) => setFormMarca((p) => ({ ...p, status: e.target.value }))}
+                                        className="w-full rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm text-zinc-900 dark:text-white">
+                                        <option value="pendiente">Pendiente</option>
+                                        <option value="activa">Activa</option>
+                                        <option value="inactiva">Inactiva</option>
+                                    </select>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Logo (PNG/JPG, máx 2 MB)</label>
+                                    <input type="file" accept="image/jpeg,image/png,image/webp"
+                                        onChange={(e) => setLogoMarca(e.target.files?.[0] || null)}
+                                        className="w-full text-xs text-zinc-600 dark:text-zinc-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-zinc-200 dark:file:bg-zinc-700 file:text-zinc-800 dark:file:text-zinc-200 file:font-bold file:text-xs" />
+                                    {logoMarca && <p className="text-green-400 text-[11px] mt-1">✓ {logoMarca.name}</p>}
+                                </div>
+                                <div className="sm:col-span-2 flex gap-2">
+                                    <button type="submit" disabled={guardandoMarca}
+                                        className="flex-1 py-2 rounded-xl bg-[#FCD116] text-zinc-950 font-black text-sm disabled:opacity-60">
+                                        {guardandoMarca ? 'Guardando...' : editandoMarcaId ? 'Actualizar marca' : 'Crear marca'}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+
+                        {/* Tabla de marcas */}
+                        {cargandoMarcas && marcas.length === 0 ? (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm py-4 text-center">Cargando...</p>
+                        ) : marcas.length === 0 ? (
+                            <p className="text-zinc-500 dark:text-zinc-400 text-sm py-4 text-center">Sin marcas registradas.</p>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left text-xs text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-white/10">
+                                            <th className="pb-2 pr-3">Logo</th>
+                                            <th className="pb-2 pr-3">Nombre</th>
+                                            <th className="pb-2 pr-3">Contacto</th>
+                                            <th className="pb-2 pr-3">Estado</th>
+                                            <th className="pb-2 pr-3">Origen</th>
+                                            <th className="pb-2">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-zinc-100 dark:divide-white/5">
+                                        {marcas.map((m) => (
+                                            <tr key={m.id} className="hover:bg-zinc-50 dark:hover:bg-white/5">
+                                                <td className="py-2 pr-3">
+                                                    {m.tiene_logo
+                                                        ? <img src={`${API_BASE}/api/admin/marcas/${m.id}/logo`} alt={m.nombre} className="w-10 h-10 object-contain rounded-lg border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800" />
+                                                        : <div className="w-10 h-10 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 text-xs">Sin logo</div>
+                                                    }
+                                                </td>
+                                                <td className="py-2 pr-3 font-semibold text-zinc-900 dark:text-white">{m.nombre}</td>
+                                                <td className="py-2 pr-3 text-zinc-500 dark:text-zinc-400 text-xs">{m.contacto || '—'}</td>
+                                                <td className="py-2 pr-3">
+                                                    <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${m.status === 'activa' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : m.status === 'inactiva' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
+                                                        {m.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2 pr-3 text-zinc-500 dark:text-zinc-400 text-xs">{m.origen}</td>
+                                                <td className="py-2 flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditandoMarcaId(m.id);
+                                                            setFormMarca({ nombre: m.nombre, contacto: m.contacto || '', status: m.status });
+                                                            setLogoMarca(null);
+                                                            setMostrarFormMarca(true);
+                                                            setMensajeMarcas('');
+                                                        }}
+                                                        className="text-xs text-amber-500 hover:text-amber-400 font-bold">
+                                                        ✏️ Editar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEliminarMarca(m.id)}
+                                                        disabled={eliminandoMarcaId === m.id}
+                                                        className="text-xs text-red-400 hover:text-red-300 font-bold disabled:opacity-50">
+                                                        🗑
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 )}
 
