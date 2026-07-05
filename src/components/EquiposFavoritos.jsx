@@ -53,7 +53,7 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
                         </div>
                         <button
                             onClick={() => setEditando(true)}
-                            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-500 dark:text-amber-400 border border-amber-400/30 hover:bg-amber-400/10 transition-colors"
+                            className="flex-shrink-0 min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold text-amber-500 dark:text-amber-400 border border-amber-400/30 hover:bg-amber-400/10 transition-colors"
                         >
                             Editar
                         </button>

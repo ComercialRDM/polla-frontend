@@ -41,6 +41,8 @@ function detectarNavegador() {
     return 'otro';
 }
 
+const MODAL_SESION_KEY = 'polla_modal_sesion';
+
 export default function InstalarApp({ delayMs = 30000 }) {
     const [visible, setVisible] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -57,7 +59,7 @@ export default function InstalarApp({ delayMs = 30000 }) {
             }
         }
 
-        if (yaInstalada() || yaDescartado()) return;
+        if (yaInstalada() || yaDescartado() || sessionStorage.getItem(MODAL_SESION_KEY)) return;
 
         function onBeforeInstall(e) {
             e.preventDefault();
@@ -72,7 +74,11 @@ export default function InstalarApp({ delayMs = 30000 }) {
         window.addEventListener('beforeinstallprompt', onBeforeInstall);
         window.addEventListener('appinstalled', onInstalled);
 
-        const timer = setTimeout(() => setVisible(true), delayMs);
+        const timer = setTimeout(() => {
+            if (sessionStorage.getItem(MODAL_SESION_KEY)) return;
+            sessionStorage.setItem(MODAL_SESION_KEY, '1');
+            setVisible(true);
+        }, delayMs);
 
         return () => {
             clearTimeout(timer);

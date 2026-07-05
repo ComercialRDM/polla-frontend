@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { obtenerInfoPolla, votar, subirFotoPerfil, crearGrupo, obtenerMisGrupos, actualizarPerfilDemografico, confirmarRegalo, solicitarRegalo, misSolicitudesRegalo, cerrarSesionRemota } from '../api';
 import InstalarApp from '../components/InstalarApp';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
-import RankingEnVivo from '../components/RankingEnVivo';
-import RankingInfluencers from '../components/RankingInfluencers';
+const RankingEnVivo = lazy(() => import('../components/RankingEnVivo'));
+const RankingInfluencers = lazy(() => import('../components/RankingInfluencers'));
 import EquiposFavoritos from '../components/EquiposFavoritos';
 import PartidosFavoritos from '../components/PartidosFavoritos';
 import CompartirPronostico from '../components/CompartirPronostico';
@@ -16,6 +16,10 @@ import MisPronosticos from '../components/MisPronosticos';
 
 
 const UNA_HORA_MS = 60 * 60 * 1000;
+const MODAL_SESION_KEY = 'polla_modal_sesion';
+function modalSesionYaMostrado() { return !!sessionStorage.getItem(MODAL_SESION_KEY); }
+function marcarModalMostrado() { sessionStorage.setItem(MODAL_SESION_KEY, '1'); }
+
 const FOTO_REMINDER_KEY = 'polla_foto_recordatorio_at';
 const FOTO_REMINDER_DIAS = 7;
 function fotoReminderDismissed() {
@@ -154,23 +158,24 @@ export default function Polla() {
     }, []);
 
     useEffect(() => {
-        if (!info?.es_especial || info?.tiene_foto || fotoReminderDismissed()) return;
-        const timer = setTimeout(() => setMostrarFotoReminder(true), 5000);
+        if (!info?.es_especial || info?.tiene_foto || fotoReminderDismissed() || modalSesionYaMostrado()) return;
+        const timer = setTimeout(() => { marcarModalMostrado(); setMostrarFotoReminder(true); }, 5000);
         return () => clearTimeout(timer);
     }, [info]);
 
     useEffect(() => {
-        if (!info || info.fecha_nacimiento || demoReminderDismissed()) return;
+        if (!info || info.fecha_nacimiento || demoReminderDismissed() || modalSesionYaMostrado()) return;
         const timer = setTimeout(() => {
+            marcarModalMostrado();
             setMostrarDemoBanner(true);
-            setMostrarFotoReminder(false); // demo tiene prioridad, cierra foto si estaba abierto
+            setMostrarFotoReminder(false);
         }, 8000);
         return () => clearTimeout(timer);
     }, [info]);
 
     useEffect(() => {
-        if (!info || info.tiene_cuenta || cuentaReminderDismissed()) return;
-        const timer = setTimeout(() => setMostrarCuentaBanner(true), 10000);
+        if (!info || info.tiene_cuenta || cuentaReminderDismissed() || modalSesionYaMostrado()) return;
+        const timer = setTimeout(() => { marcarModalMostrado(); setMostrarCuentaBanner(true); }, 10000);
         return () => clearTimeout(timer);
     }, [info]);
 
@@ -475,7 +480,7 @@ export default function Polla() {
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className="w-full max-w-md px-4 mt-6 pt-2 relative">
+            <div className="w-full max-w-md lg:max-w-5xl px-4 mt-6 pt-2 relative">
 
                 {/* HEADER: foto + saludo + cerrar sesión */}
                 <div className="flex items-start justify-between mb-5">
@@ -515,7 +520,7 @@ export default function Polla() {
                             {errorFoto && <p className="text-red-400 text-xs mt-0.5">{errorFoto}</p>}
                         </div>
                     </div>
-                    <button onClick={handleCerrarSesion} className="flex-shrink-0 text-xs text-zinc-400 border border-zinc-700 rounded-lg px-3 py-1.5 hover:text-red-400 hover:border-red-400 transition-colors mt-0.5">
+                    <button onClick={handleCerrarSesion} className="flex-shrink-0 min-h-[44px] text-xs text-zinc-400 border border-zinc-700 rounded-lg px-3 py-2 hover:text-red-400 hover:border-red-400 transition-colors">
                         Cerrar sesión
                     </button>
                 </div>
@@ -532,6 +537,10 @@ export default function Polla() {
                         <button onClick={() => { localStorage.setItem(CUENTA_REMINDER_KEY, String(Date.now())); setMostrarCuentaBanner(false); }} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none shrink-0 mt-0.5" aria-label="Cerrar">×</button>
                     </div>
                 )}
+
+                {/* ── GRID 2 columnas ≥1024px ─────────────────────────────────────────── */}
+                <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:gap-8 lg:items-start">
+                <div className="min-w-0">
 
                 {/* CARD PRINCIPAL — solo clientes */}
                 {!info.es_influencer && (() => {
@@ -684,7 +693,7 @@ export default function Polla() {
                             <p className="text-white font-bold text-sm">👥 Mi grupo</p>
                             <p className="text-zinc-500 text-xs mt-0.5">Compite con amigos en tu propio mini-torneo</p>
                         </div>
-                        <button onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }} className="text-xs text-amber-400 border border-amber-400/40 rounded-lg px-3 py-1.5 hover:bg-amber-400/10 transition-colors font-semibold flex-shrink-0">
+                        <button onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }} className="min-h-[44px] text-xs text-amber-400 border border-amber-400/40 rounded-lg px-3 py-2 hover:bg-amber-400/10 transition-colors font-semibold flex-shrink-0">
                             {mostrarFormGrupo ? 'Cancelar' : '+ Crear grupo'}
                         </button>
                     </div>
@@ -729,10 +738,6 @@ export default function Polla() {
                         <Link to="/comprar" className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]">Comprar {formatoPesos(montoEncolados)}</Link>
                     </div>
                 )}
-
-                {/* Ranking influencers + Pozo */}
-                {info.es_especial && <RankingInfluencers token={token} />}
-                <PozoPremios compact />
 
                 {/* PARTIDOS */}
                 <div id="partidos-section">
@@ -824,13 +829,6 @@ export default function Polla() {
                     </div>
                 )}
 
-                {/* Editor equipos favoritos */}
-                <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
-                <PartidosFavoritos equipos={info.equipos_favoritos} />
-
-                {/* Ranking en vivo del próximo partido */}
-                {partidoDestacado && <RankingEnVivo partidoId={partidoDestacado.partido_id} />}
-
                 {/* Regalo de Bono */}
                 <div className="mt-8 mb-2 text-center">
                     {misSolicitudes.length > 0 && (
@@ -842,6 +840,19 @@ export default function Polla() {
                     )}
                     <button onClick={() => { setMostrarModalRegalo(true); setRegaloMensaje(''); setRegaloError(''); }} className="text-xs text-zinc-600 underline hover:text-zinc-400 transition-colors">¿Quieres regalar tu bono? Solicítalo aquí</button>
                 </div>
+
+                </div>{/* ── fin columna izquierda ── */}
+
+                {/* ── COLUMNA DERECHA (sidebar) ── */}
+                <div className="flex flex-col gap-5 lg:sticky lg:top-6 mt-6 lg:mt-0">
+                    {info.es_especial && <Suspense fallback={null}><RankingInfluencers token={token} /></Suspense>}
+                    <PozoPremios compact />
+                    <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
+                    <PartidosFavoritos equipos={info.equipos_favoritos} />
+                    {partidoDestacado && <Suspense fallback={null}><RankingEnVivo partidoId={partidoDestacado.partido_id} /></Suspense>}
+                </div>
+
+                </div>{/* ── fin grid ── */}
             </div>
 
             {/* ── Modal Regalo ── */}

@@ -259,7 +259,7 @@ export default function CompartirPronostico({
                     <button
                         onClick={handleCompartir}
                         disabled={generando}
-                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-pink-500 to-purple-600 active:scale-95 transition-transform disabled:opacity-60"
+                        className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-pink-500 to-purple-600 active:scale-95 transition-transform disabled:opacity-60"
                     >
                         {generando ? 'Preparando imagen...' : '📲 Compartir mi pronóstico'}
                     </button>
@@ -271,7 +271,7 @@ export default function CompartirPronostico({
                 </div>
                 <button
                     onClick={handleCopiar}
-                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl font-bold text-sm text-zinc-400 border border-white/10 bg-white/5 active:scale-95 transition-transform"
+                    className="flex items-center justify-center gap-1.5 py-3 px-3 rounded-xl font-bold text-sm text-zinc-400 border border-white/10 bg-white/5 active:scale-95 transition-transform"
                     title="Copiar texto al portapapeles"
                 >
                     {copiado ? '✅' : '📋'}

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+const NOTIF_SESION_KEY = 'polla_notif_actividad_sesion';
 
 function tiempoRelativo(fechaStr) {
     const diff = Math.floor((Date.now() - new Date(fechaStr).getTime()) / 1000);
@@ -28,6 +29,7 @@ export default function NotificacionActividad() {
     const bottomClass = window.location.pathname === '/comprar' ? 'bottom-44' : 'bottom-24';
 
     useEffect(() => {
+        if (sessionStorage.getItem(NOTIF_SESION_KEY)) return;
         fetch(`${API_BASE}/api/polla/actividad-reciente`)
             .then(r => r.json())
             .then(d => { if (d?.success && d.actividad?.length > 0) setActividad(d.actividad); })
@@ -37,22 +39,16 @@ export default function NotificacionActividad() {
     useEffect(() => {
         if (actividad.length === 0) return;
 
-        function mostrarSiguiente() {
-            const item = actividad[idxRef.current % actividad.length];
-            idxRef.current += 1;
+        // Primera (y única) notificación por sesión, a los 20 segundos
+        timerRef.current = setTimeout(() => {
+            const item = actividad[0];
             setActual(item);
             setVisible(true);
+            sessionStorage.setItem(NOTIF_SESION_KEY, '1');
 
-            // Ocultar después de 4 segundos
-            timerRef.current = setTimeout(() => {
-                setVisible(false);
-                // Mostrar el siguiente después de 45 segundos de pausa
-                timerRef.current = setTimeout(mostrarSiguiente, 45000);
-            }, 4000);
-        }
-
-        // Primera notificación a los 20 segundos
-        timerRef.current = setTimeout(mostrarSiguiente, 20000);
+            // Auto-cierre a los 4.5 segundos
+            timerRef.current = setTimeout(() => setVisible(false), 4500);
+        }, 20000);
 
         return () => clearTimeout(timerRef.current);
     }, [actividad]);
