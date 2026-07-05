@@ -159,7 +159,12 @@ function AppRoutes() {
 }
 
 export default function App() {
-    const [mostrarSplash, setMostrarSplash] = useState(() => !sessionStorage.getItem(SPLASH_KEY));
+    const [mostrarSplash, setMostrarSplash] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        const vieneDeAd = params.has('utm_source') || params.has('utm_medium') || params.has('utm_campaign');
+        if (vieneDeAd) return false;
+        return !sessionStorage.getItem(SPLASH_KEY);
+    });
     const [backendCaido, setBackendCaido] = useState(false);
 
     useEffect(() => {
