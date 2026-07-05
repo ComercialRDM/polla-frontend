@@ -661,13 +661,6 @@ export default function Polla() {
                                 ))}
                             </div>
 
-                            {/* Nota creador de contenido */}
-                            {info.es_influencer && (
-                                <div className="mx-3 mb-3 px-3 py-2 rounded-xl bg-purple-900/30 border border-purple-500/30 text-purple-300 text-xs font-bold">
-                                    🎖️ Invitado especial · Participas para demostrar la app — tus bonos no compiten por premios monetarios
-                                </div>
-                            )}
-
                             {/* Equipos favoritos */}
                             {info.equipos_favoritos?.length > 0 && (
                                 <div className="px-3 pb-3 border-t border-white/5 pt-3">
