@@ -172,6 +172,14 @@ export default function Registro() {
             if (data?.success) {
                 guardarSesion({ ...data.usuario, token: data.token }, recordarDispositivo);
                 guardarDatosComprador({ nombre: nombre.trim(), celular: celular.trim() });
+
+                if (typeof window.gtag === 'function') {
+                    window.gtag('event', 'sign_up', { method: 'telefono' });
+                }
+                if (typeof window.fbq === 'function') {
+                    window.fbq('track', 'CompleteRegistration');
+                }
+
                 if (equipos.length > 0 && data.usuario?.calendario_token) {
                     setCalendarioToken(data.usuario.calendario_token);
                     setPaso(4);
