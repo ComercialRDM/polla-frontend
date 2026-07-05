@@ -14,6 +14,7 @@ import CompartirPronostico from '../components/CompartirPronostico';
 import { cerrarSesion } from '../utils/sesion';
 import PozoPremios from '../components/PozoPremios';
 import MisPronosticos from '../components/MisPronosticos';
+import { useTheme } from '../context/ThemeContext';
 
 
 const UNA_HORA_MS = 60 * 60 * 1000;
@@ -79,10 +80,14 @@ function Seccion({ id, titulo, defaultOpen = true, children }) {
     );
 }
 
+const TEMA_ICONOS = { auto: '🌓', light: '☀️', dark: '🌙' };
+const TEMA_ORDEN = ['auto', 'light', 'dark'];
+
 export default function Polla() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const token = searchParams.get('token');
+    const { modo: temaModo, cambiarModo: cambiarTema } = useTheme();
 
     function handleCerrarSesion() {
         cerrarSesionRemota().catch(() => {});
@@ -127,6 +132,7 @@ export default function Polla() {
     const [misSolicitudes, setMisSolicitudes] = useState([]);
 
     const [mostrarDemoBanner, setMostrarDemoBanner] = useState(false);
+    const [demoModalPendiente, setDemoModalPendiente] = useState(false);
     const [demoFecha, setDemoFecha] = useState('');
     const [demoSexo, setDemoSexo] = useState('');
     const [guardandoDemo, setGuardandoDemo] = useState(false);
@@ -188,12 +194,7 @@ export default function Polla() {
 
     useEffect(() => {
         if (!info || info.fecha_nacimiento || demoReminderDismissed() || modalSesionYaMostrado()) return;
-        const timer = setTimeout(() => {
-            marcarModalMostrado();
-            setMostrarDemoBanner(true);
-            setMostrarFotoReminder(false);
-        }, 8000);
-        return () => clearTimeout(timer);
+        setDemoModalPendiente(true);
     }, [info]);
 
     useEffect(() => {
@@ -404,6 +405,12 @@ export default function Polla() {
                             : p
                     ),
                 }));
+                if (demoModalPendiente) {
+                    marcarModalMostrado();
+                    setMostrarDemoBanner(true);
+                    setMostrarFotoReminder(false);
+                    setDemoModalPendiente(false);
+                }
             } else {
                 setErrorPorPartido((prev) => ({ ...prev, [partido.partido_id]: data?.error || 'No se pudo guardar el pronóstico.' }));
             }
@@ -543,9 +550,18 @@ export default function Polla() {
                             {errorFoto && <p className="text-red-400 text-xs mt-0.5">{errorFoto}</p>}
                         </div>
                     </div>
-                    <button onClick={handleCerrarSesion} className="flex-shrink-0 min-h-[44px] text-xs text-zinc-400 border border-zinc-700 rounded-lg px-3 py-2 hover:text-red-400 hover:border-red-400 transition-colors">
-                        Cerrar sesión
-                    </button>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                            onClick={() => cambiarTema(TEMA_ORDEN[(TEMA_ORDEN.indexOf(temaModo) + 1) % 3])}
+                            aria-label={`Tema: ${temaModo}`}
+                            className="sm:hidden w-9 h-9 flex items-center justify-center rounded-full border border-zinc-700 bg-zinc-800 text-base active:scale-90 transition-transform"
+                        >
+                            {TEMA_ICONOS[temaModo]}
+                        </button>
+                        <button onClick={handleCerrarSesion} className="min-h-[44px] text-xs text-zinc-400 border border-zinc-700 rounded-lg px-3 py-2 hover:text-red-400 hover:border-red-400 transition-colors">
+                            Cerrar sesión
+                        </button>
+                    </div>
                 </div>
 
                 {/* Banner crear cuenta */}
@@ -560,6 +576,9 @@ export default function Polla() {
                         <button onClick={() => { localStorage.setItem(CUENTA_REMINDER_KEY, String(Date.now())); setMostrarCuentaBanner(false); }} className="text-zinc-500 hover:text-zinc-300 text-lg leading-none shrink-0 mt-0.5" aria-label="Cerrar">×</button>
                     </div>
                 )}
+
+                {/* Tabla de premios en vivo — visible antes del ranking personal */}
+                <div className="mb-4"><PozoPremios compact /></div>
 
                 {/* ── GRID 2 columnas ≥1024px ─────────────────────────────────────────── */}
                 <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:gap-8 lg:items-start">
@@ -873,7 +892,6 @@ export default function Polla() {
                 <div className="flex flex-col gap-5 lg:sticky lg:top-6 mt-6 lg:mt-0">
                     <Suspense fallback={null}><RankingGeneral token={token} /></Suspense>
                     {info.es_especial && <Suspense fallback={null}><RankingInfluencers token={token} /></Suspense>}
-                    <PozoPremios compact />
                     <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
                     <PartidosFavoritos equipos={info.equipos_favoritos} />
                     {partidoDestacado && <Suspense fallback={null}><RankingEnVivo partidoId={partidoDestacado.partido_id} /></Suspense>}

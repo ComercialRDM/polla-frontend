@@ -79,7 +79,7 @@ export default function EquiposFavoritos({ token, equiposIniciales, calendarioTo
                         <button
                             key={equipo}
                             onClick={() => toggleEquipo(equipo)}
-                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors ${
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors min-h-[44px] sm:min-h-0 ${
                                 activo
                                     ? 'bg-amber-400/20 border-amber-400 text-amber-600 dark:text-amber-400'
                                     : 'bg-zinc-100 dark:bg-white/5 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10'

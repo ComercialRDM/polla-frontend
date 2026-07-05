@@ -26,7 +26,9 @@ export default function NotificacionActividad() {
     const timerRef = useRef(null);
     // En /comprar la barra fija de pago mide ~150px; subimos la notificación
     // usando window.location (no hook, porque este componente vive fuera del Router).
-    const bottomClass = window.location.pathname === '/comprar' ? 'bottom-44' : 'bottom-24';
+    const posClass = window.location.pathname === '/comprar'
+        ? 'top-20 sm:top-auto sm:bottom-44'
+        : 'top-20 sm:top-auto sm:bottom-24';
 
     useEffect(() => {
         if (sessionStorage.getItem(NOTIF_SESION_KEY)) return;
@@ -57,7 +59,7 @@ export default function NotificacionActividad() {
 
     return (
         <div
-            className={`fixed ${bottomClass} left-3 z-40 max-w-[280px] transition-all duration-500 ${
+            className={`fixed ${posClass} left-3 z-40 max-w-[280px] transition-all duration-500 ${
                 visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
             }`}
         >

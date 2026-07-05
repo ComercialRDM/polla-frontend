@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { obtenerRankingGeneral } from '../api';
 
+const TOP_COMPACT = 5;
+
 const MEDALLA = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 export default function RankingGeneral({ token }) {
     const [data, setData] = useState(null);
     const [error, setError] = useState('');
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         if (!token) return;
@@ -21,10 +24,13 @@ export default function RankingGeneral({ token }) {
 
     const { ranking, mi_posicion, mi_puntos, puntos_para_subir, total_participantes } = data;
 
-    // Filas del top 30 (pueden incluir la fila propia si está dentro)
     const top30 = ranking.filter(r => r.posicion <= 30);
-    // Fila propia fuera del top 30 (mostrada fija debajo del scroll)
-    const miFilaFuera = mi_posicion > 30 ? ranking.find(r => r.es_yo) : null;
+    const miRow = ranking.find(r => r.es_yo);
+    // Fuera del scroll: posición 31+ siempre, o posición 6-30 cuando está comprimido
+    const miFilaFuera = mi_posicion > 30
+        ? miRow
+        : (!expanded && miRow?.posicion > TOP_COMPACT ? miRow : null);
+    const visibleRows = expanded ? top30 : top30.slice(0, TOP_COMPACT);
 
     function FilaRanking({ r }) {
         const esYo = r.es_yo;
@@ -77,15 +83,26 @@ export default function RankingGeneral({ token }) {
                 Top 30 · Solo compiten clientes reales (tú incluido{mi_posicion ? `, vas #${mi_posicion}` : ''})
             </p>
 
-            {/* Lista scrolleable top 30 */}
-            <div className="overflow-y-auto max-h-[420px] flex flex-col gap-1 pr-0.5" style={{ scrollbarWidth: 'thin' }}>
-                {top30.map(r => <FilaRanking key={r.posicion} r={r} />)}
+            <div
+                className={`flex flex-col gap-1 pr-0.5 ${expanded ? 'overflow-y-auto max-h-[420px]' : ''}`}
+                style={expanded ? { scrollbarWidth: 'thin' } : {}}
+            >
+                {visibleRows.map(r => <FilaRanking key={r.posicion} r={r} />)}
                 {top30.length === 0 && (
                     <p className="text-zinc-400 dark:text-zinc-500 text-sm text-center py-6">
                         Aún no hay pronósticos cerrados — ¡el ranking se activará con el primer resultado!
                     </p>
                 )}
             </div>
+
+            {top30.length > TOP_COMPACT && (
+                <button
+                    onClick={() => setExpanded(e => !e)}
+                    className="mt-1 w-full py-2 text-xs font-bold text-amber-500 hover:text-amber-400 transition-colors text-center"
+                >
+                    {expanded ? '↑ Ver menos' : `Ver ranking completo (${top30.length}) →`}
+                </button>
+            )}
 
             {/* Fila propia fuera del top 30, separada del scroll */}
             {miFilaFuera && (
