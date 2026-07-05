@@ -57,6 +57,28 @@ function formatearTiempo(ms) {
     return `${pad(horas)}:${pad(minutos)}:${pad(segundos)}`;
 }
 
+function Seccion({ id, titulo, defaultOpen = true, children }) {
+    const [abierto, setAbierto] = useState(defaultOpen);
+    return (
+        <div id={id} className="mb-1">
+            <button
+                type="button"
+                onClick={() => setAbierto(a => !a)}
+                className="w-full flex items-center gap-3 py-3 text-left"
+            >
+                <div className="w-1 h-7 bg-[#FCD116] rounded-full shrink-0" />
+                <span className="flex-1 font-display text-2xl text-white tracking-wide uppercase leading-none">
+                    {titulo}
+                </span>
+                <svg viewBox="0 0 12 8" className={`w-4 h-4 text-zinc-400 transition-transform duration-200 shrink-0 ${abierto ? '' : '-rotate-90'}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 1L6 6L11 1" />
+                </svg>
+            </button>
+            {abierto && <div className="pb-2">{children}</div>}
+        </div>
+    );
+}
+
 export default function Polla() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -650,10 +672,11 @@ export default function Polla() {
                     );
                 })()}
 
-                {/* Historial de pronósticos */}
-                <MisPronosticos tokenAcceso={token} />
+                <Seccion titulo="🎯 Tus predicciones" defaultOpen={false}>
+                    <MisPronosticos tokenAcceso={token} />
+                </Seccion>
 
-                {/* RETA A UN AMIGO */}
+                <Seccion titulo="🏆 Invita y gana" defaultOpen={false}>{/* RETA A UN AMIGO */}
                 {(() => {
                     const urlRef = `${typeof window !== 'undefined' ? window.location.origin : 'https://ganaconretoucherie.com'}/?ref=${token}`;
                     const textoComp = `🇨🇴⚽ ¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela!\n\nPredice el marcador de los partidos y gana premios increíbles.\n\n👉 ${urlRef}`;
@@ -690,8 +713,9 @@ export default function Polla() {
                         </div>
                     );
                 })()}
+                </Seccion>
 
-                {/* Mi Grupo */}
+                <Seccion titulo="👥 Mi grupo" defaultOpen={false}>
                 <div className="rounded-2xl border border-amber-400/20 bg-zinc-900 p-4 mb-4">
                     <div className="flex items-center justify-between mb-3">
                         <div>
@@ -734,8 +758,9 @@ export default function Polla() {
                         </div>
                     )}
                 </div>
+                </Seccion>
 
-                {/* Predicciones guardadas sin cupos */}
+                <Seccion id="partidos-section" titulo="⚽ Partidos para predecir">
                 {cantidadEncolados > 0 && (
                     <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-4 text-center">
                         <p className="text-white font-bold text-sm mb-1">🔥 Tienes {cantidadEncolados} {cantidadEncolados === 1 ? 'predicción guardada' : 'predicciones guardadas'} sin cupos</p>
@@ -743,11 +768,6 @@ export default function Polla() {
                         <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]">Comprar {formatoPesos(montoEncolados)}</Link>
                     </div>
                 )}
-
-                {/* PARTIDOS */}
-                <div id="partidos-section">
-                    <p className="text-white font-bold text-base mb-3 mt-4">Partidos disponibles para predecir</p>
-                </div>
                 {info.partidos.length === 0 && (
                     <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5 text-center text-zinc-300 mb-4">No hay partidos activos por el momento.</div>
                 )}
@@ -833,6 +853,7 @@ export default function Polla() {
                         )}
                     </div>
                 )}
+                </Seccion>
 
                 {/* Regalo de Bono */}
                 <div className="mt-8 mb-2 text-center">
