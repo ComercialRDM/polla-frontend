@@ -11,6 +11,7 @@ const INTERVALO_MS = 3000;
 export default function Gracias() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
+    const esDemo = searchParams.get('demo') === 'true';
 
     // El webhook de Wompi que aprueba el pago llega de forma asíncrona, así que
     // este "¡Pago exitoso!" no se muestra a ciegas: se confirma contra el
@@ -25,6 +26,7 @@ export default function Gracias() {
 
     // Evento Meta Pixel: Lead — se dispara una sola vez al confirmar la compra
     useEffect(() => {
+        if (esDemo) return;
         if (typeof window.fbq === 'function') {
             window.fbq('track', 'Lead');
         }
@@ -171,6 +173,11 @@ export default function Gracias() {
 
                 {estado === 'aprobado' && (
                     <>
+                        {esDemo && (
+                            <div className="mb-5 px-4 py-1.5 rounded-full bg-zinc-900 border border-amber-400/50 text-amber-400 text-xs font-bold">
+                                🎬 Modo demostración
+                            </div>
+                        )}
                         <span className="text-7xl mb-3">🎉</span>
                         <h1 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">
                             ¡Ya estás participando!
@@ -236,10 +243,10 @@ export default function Gracias() {
                         </li>
                     </ul>
                     <Link
-                        to={token ? `/polla?token=${token}` : (tieneSesion ? '/' : '/registro')}
+                        to={esDemo ? '/' : (token ? `/polla?token=${token}` : (tieneSesion ? '/' : '/registro'))}
                         className="block w-full py-4 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.35)] active:scale-95 transition-transform"
                     >
-                        {tieneSesion ? 'Ir a mi cuenta' : 'Registrarme ahora — ¡es gratis!'}
+                        {esDemo ? 'Cerrar demostración' : (tieneSesion ? 'Ir a mi cuenta' : 'Registrarme ahora — ¡es gratis!')}
                     </Link>
                 </div>
 

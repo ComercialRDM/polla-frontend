@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { PLANES, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX, MULTIPLO_PERSONALIZADO, CUPO_VALOR_PERSONALIZADO, calcularCupos, calcularSaldoBono, calcularMontoPorPredicciones, formatoPesos } from '../config/planes';
 import { obtenerPartidos, crearLinkPago, obtenerBancosPse, crearPSE, crearBancolombia } from '../api';
 import CountdownPartido from '../components/CountdownPartido';
@@ -50,10 +50,12 @@ function conTimeout(promesa, ms = 15000) {
 
 export default function Comprar() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const planDesdeUrl = Number(searchParams.get('plan'));
     const planUrlValido = PLANES.some((p) => p.valor === planDesdeUrl) ? planDesdeUrl : null;
     const partidoDesdeUrl = Number(searchParams.get('partido')) || null;
+    const esDemo = searchParams.get('demo') === 'true';
 
     // Si viene de una invitación a un grupo, guardar el token para auto-unirse tras el pago
     useEffect(() => {
@@ -202,6 +204,10 @@ export default function Comprar() {
             setError('Debes aceptar los Términos y Condiciones para continuar.');
             return;
         }
+        if (esDemo) {
+            navigate('/gracias?demo=true');
+            return;
+        }
         if (!partidoId) {
             setError('No hay partidos disponibles en este momento.');
             return;
@@ -333,6 +339,12 @@ export default function Comprar() {
     return (
         <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950">
             <PageHeader titulo="Compra tu Bono" />
+
+            {esDemo && (
+                <div className="bg-amber-400 text-zinc-950 text-sm font-black text-center px-4 py-2.5 flex items-center justify-center gap-2">
+                    🎬 Modo demostración — ningún pago será procesado
+                </div>
+            )}
 
             <form id="comprar-form" onSubmit={handleSubmit}>
             <div className="max-w-lg mx-auto px-4 pt-5 pb-40 flex flex-col gap-4">
@@ -515,6 +527,13 @@ export default function Comprar() {
                 </div>
 
                 {/* ── PASO 3: Método de pago ── */}
+                {esDemo ? (
+                    <div className="rounded-2xl border-2 border-dashed border-amber-400/60 bg-amber-400/5 px-5 py-6 text-center">
+                        <p className="text-3xl mb-2">🎬</p>
+                        <p className="text-zinc-900 dark:text-white font-bold text-base mb-1">Paso 3 · Método de pago</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">En la versión real aquí el cliente elige entre tarjeta, PSE o Botón Bancolombia.</p>
+                    </div>
+                ) : (
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-white/10 overflow-hidden">
                     <div className="px-4 pt-4 pb-3 border-b border-zinc-100 dark:border-white/5 flex items-center gap-3">
                         <div className="w-6 h-6 rounded-full bg-[#FCD116] flex items-center justify-center shrink-0">
@@ -587,6 +606,7 @@ export default function Comprar() {
                     )}
 
                 </div>
+                )}
 
                 {/* Términos — justo después del método de pago para que no se olvide */}
                 <label className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${aceptaTerminos ? 'border-amber-400 bg-amber-50 dark:bg-amber-400/10' : 'border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900'}`}>
@@ -657,12 +677,14 @@ export default function Comprar() {
                         className="w-full py-3 rounded-2xl font-black text-zinc-950 text-base bg-[#FCD116] hover:bg-amber-300 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-amber-400/20"
                     >
                         {cargando
-                            ? 'Procesando pago...'
-                            : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
-                                metodoPago === 'pse' ? ' · PSE'
-                                    : metodoPago === 'bancolombia' ? ' · Bancolombia'
-                                        : ''
-                            )}
+                            ? 'Procesando...'
+                            : esDemo
+                                ? '🎬 Simular pago'
+                                : `Pagar ${valorAPagar > 0 ? formatoPesos(valorAPagar) : ''}` + (
+                                    metodoPago === 'pse' ? ' · PSE'
+                                        : metodoPago === 'bancolombia' ? ' · Bancolombia'
+                                            : ''
+                                )}
                     </button>
                 </div>
             </div>

@@ -621,7 +621,7 @@ export default function Polla() {
                                 <a href="#partidos-section" className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-black text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform">
                                     🌐 Pronosticar ahora
                                 </a>
-                                <Link to="/comprar" className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl font-bold text-sm border border-[#FCD116]/40 text-[#FCD116] hover:bg-[#FCD116]/10 active:scale-95 transition-transform">
+                                <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl font-bold text-sm border border-[#FCD116]/40 text-[#FCD116] hover:bg-[#FCD116]/10 active:scale-95 transition-transform">
                                     + Bono
                                 </Link>
                             </div>
@@ -735,7 +735,7 @@ export default function Polla() {
                     <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-4 text-center">
                         <p className="text-white font-bold text-sm mb-1">🔥 Tienes {cantidadEncolados} {cantidadEncolados === 1 ? 'predicción guardada' : 'predicciones guardadas'} sin cupos</p>
                         <p className="text-zinc-400 text-xs mb-3">Compra {cuposEncolados} {cuposEncolados === 1 ? 'cupo' : 'cupos'} más para confirmarlas todas.</p>
-                        <Link to="/comprar" className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]">Comprar {formatoPesos(montoEncolados)}</Link>
+                        <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="inline-block px-4 py-2 rounded-xl font-bold text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(234,179,8,0.35)]">Comprar {formatoPesos(montoEncolados)}</Link>
                     </div>
                 )}
 
@@ -798,7 +798,7 @@ export default function Polla() {
                                         {errorPorPartido[p.partido_id] && <p className="text-red-400 text-sm text-center mt-3">{errorPorPartido[p.partido_id]}</p>}
                                         {encolados[p.partido_id] ? (
                                             <div className="w-full mt-4 py-3 rounded-xl font-bold text-center bg-amber-400/15 text-amber-400 text-sm">
-                                                ✓ Predicción guardada — <Link to="/comprar" className="underline">compra cupos para confirmarla</Link>
+                                                ✓ Predicción guardada — <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="underline">compra cupos para confirmarla</Link>
                                             </div>
                                         ) : (
                                             <button onClick={() => handleSubmit(p)} disabled={enviandoId === p.partido_id} className="w-full mt-4 py-3 rounded-xl font-black text-slate-950 text-center bg-gradient-to-r from-yellow-400 to-amber-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] active:scale-95 transition-transform disabled:opacity-60">
