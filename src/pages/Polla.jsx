@@ -543,8 +543,8 @@ export default function Polla() {
                 <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:gap-8 lg:items-start">
                 <div className="min-w-0">
 
-                {/* CARD PRINCIPAL — solo clientes */}
-                {!info.es_influencer && (() => {
+                {/* CARD PRINCIPAL */}
+                {(() => {
                     const posicion = info.posicion || 1;
                     const totalPart = info.total_participantes || 1;
                     const puntos = info.puntos || 0;
@@ -602,6 +602,13 @@ export default function Polla() {
                                 ))}
                             </div>
 
+                            {/* Nota creador de contenido */}
+                            {info.es_influencer && (
+                                <div className="mx-3 mb-3 px-3 py-2 rounded-xl bg-purple-900/30 border border-purple-500/30 text-purple-300 text-xs font-bold">
+                                    🎖️ Invitado especial · Participas para demostrar la app — tus bonos no compiten por premios monetarios
+                                </div>
+                            )}
+
                             {/* Equipos favoritos */}
                             {info.equipos_favoritos?.length > 0 && (
                                 <div className="px-3 pb-3 border-t border-white/5 pt-3">
@@ -630,11 +637,13 @@ export default function Polla() {
                             {/* Texto motivacional */}
                             <div className="px-4 pb-4 border-t border-white/5 pt-3">
                                 <p className="text-sm text-zinc-300 leading-snug">
-                                    {info.cupos_disponibles === 0
-                                        ? '🔥 Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.'
-                                        : posicion > 3
-                                            ? '🚀 Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar hasta $1.000.000 en el Bono Colombia.'
-                                            : '💪 ¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.'}
+                                    {info.es_influencer
+                                        ? '🎬 Usa el botón + Bono para mostrarle a tu audiencia cómo se compra el bono y participar en la Polla.'
+                                        : info.cupos_disponibles === 0
+                                            ? '🔥 Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.'
+                                            : posicion > 3
+                                                ? '🚀 Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar hasta $1.000.000 en el Bono Colombia.'
+                                                : '💪 ¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.'}
                                 </p>
                             </div>
                         </div>
@@ -643,11 +652,6 @@ export default function Polla() {
 
                 {/* Historial de pronósticos */}
                 <MisPronosticos tokenAcceso={token} />
-
-                {/* Texto descriptivo influencers */}
-                {info.es_influencer && (
-                    <p className="text-zinc-400 text-sm mb-4 mt-2">Predice los marcadores y demuestra tu habilidad. Como creador de contenido, tus bonos especiales no compiten por los premios monetarios.</p>
-                )}
 
                 {/* RETA A UN AMIGO */}
                 {(() => {
