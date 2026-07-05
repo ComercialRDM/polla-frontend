@@ -2789,7 +2789,18 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                             <td className="py-2 pr-3 text-zinc-400 whitespace-nowrap">
                                                 {new Date(u.fecha_registro).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: '2-digit' })}
                                             </td>
-                                            <td className="py-2">
+                                            <td className="py-2 flex items-center gap-2">
+                                                {u.token_acceso && (
+                                                    <a
+                                                        href={`/polla?token=${u.token_acceso}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-amber-500 hover:text-amber-400 font-bold text-xs whitespace-nowrap"
+                                                        title="Abrir sesión del usuario"
+                                                    >
+                                                        👁 Ver sesión
+                                                    </a>
+                                                )}
                                                 {Number(u.compras_aprobadas) === 0 && (
                                                     <button
                                                         onClick={() => handleEliminarUsuario(u)}
