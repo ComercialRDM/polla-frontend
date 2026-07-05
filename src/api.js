@@ -631,6 +631,10 @@ export function obtenerRankingInfluencers(token) {
     return request(`/api/polla/ranking-influencers?token_acceso=${encodeURIComponent(token)}`);
 }
 
+export function obtenerRankingGeneral(token) {
+    return request(`/api/polla/ranking-general?token_acceso=${encodeURIComponent(token)}`);
+}
+
 export function urlFotoInfluencer(usuarioId) {
     return `${API_BASE}/api/polla/foto-influencer/${usuarioId}`;
 }
