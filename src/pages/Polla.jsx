@@ -7,6 +7,7 @@ import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/
 import Bandera from '../components/Bandera';
 const RankingEnVivo = lazy(() => import('../components/RankingEnVivo'));
 const RankingInfluencers = lazy(() => import('../components/RankingInfluencers'));
+const RankingGeneral = lazy(() => import('../components/RankingGeneral'));
 import EquiposFavoritos from '../components/EquiposFavoritos';
 import PartidosFavoritos from '../components/PartidosFavoritos';
 import CompartirPronostico from '../components/CompartirPronostico';
@@ -845,6 +846,7 @@ export default function Polla() {
 
                 {/* ── COLUMNA DERECHA (sidebar) ── */}
                 <div className="flex flex-col gap-5 lg:sticky lg:top-6 mt-6 lg:mt-0">
+                    <Suspense fallback={null}><RankingGeneral token={token} /></Suspense>
                     {info.es_especial && <Suspense fallback={null}><RankingInfluencers token={token} /></Suspense>}
                     <PozoPremios compact />
                     <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
