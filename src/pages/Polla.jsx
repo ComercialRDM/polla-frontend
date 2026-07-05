@@ -15,6 +15,7 @@ import { cerrarSesion } from '../utils/sesion';
 import PozoPremios from '../components/PozoPremios';
 import MisPronosticos from '../components/MisPronosticos';
 import { useTheme } from '../context/ThemeContext';
+import { AnimatePresence, motion } from 'framer-motion';
 
 
 const UNA_HORA_MS = 60 * 60 * 1000;
@@ -75,7 +76,20 @@ function Seccion({ id, titulo, defaultOpen = true, children }) {
                     <path d="M1 1L6 6L11 1" />
                 </svg>
             </button>
-            {abierto && <div className="pb-2">{children}</div>}
+            <AnimatePresence initial={false}>
+                {abierto && (
+                    <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: 'easeInOut' }}
+                        style={{ overflow: 'hidden' }}
+                    >
+                        <div className="pb-2">{children}</div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
