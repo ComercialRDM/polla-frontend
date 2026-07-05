@@ -510,7 +510,7 @@ export default function Polla() {
                 <div className="flex-1 bg-colombia-red" />
             </div>
 
-            <div className="w-full max-w-md lg:max-w-5xl px-4 mt-6 pt-2 relative">
+            <div className="w-full max-w-xl px-4 mt-6 pt-2 relative">
 
                 {/* HEADER: foto + saludo + cerrar sesión */}
                 <div className="flex items-start justify-between mb-5">
@@ -580,9 +580,6 @@ export default function Polla() {
                 {/* Tabla de premios en vivo — visible antes del ranking personal */}
                 <div className="mb-4"><PozoPremios compact /></div>
 
-                {/* ── GRID 2 columnas ≥1024px ─────────────────────────────────────────── */}
-                <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:gap-8 lg:items-start">
-                <div className="min-w-0">
 
                 {/* CARD PRINCIPAL */}
                 {(() => {
@@ -691,94 +688,7 @@ export default function Polla() {
                     );
                 })()}
 
-                <Seccion titulo="🎯 Tus predicciones" defaultOpen={false}>
-                    <MisPronosticos tokenAcceso={token} />
-                </Seccion>
-
-                <Seccion titulo="🏆 Invita y gana" defaultOpen={false}>{/* RETA A UN AMIGO */}
-                {(() => {
-                    const urlRef = `${typeof window !== 'undefined' ? window.location.origin : 'https://ganaconretoucherie.com'}/?ref=${token}`;
-                    const textoComp = `🇨🇴⚽ ¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela!\n\nPredice el marcador de los partidos y gana premios increíbles.\n\n👉 ${urlRef}`;
-                    async function compartirAmigo() {
-                        if (typeof navigator !== 'undefined' && navigator.share) {
-                            try { await navigator.share({ text: textoComp, url: urlRef }); } catch (_) {}
-                        } else {
-                            window.open(`https://wa.me/?text=${encodeURIComponent(textoComp)}`, '_blank');
-                        }
-                    }
-                    return (
-                        <div className="rounded-2xl bg-zinc-900 border border-white/10 px-4 py-3 mb-4">
-                            <div className="flex items-start justify-between mb-0.5">
-                                <p className="text-white font-bold text-sm">🏆 Reta a un amigo y gana puntos</p>
-                                {info.amigos_compraron > 0 && (
-                                    <span className="flex-shrink-0 ml-2 bg-amber-400/20 text-amber-400 text-[10px] font-black px-2 py-0.5 rounded-full">
-                                        {info.amigos_compraron} {info.amigos_compraron === 1 ? 'amigo compró' : 'amigos compraron'} ✓
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-zinc-400 text-sm mb-3">
-                                {info.amigos_compraron > 0
-                                    ? `¡Ganaste +${info.amigos_compraron * 20} pts y +${info.amigos_compraron} ${info.amigos_compraron === 1 ? 'intento' : 'intentos'} extra! Sigue compartiendo 🔥`
-                                    : 'Cuando un amigo compre usando tu link, tú y él ganan 1 intento extra y tú sumas 20 puntos.'}
-                            </p>
-                            <div className="flex gap-2">
-                                <button onClick={compartirAmigo} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform">
-                                    📲 Compartir
-                                </button>
-                                <button onClick={() => { navigator.clipboard.writeText(urlRef); setMensajeCopiado(true); setTimeout(() => setMensajeCopiado(false), 2200); }} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-zinc-300 border border-white/10 bg-white/5 active:scale-95 transition-transform">
-                                    {mensajeCopiado ? '✅ ¡Copiado!' : '🔗 Copiar link'}
-                                </button>
-                            </div>
-                        </div>
-                    );
-                })()}
-                </Seccion>
-
-                <Seccion titulo="👥 Mi grupo" defaultOpen={false}>
-                <div className="rounded-2xl border border-amber-400/20 bg-zinc-900 p-4 mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <p className="text-white font-bold text-sm">👥 Mi grupo</p>
-                            <p className="text-zinc-500 text-xs mt-0.5">Compite con amigos en tu propio mini-torneo</p>
-                        </div>
-                        <button onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }} className="min-h-[44px] text-xs text-amber-400 border border-amber-400/40 rounded-lg px-3 py-2 hover:bg-amber-400/10 transition-colors font-semibold flex-shrink-0">
-                            {mostrarFormGrupo ? 'Cancelar' : '+ Crear grupo'}
-                        </button>
-                    </div>
-                    {mostrarFormGrupo && (
-                        <form onSubmit={handleCrearGrupo} className="flex flex-col gap-2 mb-3">
-                            <input type="text" value={nuevoGrupoNombre} onChange={(e) => setNuevoGrupoNombre(e.target.value)} placeholder="Nombre del grupo (ej: Familia García)" maxLength={100} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400" />
-                            <select value={nuevoGrupoPartido} onChange={(e) => setNuevoGrupoPartido(e.target.value)} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400">
-                                <option value="">Selecciona el partido del grupo</option>
-                                {info.partidos.filter((p) => p.estado_partido === 'activo').map((p) => (
-                                    <option key={p.partido_id} value={p.partido_id}>{p.equipo_local} vs {p.equipo_visitante}</option>
-                                ))}
-                            </select>
-                            {errorGrupo && <p className="text-red-400 text-xs">{errorGrupo}</p>}
-                            <button type="submit" disabled={creandoGrupo} className="w-full py-2.5 rounded-xl font-black text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 disabled:opacity-60">
-                                {creandoGrupo ? 'Creando...' : 'Crear grupo'}
-                            </button>
-                        </form>
-                    )}
-                    {misGrupos.length === 0 && !mostrarFormGrupo && (
-                        <p className="text-zinc-500 text-xs text-center py-1">No estás en ningún grupo aún. ¡Crea uno y compártelo con tus amigos!</p>
-                    )}
-                    {misGrupos.length > 0 && (
-                        <div className="flex flex-col gap-2">
-                            {misGrupos.map((g) => (
-                                <Link key={g.token_grupo} to={`/grupo/${g.token_grupo}`} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 hover:bg-amber-400/5 transition-colors">
-                                    <div>
-                                        <p className="text-white font-bold text-sm">{g.nombre}{g.es_admin && <span className="ml-1 text-xs text-amber-400 font-normal">(admin)</span>}</p>
-                                        <p className="text-zinc-500 text-xs">{g.equipo_local} vs {g.equipo_visitante} · {g.total_miembros}/{g.max_miembros}</p>
-                                    </div>
-                                    <span className="text-amber-400 text-sm">→</span>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                </Seccion>
-
+                {/* ── Acordeón: Partidos primero (acción principal) ── */}
                 <Seccion id="partidos-section" titulo="⚽ Partidos para predecir">
                 {cantidadEncolados > 0 && (
                     <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-4 text-center">
@@ -874,6 +784,118 @@ export default function Polla() {
                 )}
                 </Seccion>
 
+                <Seccion titulo="🏆 Ranking General" defaultOpen={false}>
+                    <Suspense fallback={null}><RankingGeneral token={token} /></Suspense>
+                </Seccion>
+
+                {/* Ranking Creadores: muestra el ranking de influencers/creadores de contenido para todos los usuarios.
+                    Backend: GET /api/polla/ranking-influencers?token_acceso=X
+                    Response: { success, ranking: [{ id, nombre, puntos, exactos, referidos, posicion, tiene_foto }], mi_usuario_id }
+                    El campo 'es_yo' solo resalta la fila si el token pertenece a un creador. */}
+                <Seccion titulo="🎨 Ranking Creadores" defaultOpen={false}>
+                    <Suspense fallback={null}><RankingInfluencers token={token} /></Suspense>
+                </Seccion>
+
+                <Seccion titulo="🎯 Tus predicciones" defaultOpen={false}>
+                    <MisPronosticos tokenAcceso={token} />
+                </Seccion>
+
+                <Seccion titulo="🏆 Invita y gana" defaultOpen={false}>{/* RETA A UN AMIGO */}
+                {(() => {
+                    const urlRef = `${typeof window !== 'undefined' ? window.location.origin : 'https://ganaconretoucherie.com'}/?ref=${token}`;
+                    const textoComp = `🇨🇴⚽ ¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela!\n\nPredice el marcador de los partidos y gana premios increíbles.\n\n👉 ${urlRef}`;
+                    async function compartirAmigo() {
+                        if (typeof navigator !== 'undefined' && navigator.share) {
+                            try { await navigator.share({ text: textoComp, url: urlRef }); } catch (_) {}
+                        } else {
+                            window.open(`https://wa.me/?text=${encodeURIComponent(textoComp)}`, '_blank');
+                        }
+                    }
+                    return (
+                        <div className="rounded-2xl bg-zinc-900 border border-white/10 px-4 py-3 mb-4">
+                            <div className="flex items-start justify-between mb-0.5">
+                                <p className="text-white font-bold text-sm">🏆 Reta a un amigo y gana puntos</p>
+                                {info.amigos_compraron > 0 && (
+                                    <span className="flex-shrink-0 ml-2 bg-amber-400/20 text-amber-400 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                        {info.amigos_compraron} {info.amigos_compraron === 1 ? 'amigo compró' : 'amigos compraron'} ✓
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-zinc-400 text-sm mb-3">
+                                {info.amigos_compraron > 0
+                                    ? `¡Ganaste +${info.amigos_compraron * 20} pts y +${info.amigos_compraron} ${info.amigos_compraron === 1 ? 'intento' : 'intentos'} extra! Sigue compartiendo 🔥`
+                                    : 'Cuando un amigo compre usando tu link, tú y él ganan 1 intento extra y tú sumas 20 puntos.'}
+                            </p>
+                            <div className="flex gap-2">
+                                <button onClick={compartirAmigo} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-transform">
+                                    📲 Compartir
+                                </button>
+                                <button onClick={() => { navigator.clipboard.writeText(urlRef); setMensajeCopiado(true); setTimeout(() => setMensajeCopiado(false), 2200); }} className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-bold text-sm text-zinc-300 border border-white/10 bg-white/5 active:scale-95 transition-transform">
+                                    {mensajeCopiado ? '✅ ¡Copiado!' : '🔗 Copiar link'}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })()}
+                </Seccion>
+
+                <Seccion titulo="👥 Mi grupo" defaultOpen={false}>
+                <div className="rounded-2xl border border-amber-400/20 bg-zinc-900 p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <div>
+                            <p className="text-white font-bold text-sm">👥 Mi grupo</p>
+                            <p className="text-zinc-500 text-xs mt-0.5">Compite con amigos en tu propio mini-torneo</p>
+                        </div>
+                        <button onClick={() => { setMostrarFormGrupo((v) => !v); setErrorGrupo(''); }} className="min-h-[44px] text-xs text-amber-400 border border-amber-400/40 rounded-lg px-3 py-2 hover:bg-amber-400/10 transition-colors font-semibold flex-shrink-0">
+                            {mostrarFormGrupo ? 'Cancelar' : '+ Crear grupo'}
+                        </button>
+                    </div>
+                    {mostrarFormGrupo && (
+                        <form onSubmit={handleCrearGrupo} className="flex flex-col gap-2 mb-3">
+                            <input type="text" value={nuevoGrupoNombre} onChange={(e) => setNuevoGrupoNombre(e.target.value)} placeholder="Nombre del grupo (ej: Familia García)" maxLength={100} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                            <select value={nuevoGrupoPartido} onChange={(e) => setNuevoGrupoPartido(e.target.value)} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                                <option value="">Selecciona el partido del grupo</option>
+                                {info.partidos.filter((p) => p.estado_partido === 'activo').map((p) => (
+                                    <option key={p.partido_id} value={p.partido_id}>{p.equipo_local} vs {p.equipo_visitante}</option>
+                                ))}
+                            </select>
+                            {errorGrupo && <p className="text-red-400 text-xs">{errorGrupo}</p>}
+                            <button type="submit" disabled={creandoGrupo} className="w-full py-2.5 rounded-xl font-black text-sm text-slate-950 bg-gradient-to-r from-yellow-400 to-amber-500 disabled:opacity-60">
+                                {creandoGrupo ? 'Creando...' : 'Crear grupo'}
+                            </button>
+                        </form>
+                    )}
+                    {misGrupos.length === 0 && !mostrarFormGrupo && (
+                        <p className="text-zinc-500 text-xs text-center py-1">No estás en ningún grupo aún. ¡Crea uno y compártelo con tus amigos!</p>
+                    )}
+                    {misGrupos.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                            {misGrupos.map((g) => (
+                                <Link key={g.token_grupo} to={`/grupo/${g.token_grupo}`} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 hover:bg-amber-400/5 transition-colors">
+                                    <div>
+                                        <p className="text-white font-bold text-sm">{g.nombre}{g.es_admin && <span className="ml-1 text-xs text-amber-400 font-normal">(admin)</span>}</p>
+                                        <p className="text-zinc-500 text-xs">{g.equipo_local} vs {g.equipo_visitante} · {g.total_miembros}/{g.max_miembros}</p>
+                                    </div>
+                                    <span className="text-amber-400 text-sm">→</span>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                </Seccion>
+
+                <Seccion titulo="🏆 Ranking en Vivo" defaultOpen={false}>
+                    {partidoDestacado
+                        ? <Suspense fallback={null}><RankingEnVivo partidoId={partidoDestacado.partido_id} /></Suspense>
+                        : <p className="text-zinc-500 text-sm text-center py-4">No hay partido en vivo en este momento.</p>
+                    }
+                </Seccion>
+
+                <Seccion titulo="⭐ Elige tus equipos favoritos" defaultOpen={false}>
+                    <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
+                    <PartidosFavoritos equipos={info.equipos_favoritos} />
+                </Seccion>
+
                 {/* Regalo de Bono */}
                 <div className="mt-8 mb-2 text-center">
                     {misSolicitudes.length > 0 && (
@@ -885,19 +907,6 @@ export default function Polla() {
                     )}
                     <button onClick={() => { setMostrarModalRegalo(true); setRegaloMensaje(''); setRegaloError(''); }} className="text-xs text-zinc-600 underline hover:text-zinc-400 transition-colors">¿Quieres regalar tu bono? Solicítalo aquí</button>
                 </div>
-
-                </div>{/* ── fin columna izquierda ── */}
-
-                {/* ── COLUMNA DERECHA (sidebar) ── */}
-                <div className="flex flex-col gap-5 lg:sticky lg:top-6 mt-6 lg:mt-0">
-                    <Suspense fallback={null}><RankingGeneral token={token} /></Suspense>
-                    {info.es_especial && <Suspense fallback={null}><RankingInfluencers token={token} /></Suspense>}
-                    <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
-                    <PartidosFavoritos equipos={info.equipos_favoritos} />
-                    {partidoDestacado && <Suspense fallback={null}><RankingEnVivo partidoId={partidoDestacado.partido_id} /></Suspense>}
-                </div>
-
-                </div>{/* ── fin grid ── */}
             </div>
 
             {/* ── Modal Regalo ── */}
