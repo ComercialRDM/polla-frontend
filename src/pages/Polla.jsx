@@ -529,22 +529,30 @@ export default function Polla() {
                 {/* HEADER: foto + saludo + cerrar sesión */}
                 <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <label className="relative cursor-pointer flex-shrink-0 group">
-                            <div className={`w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-zinc-950 font-black text-xl border-2 ${info.foto_estado === 'pendiente' ? 'border-amber-400 bg-gradient-to-br from-amber-300 to-amber-500' : info.foto_estado === 'rechazada' ? 'border-red-400 bg-gradient-to-br from-red-400 to-red-600' : 'border-amber-400/40 bg-gradient-to-br from-amber-400 to-amber-600'}`}>
-                                {info.tiene_foto ? (
-                                    <img src={`${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}`} alt={info.nombre} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                                ) : (
-                                    info.nombre.charAt(0).toUpperCase()
+                        <label className="relative cursor-pointer flex-shrink-0 flex flex-col items-center gap-0.5">
+                            <div className="relative">
+                                <div className={`w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-zinc-950 font-black text-xl border-2 ${info.foto_estado === 'pendiente' ? 'border-amber-400 bg-gradient-to-br from-amber-300 to-amber-500' : info.foto_estado === 'rechazada' ? 'border-red-400 bg-gradient-to-br from-red-400 to-red-600' : 'border-amber-400/40 bg-gradient-to-br from-amber-400 to-amber-600'}`}>
+                                    {info.tiene_foto ? (
+                                        <img src={`${import.meta.env.VITE_API_BASE || 'http://localhost:4000'}/api/polla/foto-influencer/${info.usuario_id}`} alt={info.nombre} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                                    ) : (
+                                        info.nombre.charAt(0).toUpperCase()
+                                    )}
+                                </div>
+                                {/* Cámara siempre visible en esquina inferior derecha */}
+                                {!subiendoFoto && !fotoSubidaOk && info.foto_estado !== 'pendiente' && info.foto_estado !== 'rechazada' && (
+                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-zinc-800 border-2 border-zinc-700 rounded-full flex items-center justify-center text-xs leading-none">
+                                        📷
+                                    </div>
                                 )}
-                            </div>
-                            <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="text-white text-lg">📷</span>
+                                {subiendoFoto && <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center"><span className="text-white text-xs font-bold">...</span></div>}
+                                {fotoSubidaOk && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>}
+                                {info.foto_estado === 'pendiente' && !subiendoFoto && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-zinc-950 text-xs">⏳</div>}
+                                {info.foto_estado === 'rechazada' && !subiendoFoto && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">!</div>}
                             </div>
                             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleSubirFoto} className="hidden" disabled={subiendoFoto} />
-                            {subiendoFoto && <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center"><span className="text-white text-xs font-bold">...</span></div>}
-                            {fotoSubidaOk && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>}
-                            {info.foto_estado === 'pendiente' && !subiendoFoto && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center text-zinc-950 text-xs">⏳</div>}
-                            {info.foto_estado === 'rechazada' && !subiendoFoto && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">!</div>}
+                            <span className="text-[10px] font-bold text-zinc-400 hover:text-amber-400 transition-colors leading-none mt-1">
+                                {info.tiene_foto ? 'Cambiar' : 'Subir Foto'}
+                            </span>
                         </label>
                         <div className="flex-1 min-w-0">
                             <h1 className="text-2xl font-extrabold text-white leading-tight">¡Hola, {info.nombre}!</h1>
@@ -560,7 +568,6 @@ export default function Polla() {
                             </div>
                             {info.foto_estado === 'pendiente' && !subiendoFoto && <p className="text-amber-400 text-xs mt-1">📷 Foto en revisión</p>}
                             {info.foto_estado === 'rechazada' && !subiendoFoto && <p className="text-red-400 text-xs mt-1">❌ Foto rechazada. Toca para subir otra.</p>}
-                            {!info.foto_estado && !subiendoFoto && !fotoSubidaOk && <p className="text-zinc-500 text-xs mt-0.5">Toca la foto para agregar una 📷</p>}
                             {errorFoto && <p className="text-red-400 text-xs mt-0.5">{errorFoto}</p>}
                         </div>
                     </div>

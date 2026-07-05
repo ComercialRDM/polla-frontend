@@ -35,22 +35,51 @@ export default function PozoPremios({ compact = false }) {
     const superaUmbral = totalFact >= UMBRAL_DINAMICO;
 
     if (compact) {
+        const MEDALLAS = [
+            {
+                puesto: '1°',
+                valor: primero,
+                cap: CAP.primero,
+                circulo: 'bg-gradient-to-b from-yellow-300 to-amber-500 shadow-[0_2px_8px_rgba(251,191,36,0.5)]',
+                texto: 'text-amber-400',
+                cap_texto: 'text-amber-500/70',
+            },
+            {
+                puesto: '2°',
+                valor: segundo,
+                cap: CAP.segundo,
+                circulo: 'bg-gradient-to-b from-zinc-300 to-zinc-500 shadow-[0_2px_6px_rgba(160,160,160,0.4)]',
+                texto: 'text-zinc-300 dark:text-zinc-200',
+                cap_texto: 'text-zinc-400/70',
+            },
+            {
+                puesto: '3°',
+                valor: tercero,
+                cap: CAP.tercero,
+                circulo: 'bg-gradient-to-b from-orange-400 to-orange-700 shadow-[0_2px_6px_rgba(194,120,40,0.4)]',
+                texto: 'text-orange-400',
+                cap_texto: 'text-orange-400/70',
+            },
+        ];
         return (
-            <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg p-4 text-center">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 font-medium uppercase tracking-wider">Tabla de premios en vivo</p>
-                <div className="flex justify-around gap-2">
-                    <div>
-                        <p className="text-lg">🥇</p>
-                        <p className="text-amber-500 dark:text-amber-400 font-black text-base">{formatCOP(primero)}</p>
-                    </div>
-                    <div>
-                        <p className="text-lg">🥈</p>
-                        <p className="text-zinc-700 dark:text-zinc-200 font-black text-base">{formatCOP(segundo)}</p>
-                    </div>
-                    <div>
-                        <p className="text-lg">🥉</p>
-                        <p className="text-orange-600 dark:text-orange-400 font-black text-base">{formatCOP(tercero)}</p>
-                    </div>
+            <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg px-4 pt-3 pb-3">
+                <div className="flex items-center justify-center gap-1.5 mb-3">
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                    </span>
+                    <p className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Premio en vivo · crece con cada bono</p>
+                </div>
+                <div className="flex justify-around gap-1">
+                    {MEDALLAS.map(({ puesto, valor, cap, circulo, texto, cap_texto }) => (
+                        <div key={puesto} className="flex flex-col items-center gap-1">
+                            <div className={`w-8 h-8 rounded-full ${circulo} flex items-center justify-center`}>
+                                <span className="text-white font-black text-sm leading-none drop-shadow">{puesto}</span>
+                            </div>
+                            <p className={`${texto} font-black text-sm leading-tight tabular-nums`}>{formatCOP(valor)}</p>
+                            <p className={`${cap_texto} text-[9px] font-semibold leading-tight tabular-nums`}>hasta {formatCOP(cap)}</p>
+                        </div>
+                    ))}
                 </div>
             </div>
         );
