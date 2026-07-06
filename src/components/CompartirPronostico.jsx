@@ -44,6 +44,51 @@ export default function CompartirPronostico({
         ctx.textBaseline = prev;
     }
 
+    function drawGlossFlag(ctx, img, emojiText, cx, cy, r) {
+        // Flag image or emoji clipped to circle
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        if (img) {
+            const iw = img.naturalWidth || img.width;
+            const ih = img.naturalHeight || img.height;
+            const scale = (r * 2) / Math.min(iw, ih);
+            ctx.drawImage(img, cx - (iw * scale) / 2, cy - (ih * scale) / 2, iw * scale, ih * scale);
+        } else {
+            ctx.font = `${r * 1.1}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emojiText, cx, cy);
+        }
+        ctx.restore();
+
+        // White gloss overlay — top-left highlight (sphere effect)
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        const glossGrad = ctx.createLinearGradient(cx - r * 0.6, cy - r, cx + r * 0.3, cy + r * 0.3);
+        glossGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+        glossGrad.addColorStop(0.35, 'rgba(255,255,255,0.18)');
+        glossGrad.addColorStop(0.6, 'rgba(255,255,255,0)');
+        ctx.fillStyle = glossGrad;
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        ctx.restore();
+
+        // Dark bottom gradient
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        const darkGrad = ctx.createLinearGradient(cx, cy + r, cx, cy + r * 0.2);
+        darkGrad.addColorStop(0, 'rgba(0,0,0,0.28)');
+        darkGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = darkGrad;
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        ctx.restore();
+    }
+
     async function generarImagenStory() {
         const W = 1024, H = 1536;
         const canvas = document.createElement('canvas');
@@ -80,7 +125,7 @@ export default function CompartirPronostico({
         // Posiciones — flags desplazadas hacia abajo para crear espacio al nombre
         const lCX = 281, vCX = 745;
         const tplFlagCY = 693;   // posición original en el template (para tapar)
-        const flagCY   = 760;    // nueva posición de las banderas (más abajo)
+        const flagCY   = 700;    // centrado dentro del círculo oscuro del template
         const flagR    = 52;
 
         // ── Tapar banderas y VS originales del template ──
@@ -108,34 +153,27 @@ export default function CompartirPronostico({
             ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
         }
 
-        // ── Banderas nuevas (más abajo) ──
+        // ── Banderas nuevas con efecto 3D gloss ──
         [lCX, vCX].forEach((cx) => {
             ctx.fillStyle = '#030b03';
             ctx.beginPath();
             ctx.arc(cx, flagCY, flagR + 16, 0, Math.PI * 2);
             ctx.fill();
         });
-        // VS entre banderas nuevas
+
+        // VS entre banderas
         ctx.fillStyle = 'rgba(255,255,255,0.80)';
         ctx.font = 'bold 26px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('VS', W / 2, 765);
+        ctx.fillText('VS', W / 2, flagCY + 3);
 
-        // Fondo interior bandera (fallback si no carga la imagen)
-        [lCX, vCX].forEach((cx) => {
-            ctx.fillStyle = '#111118';
-            ctx.beginPath();
-            ctx.arc(cx, flagCY, flagR + 12, 0, Math.PI * 2);
-            ctx.fill();
-        });
-        // Banderas rellenando el círculo completo
-        if (imgL) drawCircleImg(ctx, imgL, lCX, flagCY, flagR + 12);
-        else drawEmojiFlag(ctx, bandera(equipoLocal), lCX, flagCY, flagR + 12);
-        if (imgV) drawCircleImg(ctx, imgV, vCX, flagCY, flagR + 12);
-        else drawEmojiFlag(ctx, bandera(equipoVisitante), vCX, flagCY, flagR + 12);
+        // Banderas 3D gloss
+        drawGlossFlag(ctx, imgL, bandera(equipoLocal), lCX, flagCY, flagR + 12);
+        drawGlossFlag(ctx, imgV, bandera(equipoVisitante), vCX, flagCY, flagR + 12);
 
         // Aro dorado encima de la bandera
         [lCX, vCX].forEach((cx) => {
+            ctx.save();
             ctx.shadowColor = 'rgba(252,209,22,0.7)';
             ctx.shadowBlur = 20;
             ctx.strokeStyle = '#FCD116';
@@ -143,7 +181,7 @@ export default function CompartirPronostico({
             ctx.beginPath();
             ctx.arc(cx, flagCY, flagR + 13, 0, Math.PI * 2);
             ctx.stroke();
-            ctx.shadowBlur = 0;
+            ctx.restore();
         });
 
         // ── NOMBRES DE EQUIPOS ──
