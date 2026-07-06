@@ -65,20 +65,109 @@ function formatearTiempo(ms) {
     return `${pad(horas)}:${pad(minutos)}:${pad(segundos)}`;
 }
 
-function Seccion({ id, titulo, defaultOpen = true, children }) {
+function IconoCirculo({ icono }) {
+    return (
+        <div
+            className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+            style={{
+                background: 'radial-gradient(circle at 40% 35%, #1f1c0e, #080806)',
+                border: '2px solid #FCD116',
+                boxShadow: '0 0 10px rgba(252,209,22,0.2)',
+            }}
+        >
+            {icono}
+        </div>
+    );
+}
+
+const ICONOS_SECCION = {
+    partidos: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9.5"/>
+            <polygon points="12,5.5 14.7,9.5 12,13.5 9.3,9.5" fill="white" stroke="none"/>
+            <line x1="12" y1="5.5" x2="12" y2="2.5"/>
+            <line x1="14.7" y1="9.5" x2="20.5" y2="7.5"/>
+            <line x1="13.3" y1="13.5" x2="17.5" y2="18.5"/>
+            <line x1="10.7" y1="13.5" x2="6.5" y2="18.5"/>
+            <line x1="9.3" y1="9.5" x2="3.5" y2="7.5"/>
+        </svg>
+    ),
+    ranking: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 3h10v7a5 5 0 01-10 0V3z"/>
+            <path d="M7 3c-2.2 0-3.2 1-3.2 2.8 0 1.5 1 3 3.2 3.7"/>
+            <path d="M17 3c2.2 0 3.2 1 3.2 2.8 0 1.5-1 3-3.2 3.7"/>
+            <line x1="12" y1="13" x2="12" y2="16.5"/>
+            <rect x="8.5" y="16.5" width="7" height="2" rx="1" fill="white" stroke="none"/>
+            <line x1="7" y1="20.5" x2="17" y2="20.5" strokeWidth="2"/>
+            <polygon points="12,5 12.9,7.7 15.7,7.7 13.4,9.4 14.2,12.1 12,10.5 9.8,12.1 10.6,9.4 8.3,7.7 11.1,7.7" fill="white" stroke="none"/>
+        </svg>
+    ),
+    creadores: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="14" width="5" height="8" rx="0.5" fill="white"/>
+            <rect x="9.5" y="9" width="5" height="13" rx="0.5" fill="white"/>
+            <rect x="17" y="4" width="5" height="18" rx="0.5" fill="white"/>
+            <line x1="13.5" y1="9" x2="22" y2="3" stroke="white" strokeWidth="1.8"/>
+            <line x1="17" y1="2" x2="22" y2="2" stroke="white" strokeWidth="2"/>
+            <line x1="22" y1="2" x2="22" y2="7" stroke="white" strokeWidth="2"/>
+        </svg>
+    ),
+    predicciones: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9.5"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2.5" fill="white" stroke="none"/>
+            <line x1="17.5" y1="6.5" x2="14.5" y2="9.5" strokeWidth="2"/>
+            <polygon points="16.5,3.5 20.5,3.5 20.5,7.5" fill="white" stroke="none"/>
+        </svg>
+    ),
+    invita: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="5.5" width="20" height="14" rx="2"/>
+            <path d="M2 6.5l10 8 10-8"/>
+        </svg>
+    ),
+    grupo: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="9" cy="7" r="3.5"/>
+            <path d="M2 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/>
+            <circle cx="17.5" cy="8" r="2.5"/>
+            <path d="M22 21c0-2.8-1.6-5.2-4-6.3"/>
+        </svg>
+    ),
+    vivo: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="2" fill="white" stroke="none"/>
+            <path d="M8.5 15.5a4.97 4.97 0 010-7"/>
+            <path d="M15.5 15.5a4.97 4.97 0 000-7"/>
+            <path d="M5 18.5A9 9 0 015 5.5"/>
+            <path d="M19 18.5A9 9 0 0119 5.5"/>
+        </svg>
+    ),
+    favoritos: (
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L4 5.5v6c0 5.5 3.5 9.5 8 11 4.5-1.5 8-5.5 8-11v-6z"/>
+            <polygon points="12,7.5 13.1,11 17,11 14,13.2 15.1,16.7 12,14.5 8.9,16.7 10,13.2 7,11 10.9,11" fill="white" stroke="none"/>
+        </svg>
+    ),
+};
+
+function Seccion({ id, titulo, icono, defaultOpen = true, children }) {
     const [abierto, setAbierto] = useState(defaultOpen);
     return (
         <div id={id} className="mb-1">
             <button
                 type="button"
                 onClick={() => setAbierto(a => !a)}
-                className="w-full flex items-center gap-3 py-3 text-left"
+                className="w-full flex items-center gap-3 py-2.5 text-left"
             >
-                <div className="w-1 h-7 bg-[#FCD116] rounded-full shrink-0" />
-                <span className="flex-1 font-display text-2xl text-white tracking-wide uppercase leading-none">
+                <div className="w-1 h-11 bg-[#FCD116] rounded-full shrink-0" />
+                {icono && <IconoCirculo icono={icono} />}
+                <span className="flex-1 font-display text-xl text-white tracking-wide uppercase leading-none">
                     {titulo}
                 </span>
-                <svg viewBox="0 0 12 8" className={`w-4 h-4 text-zinc-400 transition-transform duration-200 shrink-0 ${abierto ? '' : '-rotate-90'}`} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 12 8" className={`w-4 h-4 text-amber-400 transition-transform duration-200 shrink-0 ${abierto ? '' : '-rotate-90'}`} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M1 1L6 6L11 1" />
                 </svg>
             </button>
@@ -716,7 +805,7 @@ export default function Polla() {
                 })()}
 
                 {/* ── Acordeón: Partidos primero (acción principal) ── */}
-                <Seccion id="partidos-section" titulo="⚽ Partidos para predecir">
+                <Seccion id="partidos-section" titulo="Partidos para predecir" icono={ICONOS_SECCION.partidos}>
                 {cantidadEncolados > 0 && (
                     <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 px-5 py-4 mb-4 text-center">
                         <p className="text-white font-bold text-sm mb-1">🔥 Tienes {cantidadEncolados} {cantidadEncolados === 1 ? 'predicción guardada' : 'predicciones guardadas'} sin cupos</p>
@@ -811,7 +900,7 @@ export default function Polla() {
                 )}
                 </Seccion>
 
-                <Seccion titulo="🏆 Ranking General" defaultOpen={false}>
+                <Seccion titulo="Ranking General" icono={ICONOS_SECCION.ranking} defaultOpen={false}>
                     <Suspense fallback={null}><RankingGeneral token={token} /></Suspense>
                 </Seccion>
 
@@ -819,15 +908,15 @@ export default function Polla() {
                     Backend: GET /api/polla/ranking-influencers?token_acceso=X
                     Response: { success, ranking: [{ id, nombre, puntos, exactos, referidos, posicion, tiene_foto }], mi_usuario_id }
                     El campo 'es_yo' solo resalta la fila si el token pertenece a un creador. */}
-                <Seccion titulo="🎨 Ranking Creadores" defaultOpen={false}>
+                <Seccion titulo="Ranking Creadores" icono={ICONOS_SECCION.creadores} defaultOpen={false}>
                     <Suspense fallback={null}><RankingInfluencers token={token} /></Suspense>
                 </Seccion>
 
-                <Seccion titulo="🎯 Tus predicciones" defaultOpen={false}>
+                <Seccion titulo="Tus predicciones" icono={ICONOS_SECCION.predicciones} defaultOpen={false}>
                     <MisPronosticos tokenAcceso={token} />
                 </Seccion>
 
-                <Seccion titulo="🏆 Invita y gana" defaultOpen={false}>{/* RETA A UN AMIGO */}
+                <Seccion titulo="Invita y gana" icono={ICONOS_SECCION.invita} defaultOpen={false}>{/* RETA A UN AMIGO */}
                 {(() => {
                     const urlRef = `${typeof window !== 'undefined' ? window.location.origin : 'https://ganaconretoucherie.com'}/?ref=${token}`;
                     const textoComp = `🇨🇴⚽ ¡Te reto a participar en la Polla Mundialista de La Retoucherie de Manuela!\n\nPredice el marcador de los partidos y gana premios increíbles.\n\n👉 ${urlRef}`;
@@ -866,7 +955,7 @@ export default function Polla() {
                 })()}
                 </Seccion>
 
-                <Seccion titulo="👥 Mi grupo" defaultOpen={false}>
+                <Seccion titulo="Mi grupo" icono={ICONOS_SECCION.grupo} defaultOpen={false}>
                 <div className="rounded-2xl border border-amber-400/20 bg-zinc-900 p-4 mb-4">
                     <div className="flex items-center justify-between mb-3">
                         <div>
@@ -911,14 +1000,14 @@ export default function Polla() {
                 </div>
                 </Seccion>
 
-                <Seccion titulo="🏆 Ranking en Vivo" defaultOpen={false}>
+                <Seccion titulo="Ranking en Vivo" icono={ICONOS_SECCION.vivo} defaultOpen={false}>
                     {partidoDestacado
                         ? <Suspense fallback={null}><RankingEnVivo partidoId={partidoDestacado.partido_id} /></Suspense>
                         : <p className="text-zinc-500 text-sm text-center py-4">No hay partido en vivo en este momento.</p>
                     }
                 </Seccion>
 
-                <Seccion titulo="⭐ Elige tus equipos favoritos" defaultOpen={false}>
+                <Seccion titulo="Elige tus equipos favoritos" icono={ICONOS_SECCION.favoritos} defaultOpen={false}>
                     <EquiposFavoritos token={token} equiposIniciales={info.equipos_favoritos || []} calendarioToken={info.calendario_token} onGuardado={(equipos) => setInfo((prev) => ({ ...prev, equipos_favoritos: equipos }))} />
                     <PartidosFavoritos equipos={info.equipos_favoritos} />
                 </Seccion>
