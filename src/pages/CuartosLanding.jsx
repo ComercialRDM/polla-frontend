@@ -247,6 +247,8 @@ export default function CuartosLanding() {
     // ── Pantalla de éxito ─────────────────────────────────────────────────────
     if (resultados) {
         const primerNombre = nombre.trim().split(' ')[0];
+        const tokenAcceso = resultados.find(r => r.token_acceso)?.token_acceso;
+        if (tokenAcceso) localStorage.setItem('polla_token_acceso', tokenAcceso);
         return (
             <div className="min-h-screen bg-zinc-950 flex flex-col items-center pb-16">
                 <div className="w-full h-1.5 flex">
@@ -294,10 +296,10 @@ export default function CuartosLanding() {
                             por los <strong className="text-white">$5.000.000 en premios</strong> necesitas comprar tu bono de arreglos de la Retoucherie.
                         </p>
                         <a
-                            href="/iniciar-sesion"
+                            href={tokenAcceso ? `/polla?token=${tokenAcceso}` : '/iniciar-sesion'}
                             className="inline-block w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] shadow-[0_0_20px_rgba(252,209,22,0.3)] hover:bg-yellow-300 active:scale-95 transition-all text-center"
                         >
-                            Crear mi cuenta y participar por los premios
+                            {tokenAcceso ? 'Ver mi perfil y participar' : 'Crear mi cuenta y participar'}
                         </a>
                         <p className="text-zinc-600 text-[10px] mt-2">Desde $10.000 · Pago seguro con Wompi</p>
                     </div>
