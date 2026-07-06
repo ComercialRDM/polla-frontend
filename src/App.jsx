@@ -28,6 +28,7 @@ const RegistroInfluencer = lazy(() => import('./pages/RegistroInfluencer'));
 const Grupo = lazy(() => import('./pages/Grupo'));
 const InvitacionInfluencer = lazy(() => import('./pages/InvitacionInfluencer'));
 const ColombiaLanding = lazy(() => import('./pages/ColombiaLanding'));
+const CuartosLanding = lazy(() => import('./pages/CuartosLanding'));
 const MarcasRegistro = lazy(() => import('./pages/MarcasRegistro'));
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -117,7 +118,7 @@ function AppRoutes() {
     // /como-funciona tiene su propio boton fijo de compra en movil (CTAFijoMovil);
     // se desplaza el de WhatsApp hacia arriba para que no se encimen.
     const conCTAFijo = location.pathname === '/' || location.pathname === '/como-funciona';
-    const ocultarWhatsApp = location.pathname === '/colombia' || location.pathname.startsWith('/dashboardpollardm') || location.pathname.startsWith('/adminqr');
+    const ocultarWhatsApp = location.pathname === '/colombia' || location.pathname === '/cuartos' || location.pathname.startsWith('/dashboardpollardm') || location.pathname.startsWith('/adminqr');
 
     return (
         <>
@@ -149,6 +150,7 @@ function AppRoutes() {
                     <Route path="/grupo/:token" element={<Grupo />} />
                     <Route path="/invitacion/:token" element={<InvitacionInfluencer />} />
                     <Route path="/colombia" element={<ColombiaLanding />} />
+                    <Route path="/cuartos" element={<CuartosLanding />} />
                     <Route path="/marcas/registro/:token" element={<MarcasRegistro />} />
                 </Routes>
             </Suspense>

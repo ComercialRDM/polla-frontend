@@ -52,7 +52,7 @@ export default function RegistroInfluencer() {
                 autoriza_foto: autorizaFoto,
             });
             if (data?.success) {
-                setEnviado(true);
+                setEnviado(data.ya_registrado ? 'duplicado' : 'nuevo');
             } else {
                 setError(data?.error || 'No se pudo completar el registro. Intenta de nuevo.');
             }
@@ -93,7 +93,16 @@ export default function RegistroInfluencer() {
                     Después de registrarte te enviaremos tu Bono Especial.
                 </p>
 
-                {enviado ? (
+                {enviado === 'duplicado' ? (
+                    <div className="rounded-xl border border-amber-400/40 bg-amber-50 dark:bg-amber-900/20 px-4 py-5 text-center">
+                        <p className="text-2xl mb-2">⚠️</p>
+                        <p className="text-amber-800 dark:text-amber-300 font-bold mb-2">Ya tienes una solicitud registrada</p>
+                        <p className="text-amber-700 dark:text-amber-400 text-sm">
+                            El correo <strong>{correo}</strong> ya está en nuestra lista.
+                            Te contactaremos pronto por WhatsApp cuando tu Bono Especial esté listo.
+                        </p>
+                    </div>
+                ) : enviado === 'nuevo' ? (
                     <div className="flex flex-col gap-4">
                         <div className="rounded-xl border border-green-400/40 bg-green-50 dark:bg-green-900/20 px-4 py-5 text-center">
                             <p className="text-2xl mb-2">✅</p>
