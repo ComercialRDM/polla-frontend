@@ -1049,24 +1049,34 @@ export default function Polla() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Género</label>
-                                        <div className="flex flex-col gap-2">
+                                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-2">Género</label>
+                                        <div className="flex flex-wrap gap-2">
                                             {[
-                                                { value: 'masculino', label: 'Masculino' },
-                                                { value: 'femenino', label: 'Femenino' },
-                                                { value: 'prefiero_no_decirlo', label: 'Prefiero no decirlo' },
+                                                { value: 'masculino', label: 'Hombre' },
+                                                { value: 'femenino', label: 'Mujer' },
+                                                { value: 'prefiero_no_decirlo', label: 'Prefiero reservar' },
                                             ].map((op) => (
-                                                <label key={op.value} className="flex items-center gap-2 cursor-pointer text-xs text-zinc-700 dark:text-zinc-300 py-1">
-                                                    <input
-                                                        type="radio"
-                                                        name="sexo_demo"
-                                                        value={op.value}
-                                                        checked={demoSexo === op.value}
-                                                        onChange={() => setDemoSexo(op.value)}
-                                                        className="accent-violet-500 w-4 h-4"
-                                                    />
+                                                <button
+                                                    key={op.value}
+                                                    type="button"
+                                                    onClick={() => setDemoSexo(op.value)}
+                                                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium border transition-all ${
+                                                        demoSexo === op.value
+                                                            ? 'bg-violet-600 border-violet-500 text-white'
+                                                            : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
+                                                    }`}
+                                                >
+                                                    <span className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                                                        demoSexo === op.value
+                                                            ? 'border-white'
+                                                            : 'border-zinc-400 dark:border-zinc-500'
+                                                    }`}>
+                                                        {demoSexo === op.value && (
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                                                        )}
+                                                    </span>
                                                     {op.label}
-                                                </label>
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
