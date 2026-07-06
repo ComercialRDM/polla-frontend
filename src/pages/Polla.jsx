@@ -732,7 +732,11 @@ export default function Polla() {
                                             }
                                         </p>
                                     </div>
-                                    <span className="text-4xl flex-shrink-0">{medalla}</span>
+                                    <div className="flex-shrink-0 relative w-12 h-12">
+                                        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'radial-gradient(circle at 38% 32%, #FDE68A, #F59E0B, #B45309)', boxShadow: '0 4px 14px rgba(234,179,8,0.5)', border: '2.5px solid #FCD116' }}>
+                                            <span className="text-2xl leading-none">{posicion <= 3 ? (posicion === 1 ? '🥇' : posicion === 2 ? '🥈' : '🥉') : '⭐'}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 {!esLider && (
                                     <div className="mt-3">
@@ -753,12 +757,12 @@ export default function Polla() {
                                     { icono: '⭐', valor: info.puntos || 0, label: 'Puntos', color: 'text-[#FCD116]' },
                                     { icono: '🎯', valor: info.exactos || 0, label: 'Exactos', color: 'text-green-400' },
                                     { icono: '⚽', valor: info.cupos_usados || 0, label: 'Usados', color: 'text-blue-400' },
-                                    { icono: '🎟️', valor: info.cupos_disponibles || 0, label: info.cupos_disponibles > 0 ? 'Quedan' : 'Agotados', color: info.cupos_disponibles > 0 ? 'text-white' : 'text-zinc-600' },
+                                    { icono: '🎟️', valor: info.cupos_disponibles || 0, label: info.cupos_disponibles > 0 ? 'Quedan' : 'Agotados', color: info.cupos_disponibles > 0 ? 'text-white' : 'text-red-400' },
                                 ].map(({ icono, valor, label, color }) => (
-                                    <div key={label} className="flex flex-col items-center justify-center rounded-xl bg-zinc-800/60 border border-white/5 py-2.5 px-1">
-                                        <span className="text-sm mb-0.5">{icono}</span>
-                                        <span className={`font-black text-xl leading-none ${color}`}>{valor}</span>
-                                        <span className="text-zinc-500 text-[10px] mt-0.5 text-center leading-tight">{label}</span>
+                                    <div key={label} className="flex flex-col items-center justify-center rounded-xl bg-zinc-800/60 border border-white/5 py-3 px-1 gap-1">
+                                        <span className="text-2xl leading-none">{icono}</span>
+                                        <span className={`font-black text-2xl leading-none tabular-nums ${color}`}>{valor}</span>
+                                        <span className="text-zinc-400 text-[9px] font-bold uppercase tracking-wide text-center leading-tight">{label}</span>
                                     </div>
                                 ))}
                             </div>
@@ -780,24 +784,27 @@ export default function Polla() {
 
                             {/* Botones de acción */}
                             <div className="px-3 pb-3 flex gap-2 border-t border-white/5 pt-3">
-                                <a href="#partidos-section" className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-black text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform">
-                                    🌐 Pronosticar ahora
+                                <a href="#partidos-section" className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform uppercase tracking-wide">
+                                    <span className="text-base">⚽</span> Pronosticar ahora
                                 </a>
-                                <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl font-bold text-sm border border-[#FCD116]/40 text-[#FCD116] hover:bg-[#FCD116]/10 active:scale-95 transition-transform">
+                                <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl font-black text-sm border-2 border-[#FCD116] text-[#FCD116] bg-zinc-950 hover:bg-[#FCD116]/10 active:scale-95 transition-transform uppercase tracking-wide">
                                     + Bono
                                 </Link>
                             </div>
 
-                            {/* Texto motivacional */}
-                            <div className="px-4 pb-4 border-t border-white/5 pt-3">
+                            {/* Mensaje motivacional */}
+                            <div className="mx-3 mb-3 rounded-xl border border-white/8 bg-zinc-800/50 px-3 py-2.5 flex items-start gap-2.5">
+                                <span className="text-xl flex-shrink-0 mt-0.5">
+                                    {info.es_influencer ? '🎬' : info.cupos_disponibles === 0 ? '🛡️' : posicion > 3 ? '🚀' : '💪'}
+                                </span>
                                 <p className="text-sm text-zinc-300 leading-snug">
                                     {info.es_influencer
-                                        ? '🎬 Usa el botón + Bono para mostrarle a tu audiencia cómo se compra el bono y participar en la Polla.'
+                                        ? 'Usa el botón + Bono para mostrarle a tu audiencia cómo se compra el bono y participar en la Polla.'
                                         : info.cupos_disponibles === 0
-                                            ? '🔥 Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.'
+                                            ? 'Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.'
                                             : posicion > 3
-                                                ? '🚀 Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar hasta $1.000.000 en el Bono Colombia.'
-                                                : '💪 ¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.'}
+                                                ? 'Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar.'
+                                                : '¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.'}
                                 </p>
                             </div>
                         </div>
