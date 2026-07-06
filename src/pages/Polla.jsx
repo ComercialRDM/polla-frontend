@@ -706,20 +706,17 @@ export default function Polla() {
 
 
                 {/* CARD PRINCIPAL */}
-                <div className="rounded-2xl overflow-hidden mb-4">
+                <div className="rounded-2xl overflow-hidden mb-4 relative">
                     <img
                         src={dashboardImg}
                         alt="Mi dashboard de la Polla"
                         className="w-full"
                         style={{ display: 'block' }}
                     />
-                    <div className="flex gap-2 mt-2">
-                        <a href="#partidos-section" className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform uppercase tracking-wide">
-                            <span className="text-base">⚽</span> Pronosticar ahora
-                        </a>
-                        <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl font-black text-sm border-2 border-[#FCD116] text-[#FCD116] bg-zinc-950 hover:bg-[#FCD116]/10 active:scale-95 transition-transform uppercase tracking-wide">
-                            + Bono
-                        </Link>
+                    {/* Overlay transparente sobre los botones del diseño en la imagen (último ~14% del alto) */}
+                    <div className="absolute bottom-0 left-0 right-0 flex" style={{ height: '14%' }}>
+                        <a href="#partidos-section" className="flex-1 h-full" aria-label="Pronosticar ahora" />
+                        <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="h-full" style={{ width: '28%' }} aria-label="Comprar bono" />
                     </div>
                 </div>
 
