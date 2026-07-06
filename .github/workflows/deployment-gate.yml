@@ -6,32 +6,125 @@ on:
 
 jobs:
   verificar-horario:
-    name: Verificar horario Colombia
+    name: Verificar horario Colombia (4 fuentes)
     runs-on: ubuntu-latest
     outputs:
       permitido: ${{ steps.check.outputs.permitido }}
       hora_colombia: ${{ steps.check.outputs.hora_colombia }}
     steps:
-      - name: Verificar hora (7am–9pm Colombia, UTC-5)
+      - name: Verificar hora desde 4 fuentes (UTC-5 Colombia)
         id: check
         run: |
-          HORA_COLOMBIA=$(TZ="America/Bogota" date '+%H:%M:%S %Z %Y-%m-%d')
-          HORA=$(TZ="America/Bogota" date +%H)
-          MINUTO=$(TZ="America/Bogota" date +%M)
-          TOTAL_MIN=$(( 10#$HORA * 60 + 10#$MINUTO ))
-          INICIO=$(( 7 * 60 ))         # 7:00 AM  = 420 min
-          FIN=$(( 23 * 60 + 30 ))      # 11:30 PM = 1410 min
+          INICIO=420    # 7:00 AM  = 420 min desde medianoche
+          FIN=1410      # 11:30 PM = 1410 min desde medianoche
+          FUENTES_OK=0
+          FUENTES_DENTRO=0
+          RESUMEN=""
 
-          echo "hora_colombia=$HORA_COLOMBIA" >> $GITHUB_OUTPUT
-          echo "Hora Colombia: $HORA_COLOMBIA"
-          echo "Minutos desde medianoche: $TOTAL_MIN (ventana: $INICIO-$FIN)"
+          min_desde_medianoche() {
+            echo $(( 10#$1 * 60 + 10#$2 ))
+          }
 
-          if [ $TOTAL_MIN -ge $INICIO ] && [ $TOTAL_MIN -lt $FIN ]; then
-            echo "permitido=true" >> $GITHUB_OUTPUT
-            echo "✅ Dentro del horario permitido (7am-11:30pm)"
+          # ── Fuente 1: Reloj del runner (NTP / Chrony, múltiples servidores) ──
+          H1=$(TZ="America/Bogota" date +%H)
+          M1=$(TZ="America/Bogota" date +%M)
+          MIN1=$(min_desde_medianoche "$H1" "$M1")
+          FUENTES_OK=$(( FUENTES_OK + 1 ))
+          if [ "$MIN1" -ge "$INICIO" ] && [ "$MIN1" -lt "$FIN" ]; then
+            FUENTES_DENTRO=$(( FUENTES_DENTRO + 1 ))
+            RESUMEN="${RESUMEN}\n✅ Runner NTP:    ${H1}:${M1} (dentro del horario)"
           else
-            echo "permitido=false" >> $GITHUB_OUTPUT
-            echo "🚨 FUERA del horario — deploy bloqueado"
+            RESUMEN="${RESUMEN}\n❌ Runner NTP:    ${H1}:${M1} (fuera del horario)"
+          fi
+
+          # ── Fuente 2: WorldTimeAPI.org ────────────────────────────────────────
+          RESP2=$(curl -sf --max-time 8 "https://worldtimeapi.org/api/timezone/America/Bogota" 2>/dev/null)
+          if [ -n "$RESP2" ]; then
+            H2=$(echo "$RESP2" | python3 -c "import sys,json; d=json.load(sys.stdin); print(int(d['datetime'][11:13]))" 2>/dev/null || echo "")
+            M2=$(echo "$RESP2" | python3 -c "import sys,json; d=json.load(sys.stdin); print(int(d['datetime'][14:16]))" 2>/dev/null || echo "")
+            if [ -n "$H2" ] && [ -n "$M2" ]; then
+              MIN2=$(min_desde_medianoche "$H2" "$M2")
+              FUENTES_OK=$(( FUENTES_OK + 1 ))
+              if [ "$MIN2" -ge "$INICIO" ] && [ "$MIN2" -lt "$FIN" ]; then
+                FUENTES_DENTRO=$(( FUENTES_DENTRO + 1 ))
+                RESUMEN="${RESUMEN}\n✅ WorldTimeAPI: ${H2}:${M2} (dentro del horario)"
+              else
+                RESUMEN="${RESUMEN}\n❌ WorldTimeAPI: ${H2}:${M2} (fuera del horario)"
+              fi
+            else
+              RESUMEN="${RESUMEN}\n⚠️  WorldTimeAPI: respuesta inválida (se omite)"
+            fi
+          else
+            RESUMEN="${RESUMEN}\n⚠️  WorldTimeAPI: sin respuesta (se omite)"
+          fi
+
+          # ── Fuente 3: TimeAPI.io ──────────────────────────────────────────────
+          RESP3=$(curl -sf --max-time 8 "https://timeapi.io/api/Time/current/zone?timeZone=America%2FBogota" 2>/dev/null)
+          if [ -n "$RESP3" ]; then
+            H3=$(echo "$RESP3" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['hour'])" 2>/dev/null || echo "")
+            M3=$(echo "$RESP3" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['minute'])" 2>/dev/null || echo "")
+            if [ -n "$H3" ] && [ -n "$M3" ]; then
+              MIN3=$(min_desde_medianoche "$H3" "$M3")
+              FUENTES_OK=$(( FUENTES_OK + 1 ))
+              if [ "$MIN3" -ge "$INICIO" ] && [ "$MIN3" -lt "$FIN" ]; then
+                FUENTES_DENTRO=$(( FUENTES_DENTRO + 1 ))
+                RESUMEN="${RESUMEN}\n✅ TimeAPI.io:   ${H3}:${M3} (dentro del horario)"
+              else
+                RESUMEN="${RESUMEN}\n❌ TimeAPI.io:   ${H3}:${M3} (fuera del horario)"
+              fi
+            else
+              RESUMEN="${RESUMEN}\n⚠️  TimeAPI.io:   respuesta inválida (se omite)"
+            fi
+          else
+            RESUMEN="${RESUMEN}\n⚠️  TimeAPI.io:   sin respuesta (se omite)"
+          fi
+
+          # ── Fuente 4: Cloudflare Time (ts Unix UTC → Colombia UTC-5) ─────────
+          RESP4=$(curl -sf --max-time 8 "https://time.cloudflare.com/cdn-cgi/trace" 2>/dev/null)
+          if [ -n "$RESP4" ]; then
+            TS4=$(echo "$RESP4" | grep '^ts=' | cut -d= -f2 | cut -d. -f1 2>/dev/null || echo "")
+            if [ -n "$TS4" ]; then
+              H4=$(python3 -c "from datetime import datetime,timezone,timedelta; d=datetime.fromtimestamp(int('$TS4'),timezone(timedelta(hours=-5))); print(d.hour)" 2>/dev/null || echo "")
+              M4=$(python3 -c "from datetime import datetime,timezone,timedelta; d=datetime.fromtimestamp(int('$TS4'),timezone(timedelta(hours=-5))); print(d.minute)" 2>/dev/null || echo "")
+              if [ -n "$H4" ] && [ -n "$M4" ]; then
+                MIN4=$(min_desde_medianoche "$H4" "$M4")
+                FUENTES_OK=$(( FUENTES_OK + 1 ))
+                if [ "$MIN4" -ge "$INICIO" ] && [ "$MIN4" -lt "$FIN" ]; then
+                  FUENTES_DENTRO=$(( FUENTES_DENTRO + 1 ))
+                  RESUMEN="${RESUMEN}\n✅ Cloudflare:   ${H4}:${M4} (dentro del horario)"
+                else
+                  RESUMEN="${RESUMEN}\n❌ Cloudflare:   ${H4}:${M4} (fuera del horario)"
+                fi
+              else
+                RESUMEN="${RESUMEN}\n⚠️  Cloudflare:   timestamp inválido (se omite)"
+              fi
+            else
+              RESUMEN="${RESUMEN}\n⚠️  Cloudflare:   sin campo ts (se omite)"
+            fi
+          else
+            RESUMEN="${RESUMEN}\n⚠️  Cloudflare:   sin respuesta (se omite)"
+          fi
+
+          # ── Resultado ─────────────────────────────────────────────────────────
+          echo -e "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo -e "Verificación de horario Colombia (7am–11:30pm)"
+          echo -e "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo -e "$RESUMEN"
+          echo -e "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Fuentes respondidas: $FUENTES_OK | Dentro del horario: $FUENTES_DENTRO"
+
+          # Mayoría simple de las fuentes que respondieron
+          MITAD=$(( (FUENTES_OK + 1) / 2 ))
+
+          HORA_COL=$(TZ="America/Bogota" date '+%H:%M:%S %Z %Y-%m-%d')
+          echo "hora_colombia=${HORA_COL}" >> "$GITHUB_OUTPUT"
+
+          if [ "$FUENTES_DENTRO" -ge "$MITAD" ]; then
+            echo "permitido=true" >> "$GITHUB_OUTPUT"
+            echo "✅ DEPLOY PERMITIDO — $FUENTES_DENTRO/$FUENTES_OK fuentes confirman horario válido"
+          else
+            echo "permitido=false" >> "$GITHUB_OUTPUT"
+            echo "🚨 DEPLOY BLOQUEADO — solo $FUENTES_DENTRO/$FUENTES_OK fuentes dentro del horario"
           fi
 
   deploy:
@@ -88,5 +181,5 @@ jobs:
 
       - name: Fallar el workflow
         run: |
-          echo "🚨 Deploy rechazado — fuera del horario permitido (7am-9pm Colombia)"
+          echo "🚨 Deploy rechazado — fuera del horario permitido (7am-11:30pm Colombia)"
           exit 1
