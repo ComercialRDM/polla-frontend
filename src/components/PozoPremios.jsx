@@ -9,6 +9,25 @@ function formatCOP(valor) {
     return `$${Number(valor).toLocaleString('es-CO')}`;
 }
 
+function WreathRing({ color }) {
+    return (
+        <svg viewBox="0 0 96 96" className="absolute inset-0 w-full h-full pointer-events-none">
+            <g fill={color} opacity="0.9">
+                <ellipse cx="17" cy="22" rx="4.5" ry="9" transform="rotate(-48 17 22)" />
+                <ellipse cx="10" cy="38" rx="4.5" ry="9" transform="rotate(-22 10 38)" />
+                <ellipse cx="11" cy="56" rx="4.5" ry="9" transform="rotate(8 11 56)" />
+                <ellipse cx="21" cy="70" rx="4.5" ry="9" transform="rotate(34 21 70)" />
+            </g>
+            <g fill={color} opacity="0.9">
+                <ellipse cx="79" cy="22" rx="4.5" ry="9" transform="rotate(48 79 22)" />
+                <ellipse cx="86" cy="38" rx="4.5" ry="9" transform="rotate(22 86 38)" />
+                <ellipse cx="85" cy="56" rx="4.5" ry="9" transform="rotate(-8 85 56)" />
+                <ellipse cx="75" cy="70" rx="4.5" ry="9" transform="rotate(-34 75 70)" />
+            </g>
+        </svg>
+    );
+}
+
 export default function PozoPremios({ compact = false }) {
     const [pozo, setPozo] = useState(null);
 
@@ -29,8 +48,6 @@ export default function PozoPremios({ compact = false }) {
     const segundo = pozo?.segundo ?? BASE.segundo;
     const tercero = pozo?.tercero ?? BASE.tercero;
     const totalFact = Number(pozo?.total_fact ?? 0);
-
-    // Progreso hacia el umbral dinámico (o hacia el cap del 1er puesto)
     const pctUmbral = Math.min((totalFact / UMBRAL_DINAMICO) * 100, 100);
     const superaUmbral = totalFact >= UMBRAL_DINAMICO;
 
@@ -40,44 +57,119 @@ export default function PozoPremios({ compact = false }) {
                 puesto: '1°',
                 valor: primero,
                 cap: CAP.primero,
-                circulo: 'bg-gradient-to-b from-yellow-300 to-amber-500 shadow-[0_2px_8px_rgba(251,191,36,0.5)]',
-                texto: 'text-amber-400',
-                cap_texto: 'text-amber-500/70',
+                wreathColor: '#B8860B',
+                medalGrad: 'radial-gradient(circle at 35% 32%, #FDE047, #D97706)',
+                medalShadow: '0 4px 16px rgba(251,191,36,0.55)',
+                amountHex: '#92400E',
+                capHex: '#B45309',
+                podiumTop: '#FDE68A',
+                podiumBot: '#F59E0B',
+                starHex: '#FCD116',
             },
             {
                 puesto: '2°',
                 valor: segundo,
                 cap: CAP.segundo,
-                circulo: 'bg-gradient-to-b from-zinc-300 to-zinc-500 shadow-[0_2px_6px_rgba(160,160,160,0.4)]',
-                texto: 'text-zinc-300 dark:text-zinc-200',
-                cap_texto: 'text-zinc-400/70',
+                wreathColor: '#8B97A6',
+                medalGrad: 'radial-gradient(circle at 35% 32%, #E5E7EB, #6B7280)',
+                medalShadow: '0 4px 12px rgba(156,163,175,0.45)',
+                amountHex: '#4B5563',
+                capHex: '#9CA3AF',
+                podiumTop: '#E5E7EB',
+                podiumBot: '#9CA3AF',
+                starHex: '#9CA3AF',
             },
             {
                 puesto: '3°',
                 valor: tercero,
                 cap: CAP.tercero,
-                circulo: 'bg-gradient-to-b from-orange-400 to-orange-700 shadow-[0_2px_6px_rgba(194,120,40,0.4)]',
-                texto: 'text-orange-400',
-                cap_texto: 'text-orange-400/70',
+                wreathColor: '#92400E',
+                medalGrad: 'radial-gradient(circle at 35% 32%, #FDBA74, #B45309)',
+                medalShadow: '0 4px 12px rgba(180,83,9,0.45)',
+                amountHex: '#9A3412',
+                capHex: '#C2410C',
+                podiumTop: '#FED7AA',
+                podiumBot: '#EA580C',
+                starHex: '#F97316',
             },
         ];
+
         return (
-            <div className="rounded-2xl border border-amber-400/30 bg-white dark:bg-slate-900/60 shadow-sm dark:shadow-[0_0_15px_rgba(234,179,8,0.15)] backdrop-blur-lg px-4 pt-3 pb-3">
-                <div className="flex items-center justify-center gap-1.5 mb-3">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-                    </span>
-                    <p className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Premio en vivo · crece con cada bono</p>
+            <div
+                className="rounded-2xl bg-white overflow-hidden"
+                style={{ border: '1px solid #E5E7EB', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}
+            >
+                {/* Header */}
+                <div className="text-center pt-3 pb-1 px-4">
+                    <div className="text-xl leading-none">🏆</div>
+                    <p className="font-black text-zinc-900 text-[13px] uppercase tracking-wider mt-0.5 leading-tight">
+                        Premio en vivo
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <div className="flex-1 h-px" style={{ background: 'linear-gradient(to right, transparent, #FCD116)' }} />
+                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-[0.14em] whitespace-nowrap">
+                            Crece con cada bono
+                        </p>
+                        <div className="flex-1 h-px" style={{ background: 'linear-gradient(to left, transparent, #FCD116)' }} />
+                    </div>
                 </div>
-                <div className="flex justify-around gap-1">
-                    {MEDALLAS.map(({ puesto, valor, cap, circulo, texto, cap_texto }) => (
-                        <div key={puesto} className="flex flex-col items-center gap-1">
-                            <div className={`w-8 h-8 rounded-full ${circulo} flex items-center justify-center`}>
-                                <span className="text-white font-black text-sm leading-none drop-shadow">{puesto}</span>
+
+                {/* Three medal columns */}
+                <div className="flex justify-around items-start px-2 pb-3 pt-1">
+                    {MEDALLAS.map(({ puesto, valor, cap, wreathColor, medalGrad, medalShadow, amountHex, capHex, podiumTop, podiumBot, starHex }) => (
+                        <div key={puesto} className="flex flex-col items-center" style={{ width: '30%' }}>
+                            {/* Wreath + medal circle */}
+                            <div className="relative flex items-center justify-center" style={{ width: 64, height: 72 }}>
+                                <WreathRing color={wreathColor} />
+                                <div
+                                    className="relative z-10 flex items-center justify-center rounded-full"
+                                    style={{
+                                        width: 40, height: 40,
+                                        background: medalGrad,
+                                        boxShadow: medalShadow,
+                                    }}
+                                >
+                                    <span className="text-white font-black text-sm drop-shadow-sm leading-none">{puesto}</span>
+                                </div>
                             </div>
-                            <p className={`${texto} font-black text-sm leading-tight tabular-nums`}>{formatCOP(valor)}</p>
-                            <p className={`${cap_texto} text-[9px] font-semibold leading-tight tabular-nums`}>hasta {formatCOP(cap)}</p>
+
+                            {/* Podium base (3D effect) */}
+                            <div className="w-full px-1 -mt-1.5">
+                                <div
+                                    className="rounded-t-lg h-5"
+                                    style={{
+                                        background: `linear-gradient(to bottom, ${podiumTop}, ${podiumBot})`,
+                                        boxShadow: '0 4px 10px rgba(0,0,0,0.18)',
+                                    }}
+                                />
+                                <div
+                                    className="rounded-b-md h-2.5 mx-2"
+                                    style={{
+                                        background: `linear-gradient(to bottom, ${podiumBot}, ${podiumBot}99)`,
+                                    }}
+                                />
+                            </div>
+
+                            {/* Amount */}
+                            <p
+                                className="font-black text-sm mt-2 leading-tight tabular-nums"
+                                style={{ color: amountHex }}
+                            >
+                                {formatCOP(valor)}
+                            </p>
+                            <p
+                                className="text-[9px] font-semibold uppercase tracking-wide mt-0.5 leading-tight"
+                                style={{ color: capHex }}
+                            >
+                                hasta {formatCOP(cap)}
+                            </p>
+
+                            {/* Star divider */}
+                            <div className="flex items-center gap-1 mt-1.5">
+                                <div className="h-px w-5" style={{ background: `linear-gradient(to left, ${starHex}90, transparent)` }} />
+                                <span className="text-[8px]" style={{ color: starHex }}>★</span>
+                                <div className="h-px w-5" style={{ background: `linear-gradient(to right, ${starHex}90, transparent)` }} />
+                            </div>
                         </div>
                     ))}
                 </div>
