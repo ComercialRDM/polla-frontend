@@ -5,7 +5,6 @@ import InstalarApp from '../components/InstalarApp';
 import { formatoPesos, calcularMontoPorPredicciones } from '../config/planes';
 import { agregarMarcadorPendiente, obtenerMarcadoresPendientes } from '../utils/marcadorPendiente';
 import Bandera from '../components/Bandera';
-import dashboardImg from '../assets/dashboardusuarios.png';
 const RankingEnVivo = lazy(() => import('../components/RankingEnVivo'));
 const RankingInfluencers = lazy(() => import('../components/RankingInfluencers'));
 const RankingGeneral = lazy(() => import('../components/RankingGeneral'));
@@ -705,20 +704,109 @@ export default function Polla() {
                 <div className="mb-4"><PozoPremios compact /></div>
 
 
-                {/* CARD PRINCIPAL */}
-                <div className="rounded-2xl overflow-hidden mb-4 relative">
-                    <img
-                        src={dashboardImg}
-                        alt="Mi dashboard de la Polla"
-                        className="w-full"
-                        style={{ display: 'block' }}
-                    />
-                    {/* Overlay transparente sobre los botones del diseño en la imagen (último ~14% del alto) */}
-                    <div className="absolute bottom-0 left-0 right-0 flex" style={{ height: '14%' }}>
-                        <a href="#partidos-section" className="flex-1 h-full" aria-label="Pronosticar ahora" />
-                        <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="h-full" style={{ width: '28%' }} aria-label="Comprar bono" />
-                    </div>
-                </div>
+                {/* CARD PRINCIPAL — datos reales en tiempo real */}
+                {(() => {
+                    const posicion = info.posicion || 1;
+                    const totalPart = info.total_participantes || 1;
+                    const puntos = info.puntos || 0;
+                    const ptsFaltan = info.puntos_para_superar;
+                    const esLider = posicion === 1 || ptsFaltan === null;
+                    const ptsObj = puntos + (ptsFaltan || 0);
+                    const progreso = ptsObj > 0 ? Math.min(100, Math.round((puntos / ptsObj) * 100)) : 100;
+                    return (
+                        <div className="rounded-2xl bg-zinc-900 border border-[#FCD116]/30 overflow-hidden mb-4">
+
+                            {/* Ranking */}
+                            <div className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="font-black text-4xl text-white leading-none">#{posicion}</span>
+                                            <span className="text-zinc-500 text-xs">de {totalPart} {totalPart === 1 ? 'participante' : 'participantes'}</span>
+                                        </div>
+                                        <p className="text-sm mt-1 leading-tight">
+                                            {esLider
+                                                ? <span className="text-[#FCD116] font-semibold">¡Vas en primer lugar! Sigue así 💪</span>
+                                                : <span className="text-zinc-400">Te faltan <span className="text-white font-bold">{ptsFaltan} pt{ptsFaltan === 1 ? '' : 's'}</span> para subir al #{posicion - 1} ⬆️</span>
+                                            }
+                                        </p>
+                                    </div>
+                                    <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ background: 'radial-gradient(circle at 38% 32%, #FDE68A, #F59E0B, #B45309)', boxShadow: '0 4px 14px rgba(234,179,8,0.5)', border: '2.5px solid #FCD116' }}>
+                                        <span className="text-2xl leading-none">{posicion <= 3 ? (posicion === 1 ? '🥇' : posicion === 2 ? '🥈' : '🥉') : '⭐'}</span>
+                                    </div>
+                                </div>
+                                {!esLider && (
+                                    <div className="mt-3">
+                                        <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                                            <div className="h-2 rounded-full bg-gradient-to-r from-[#FCD116] to-amber-500 transition-all duration-700" style={{ width: `${progreso}%` }} />
+                                        </div>
+                                        <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                                            <span>Tus {puntos} pts</span>
+                                            <span>{ptsObj} pts del #{posicion - 1}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Stats grid */}
+                            <div className="grid grid-cols-4 gap-2 px-3 pb-3 border-t border-white/5 pt-3">
+                                {[
+                                    { icono: '⭐', valor: info.puntos || 0, label: 'Puntos', color: 'text-[#FCD116]' },
+                                    { icono: '🎯', valor: info.exactos || 0, label: 'Exactos', color: 'text-green-400' },
+                                    { icono: '⚽', valor: info.cupos_usados || 0, label: 'Usados', color: 'text-blue-400' },
+                                    { icono: '🎟️', valor: info.cupos_disponibles || 0, label: info.cupos_disponibles > 0 ? 'Quedan' : 'Agotados', color: info.cupos_disponibles > 0 ? 'text-white' : 'text-red-400' },
+                                ].map(({ icono, valor, label, color }) => (
+                                    <div key={label} className="flex flex-col items-center justify-center rounded-xl bg-zinc-800/60 border border-white/5 py-3 px-1 gap-1">
+                                        <span className="text-2xl leading-none">{icono}</span>
+                                        <span className={`font-black text-2xl leading-none tabular-nums ${color}`}>{valor}</span>
+                                        <span className="text-zinc-400 text-[9px] font-bold uppercase tracking-wide text-center leading-tight">{label}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Equipos favoritos */}
+                            {info.equipos_favoritos?.length > 0 && (
+                                <div className="px-3 pb-3 border-t border-white/5 pt-3">
+                                    <p className="text-zinc-500 text-[10px] uppercase tracking-wide font-bold mb-2">⭐ Equipos favoritos</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {info.equipos_favoritos.map((equipo) => (
+                                            <span key={equipo} className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full pl-1 pr-2.5 py-0.5">
+                                                <Bandera equipo={equipo} className="w-5 h-5 flex-shrink-0" />
+                                                <span className="text-zinc-200 text-xs font-semibold">{equipo}</span>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Botones */}
+                            <div className="px-3 pb-3 flex gap-2 border-t border-white/5 pt-3">
+                                <a href="#partidos-section" className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-sm text-zinc-950 bg-[#FCD116] active:scale-95 transition-transform uppercase tracking-wide">
+                                    <span className="text-base">⚽</span> Pronosticar ahora
+                                </a>
+                                <Link to={info.es_especial ? "/comprar?demo=true" : "/comprar"} className="flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl font-black text-sm border-2 border-[#FCD116] text-[#FCD116] bg-zinc-950 hover:bg-[#FCD116]/10 active:scale-95 transition-transform uppercase tracking-wide">
+                                    + Bono
+                                </Link>
+                            </div>
+
+                            {/* Mensaje motivacional */}
+                            <div className="mx-3 mb-3 rounded-xl border border-white/8 bg-zinc-800/50 px-3 py-2.5 flex items-start gap-2.5">
+                                <span className="text-xl flex-shrink-0 mt-0.5">
+                                    {info.es_influencer ? '🎬' : info.cupos_disponibles === 0 ? '🛡️' : posicion > 3 ? '🚀' : '💪'}
+                                </span>
+                                <p className="text-sm text-zinc-300 leading-snug">
+                                    {info.es_influencer
+                                        ? 'Usa el botón + Bono para mostrarle a tu audiencia cómo se compra el bono y participar en la Polla.'
+                                        : info.cupos_disponibles === 0
+                                            ? 'Se te acabaron los intentos. Compra otro bono ahora para seguir prediciendo y no perderte ningún partido.'
+                                            : posicion > 3
+                                                ? 'Sube a un bono de $50.000 o $100.000 para tener más intentos: más partidos pronosticados, más opciones de ganar.'
+                                                : '¡Vas muy bien! Compra otro bono para asegurar tu lugar en el podio y seguir acumulando intentos.'}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* ── Acordeón: Partidos primero (acción principal) ── */}
                 <Seccion id="partidos-section" titulo="Partidos para predecir" icono={ICONOS_SECCION.partidos}>
