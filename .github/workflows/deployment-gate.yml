@@ -19,8 +19,8 @@ jobs:
           HORA=$(TZ="America/Bogota" date +%H)
           MINUTO=$(TZ="America/Bogota" date +%M)
           TOTAL_MIN=$(( 10#$HORA * 60 + 10#$MINUTO ))
-          INICIO=$(( 7 * 60 ))    # 7:00 AM = 420 min
-          FIN=$(( 21 * 60 ))      # 9:00 PM = 1260 min
+          INICIO=$(( 7 * 60 ))         # 7:00 AM  = 420 min
+          FIN=$(( 23 * 60 + 30 ))      # 11:30 PM = 1410 min
 
           echo "hora_colombia=$HORA_COLOMBIA" >> $GITHUB_OUTPUT
           echo "Hora Colombia: $HORA_COLOMBIA"
@@ -28,7 +28,7 @@ jobs:
 
           if [ $TOTAL_MIN -ge $INICIO ] && [ $TOTAL_MIN -lt $FIN ]; then
             echo "permitido=true" >> $GITHUB_OUTPUT
-            echo "✅ Dentro del horario permitido (7am-9pm)"
+            echo "✅ Dentro del horario permitido (7am-11:30pm)"
           else
             echo "permitido=false" >> $GITHUB_OUTPUT
             echo "🚨 FUERA del horario — deploy bloqueado"
@@ -78,7 +78,7 @@ jobs:
                   <tr><td style="padding: 8px 0; color: #71717a;">Mensaje commit</td><td style="padding: 8px 0; font-style: italic;">${{ github.event.head_commit.message }}</td></tr>
                 </table>
                 <div style="margin-top: 20px; padding: 16px; background: #fee2e2; border-radius: 8px;">
-                  <p style="margin: 0; color: #991b1b; font-weight: bold;">⚠️ El deploy fue bloqueado automáticamente. Horario permitido: 7:00 AM – 9:00 PM hora Colombia (UTC-5), todos los días.</p>
+                  <p style="margin: 0; color: #991b1b; font-weight: bold;">⚠️ El deploy fue bloqueado automáticamente. Horario permitido: 7:00 AM – 11:30 PM hora Colombia (UTC-5), todos los días.</p>
                 </div>
                 <p style="margin-top: 20px; text-align: center;">
                   <a href="https://github.com/ComercialRDM/polla-frontend/actions" style="background: #dc2626; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Ver en GitHub Actions →</a>
