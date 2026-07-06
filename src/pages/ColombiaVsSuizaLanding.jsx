@@ -26,6 +26,29 @@ function formatHora(iso) {
     });
 }
 
+// Bandera circular con efecto 3D brillante
+function BanderaGloss({ equipo, size = 'lg' }) {
+    return (
+        <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0"
+            style={{
+                boxShadow: '0 8px 24px rgba(0,0,0,0.55), 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.35)',
+            }}
+        >
+            <Bandera equipo={equipo} className="w-full h-full" size={size} />
+            {/* Destello superior */}
+            <div className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                    background: 'linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 35%, transparent 60%)',
+                }}
+            />
+            {/* Sombra inferior para profundidad */}
+            <div className="absolute bottom-0 left-0 right-0 h-2/5 rounded-b-full pointer-events-none"
+                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.28), transparent)' }}
+            />
+        </div>
+    );
+}
+
 function GolInput({ value, onChange }) {
     return (
         <input
@@ -55,6 +78,7 @@ export default function ColombiaVsSuizaLanding() {
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
     const [celular, setCelular] = useState('');
+    // localGol y visitanteGol siempre en orden DB (equipo_local/visitante)
     const [localGol, setLocalGol] = useState('');
     const [visitanteGol, setVisitanteGol] = useState('');
 
@@ -142,6 +166,15 @@ export default function ColombiaVsSuizaLanding() {
         );
     }
 
+    // Colombia siempre a la izquierda en pantalla
+    const colombiaEsLocal = incluye(partido.equipo_local, 'colombia');
+    const equipoIzq = colombiaEsLocal ? partido.equipo_local : partido.equipo_visitante;
+    const equipoDer = colombiaEsLocal ? partido.equipo_visitante : partido.equipo_local;
+    const golIzq = colombiaEsLocal ? localGol : visitanteGol;
+    const golDer = colombiaEsLocal ? visitanteGol : localGol;
+    const setGolIzq = colombiaEsLocal ? setLocalGol : setVisitanteGol;
+    const setGolDer = colombiaEsLocal ? setVisitanteGol : setLocalGol;
+
     const ahora = Date.now();
     const cerrado = new Date(partido.fecha_hora_inicio).getTime() - ahora < CIERRE_MS;
 
@@ -149,6 +182,12 @@ export default function ColombiaVsSuizaLanding() {
     if (resultado) {
         const primerNombre = resultado.nombre.trim().split(' ')[0];
         const tokenAcceso = resultado.token_acceso;
+        const colEsLocalRes = incluye(resultado.partido.equipo_local, 'colombia');
+        const equipoIzqRes = colEsLocalRes ? resultado.partido.equipo_local : resultado.partido.equipo_visitante;
+        const equipoDerRes = colEsLocalRes ? resultado.partido.equipo_visitante : resultado.partido.equipo_local;
+        const predIzqRes = colEsLocalRes ? resultado.pred_local : resultado.pred_visitante;
+        const predDerRes = colEsLocalRes ? resultado.pred_visitante : resultado.pred_local;
+
         return (
             <div className="min-h-screen bg-zinc-950 flex flex-col items-center pb-16">
                 <div className="w-full h-1.5 flex">
@@ -157,11 +196,7 @@ export default function ColombiaVsSuizaLanding() {
                     <div className="flex-1 bg-[#CE1126]" />
                 </div>
                 <div className="w-full max-w-md px-4 mt-8 flex flex-col items-center gap-5">
-                    <img
-                        src={logoRetoucherie}
-                        alt="La Retoucherie"
-                        className="h-20 w-20 object-cover rounded-2xl ring-2 ring-[#FCD116]/50 shadow-xl"
-                    />
+                    <img src={logoRetoucherie} alt="La Retoucherie" className="h-20 w-20 object-cover rounded-2xl ring-2 ring-[#FCD116]/50 shadow-xl" />
                     <div className="text-center">
                         <p className="text-[#FCD116] font-black text-xs uppercase tracking-widest mb-1">
                             {resultado.ya_registrado ? '¡Ya tenías tu pronóstico!' : '¡Pronóstico registrado!'}
@@ -173,22 +208,20 @@ export default function ColombiaVsSuizaLanding() {
                     </div>
 
                     <div className="w-full rounded-2xl bg-zinc-900 border border-[#FCD116]/30 p-5">
-                        <p className="text-zinc-500 text-xs text-center mb-3 uppercase tracking-widest">
-                            Tu marcador · {resultado.partido.equipo_local} vs {resultado.partido.equipo_visitante}
-                        </p>
+                        <p className="text-zinc-500 text-xs text-center mb-4 uppercase tracking-widest">Tu marcador</p>
                         <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col items-center flex-1 gap-1.5">
-                                <Bandera equipo={resultado.partido.equipo_local} className="w-12 h-12" size="lg" />
-                                <p className="text-white font-bold text-xs text-center">{resultado.partido.equipo_local}</p>
+                            <div className="flex flex-col items-center flex-1 gap-2">
+                                <BanderaGloss equipo={equipoIzqRes} />
+                                <p className="text-white font-bold text-xs text-center">{equipoIzqRes}</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-white font-black text-4xl tabular-nums">{resultado.pred_local}</span>
+                            <div className="flex items-center gap-2 px-1">
+                                <span className="text-white font-black text-4xl tabular-nums">{predIzqRes}</span>
                                 <span className="text-zinc-500 font-black text-2xl">–</span>
-                                <span className="text-white font-black text-4xl tabular-nums">{resultado.pred_visitante}</span>
+                                <span className="text-white font-black text-4xl tabular-nums">{predDerRes}</span>
                             </div>
-                            <div className="flex flex-col items-center flex-1 gap-1.5">
-                                <Bandera equipo={resultado.partido.equipo_visitante} className="w-12 h-12" size="lg" />
-                                <p className="text-white font-bold text-xs text-center">{resultado.partido.equipo_visitante}</p>
+                            <div className="flex flex-col items-center flex-1 gap-2">
+                                <BanderaGloss equipo={equipoDerRes} />
+                                <p className="text-white font-bold text-xs text-center">{equipoDerRes}</p>
                             </div>
                         </div>
                     </div>
@@ -255,22 +288,24 @@ export default function ColombiaVsSuizaLanding() {
                     </div>
                     <div className="px-4 pt-6 pb-5">
                         <p className="text-zinc-500 text-[10px] text-center uppercase tracking-widest mb-5">
-                            {partido.fase?.replace(/_/g, ' ') || 'Semifinal'} · Mundial 2026
+                            {partido.fase?.replace(/_/g, ' ') || 'Octavos de final'} · Mundial 2026
                         </p>
+
+                        {/* Banderas con efecto 3D */}
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <Bandera equipo={partido.equipo_local} className="w-14 h-14" size="lg" />
+                                <BanderaGloss equipo={equipoIzq} />
                                 <p className="text-white font-extrabold text-sm text-center leading-tight">
-                                    {partido.equipo_local}
+                                    {equipoIzq}
                                 </p>
                             </div>
-                            <div className="flex flex-col items-center gap-1 pt-4">
+                            <div className="flex flex-col items-center gap-1 pt-4 flex-shrink-0">
                                 <span className="text-[#FCD116] font-black text-2xl">VS</span>
                             </div>
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <Bandera equipo={partido.equipo_visitante} className="w-14 h-14" size="lg" />
+                                <BanderaGloss equipo={equipoDer} />
                                 <p className="text-white font-extrabold text-sm text-center leading-tight">
-                                    {partido.equipo_visitante}
+                                    {equipoDer}
                                 </p>
                             </div>
                         </div>
@@ -282,13 +317,19 @@ export default function ColombiaVsSuizaLanding() {
                             </div>
                         ) : (
                             <div className="border-t border-white/5 pt-4">
-                                <p className="text-zinc-400 text-xs text-center mb-3 uppercase tracking-widest">
+                                <p className="text-zinc-400 text-xs text-center mb-1 uppercase tracking-widest">
                                     ¿Cuál crees que será el marcador?
                                 </p>
+                                {/* Etiquetas de equipo sobre los inputs */}
+                                <div className="flex items-center gap-3 mb-1">
+                                    <p className="flex-1 text-center text-[#FCD116] text-[10px] font-bold uppercase tracking-wide">{equipoIzq}</p>
+                                    <div className="w-6 flex-shrink-0" />
+                                    <p className="flex-1 text-center text-zinc-400 text-[10px] font-bold uppercase tracking-wide">{equipoDer}</p>
+                                </div>
                                 <div className="flex items-center gap-3">
-                                    <GolInput value={localGol} onChange={setLocalGol} />
+                                    <GolInput value={golIzq} onChange={setGolIzq} />
                                     <span className="text-zinc-500 font-black text-3xl flex-shrink-0">:</span>
-                                    <GolInput value={visitanteGol} onChange={setVisitanteGol} />
+                                    <GolInput value={golDer} onChange={setGolDer} />
                                 </div>
                             </div>
                         )}
@@ -353,7 +394,7 @@ export default function ColombiaVsSuizaLanding() {
                             disabled={enviando}
                             className="w-full py-4 rounded-xl font-black text-zinc-950 text-base bg-[#FCD116] shadow-[0_0_24px_rgba(252,209,22,0.35)] hover:bg-yellow-300 active:scale-95 transition-all disabled:opacity-60"
                         >
-                            {enviando ? 'Registrando...' : 'Registrar mi pronóstico'}
+                            {enviando ? 'Registrando...' : 'Registrar mi pronóstico 🇨🇴'}
                         </button>
 
                         <p className="text-zinc-400 text-xs leading-relaxed text-center">
