@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { obtenerPartidos } from '../api';
+import { useEffect, useRef, useState } from 'react';
+import { obtenerPartidos, solicitarCodigoTelefono, verificarCodigoTelefono, solicitarCodigoCorreo, verificarCodigoCorreo } from '../api';
 import Bandera from '../components/Bandera';
 import CompartirPronostico from '../components/CompartirPronostico';
 import logoRetoucherie from '../assets/LOGO_RDM.jpeg';
@@ -53,6 +53,176 @@ function GolInput({ value, onChange }) {
             }}
             className="w-full mt-1 rounded-xl bg-zinc-800 border border-white/10 text-white font-black text-3xl text-center py-3 focus:outline-none focus:ring-2 focus:ring-[#FCD116] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
+    );
+}
+
+function OtpAcceso({ celular, tokenAcceso }) {
+    const [paso, setPaso] = useState('iniciando'); // iniciando|codigo_sms|correo_input|codigo_correo|autenticado|saltado
+    const [codigo, setCodigo] = useState('');
+    const [correo, setCorreo] = useState('');
+    const [error, setError] = useState('');
+    const [enviando, setEnviando] = useState(false);
+    const [segundos, setSegundos] = useState(0);
+    const [finalToken, setFinalToken] = useState(tokenAcceso);
+    const iniciado = useRef(false);
+
+    useEffect(() => {
+        if (iniciado.current) return;
+        iniciado.current = true;
+        const cel = celular.replace(/[^0-9]/g, '');
+        if (!cel) { setPaso('correo_input'); return; }
+        solicitarCodigoTelefono(cel)
+            .then(data => { if (data?.success) { setPaso('codigo_sms'); setSegundos(60); } else setPaso('correo_input'); })
+            .catch(() => setPaso('correo_input'));
+    }, []);
+
+    useEffect(() => {
+        if (segundos <= 0) return;
+        const t = setTimeout(() => setSegundos(s => s - 1), 1000);
+        return () => clearTimeout(t);
+    }, [segundos]);
+
+    async function verificarSms(e) {
+        e.preventDefault();
+        if (codigo.length !== 6) return setError('El código tiene 6 dígitos.');
+        setError(''); setEnviando(true);
+        try {
+            const data = await verificarCodigoTelefono({ celular: celular.replace(/[^0-9]/g, ''), codigo });
+            if (data?.success) {
+                const tok = data.token_acceso || tokenAcceso;
+                if (tok) localStorage.setItem('polla_token_acceso', tok);
+                setFinalToken(tok); setPaso('autenticado');
+            } else setError(data?.error || 'Código incorrecto o vencido.');
+        } catch { setError('Error de conexión.'); }
+        finally { setEnviando(false); }
+    }
+
+    async function enviarCorreo(e) {
+        e.preventDefault();
+        const c = correo.trim().toLowerCase();
+        if (!c.includes('@')) return setError('Correo inválido.');
+        setError(''); setEnviando(true);
+        try {
+            const data = await solicitarCodigoCorreo(c);
+            if (data?.success) { setPaso('codigo_correo'); setSegundos(60); }
+            else setError(data?.error || 'No se pudo enviar el código.');
+        } catch { setError('Error de conexión.'); }
+        finally { setEnviando(false); }
+    }
+
+    async function verificarCorreo(e) {
+        e.preventDefault();
+        if (codigo.length !== 6) return setError('El código tiene 6 dígitos.');
+        setError(''); setEnviando(true);
+        try {
+            const data = await verificarCodigoCorreo({ correo: correo.trim().toLowerCase(), codigo });
+            if (data?.success) {
+                const tok = data.token_acceso || tokenAcceso;
+                if (tok) localStorage.setItem('polla_token_acceso', tok);
+                setFinalToken(tok); setPaso('autenticado');
+            } else setError(data?.error || 'Código incorrecto o vencido.');
+        } catch { setError('Error de conexión.'); }
+        finally { setEnviando(false); }
+    }
+
+    const celMask = '•••• ' + celular.replace(/[^0-9]/g, '').slice(-4);
+
+    return (
+        <div className="w-full rounded-2xl bg-gradient-to-br from-[#FCD116]/10 to-[#FCD116]/5 border border-[#FCD116]/30 p-5">
+            <p className="text-[#FCD116] font-black text-sm mb-1 text-center">¿Quieres ganar parte del Premio?</p>
+            <p className="text-zinc-400 text-xs mb-4 text-center">
+                Con tus pronósticos ya estás en juego simbólicamente, pero para participar
+                por los <strong className="text-white">$5.000.000 en premios</strong> necesitas comprar tu bono.
+            </p>
+
+            {paso === 'iniciando' && (
+                <div className="flex flex-col items-center gap-2 py-3">
+                    <div className="w-6 h-6 border-2 border-[#FCD116] border-t-transparent rounded-full animate-spin" />
+                    <p className="text-zinc-400 text-xs">Enviando código de acceso al {celMask}...</p>
+                </div>
+            )}
+
+            {paso === 'codigo_sms' && (
+                <form onSubmit={verificarSms} className="flex flex-col gap-3">
+                    <p className="text-white text-xs text-center">
+                        Código enviado por SMS al <span className="font-bold text-[#FCD116]">{celMask}</span>
+                    </p>
+                    <input
+                        type="text" inputMode="numeric" autoComplete="one-time-code"
+                        placeholder="000000"
+                        value={codigo} onChange={e => setCodigo(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                        className="w-full rounded-xl bg-zinc-800 border border-white/10 text-white font-black text-2xl text-center py-3 tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                    />
+                    {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+                    <button type="submit" disabled={enviando || codigo.length !== 6}
+                        className="w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] disabled:opacity-50 active:scale-95 transition-all">
+                        {enviando ? 'Verificando...' : 'Entrar a mi perfil →'}
+                    </button>
+                    <div className="flex justify-between text-xs text-zinc-500">
+                        <button type="button" onClick={() => { setError(''); setPaso('correo_input'); }} className="underline">No me llegó el SMS</button>
+                        {segundos > 0 ? <span>Reenviar en {segundos}s</span>
+                            : <button type="button" onClick={async () => { const d = await solicitarCodigoTelefono(celular.replace(/[^0-9]/g, '')); if (d?.success) setSegundos(60); }} className="underline">Reenviar</button>}
+                    </div>
+                </form>
+            )}
+
+            {paso === 'correo_input' && (
+                <form onSubmit={enviarCorreo} className="flex flex-col gap-3">
+                    <p className="text-white text-xs text-center">Ingresa tu correo para recibir el código de acceso</p>
+                    <input
+                        type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com"
+                        value={correo} onChange={e => setCorreo(e.target.value)}
+                        className="w-full rounded-xl bg-zinc-800 border border-white/10 text-white text-sm text-center py-3 px-4 focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                    />
+                    {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+                    <button type="submit" disabled={enviando || !correo.includes('@')}
+                        className="w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] disabled:opacity-50 active:scale-95 transition-all">
+                        {enviando ? 'Enviando...' : 'Enviar código por correo'}
+                    </button>
+                    <button type="button" onClick={() => { setFinalToken(tokenAcceso); setPaso('saltado'); }} className="text-xs text-zinc-500 underline text-center">
+                        Entrar con mi link directo
+                    </button>
+                </form>
+            )}
+
+            {paso === 'codigo_correo' && (
+                <form onSubmit={verificarCorreo} className="flex flex-col gap-3">
+                    <p className="text-white text-xs text-center">
+                        Código enviado a <span className="font-bold text-[#FCD116]">{correo}</span>
+                    </p>
+                    <input
+                        type="text" inputMode="numeric" autoComplete="one-time-code"
+                        placeholder="000000"
+                        value={codigo} onChange={e => setCodigo(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                        className="w-full rounded-xl bg-zinc-800 border border-white/10 text-white font-black text-2xl text-center py-3 tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-[#FCD116]"
+                    />
+                    {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+                    <button type="submit" disabled={enviando || codigo.length !== 6}
+                        className="w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] disabled:opacity-50 active:scale-95 transition-all">
+                        {enviando ? 'Verificando...' : 'Entrar a mi perfil →'}
+                    </button>
+                    <div className="flex justify-between text-xs text-zinc-500">
+                        <button type="button" onClick={() => { setError(''); setCodigo(''); setPaso('correo_input'); }} className="underline">Cambiar correo</button>
+                        {segundos > 0 ? <span>Reenviar en {segundos}s</span>
+                            : <button type="button" onClick={() => { setError(''); setCodigo(''); setPaso('correo_input'); }} className="underline">Reenviar</button>}
+                    </div>
+                    <button type="button" onClick={() => { setFinalToken(tokenAcceso); setPaso('saltado'); }} className="text-xs text-zinc-500 underline text-center">
+                        Entrar con mi link directo
+                    </button>
+                </form>
+            )}
+
+            {(paso === 'autenticado' || paso === 'saltado') && (
+                <div className="flex flex-col gap-2">
+                    {paso === 'autenticado' && <p className="text-green-400 text-xs text-center">✅ ¡Identidad verificada!</p>}
+                    <a href={finalToken ? `/polla?token=${finalToken}` : '/iniciar-sesion'}
+                        className="inline-block w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] shadow-[0_0_20px_rgba(252,209,22,0.3)] active:scale-95 transition-all text-center">
+                        Ver mi perfil y participar
+                    </a>
+                    <p className="text-zinc-600 text-[10px] text-center">Desde $10.000 · Pago seguro con Wompi</p>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -289,20 +459,7 @@ export default function CuartosLanding() {
                         </div>
                     )}
 
-                    <div className="w-full rounded-2xl bg-gradient-to-br from-[#FCD116]/10 to-[#FCD116]/5 border border-[#FCD116]/30 p-5 text-center">
-                        <p className="text-[#FCD116] font-black text-sm mb-1">¿Quieres ganar parte del Premio?</p>
-                        <p className="text-zinc-400 text-xs mb-4">
-                            Con tus pronósticos ya estás en juego simbólicamente, pero para participar
-                            por los <strong className="text-white">$5.000.000 en premios</strong> necesitas comprar tu bono de arreglos de la Retoucherie.
-                        </p>
-                        <a
-                            href={tokenAcceso ? `/polla?token=${tokenAcceso}` : '/iniciar-sesion'}
-                            className="inline-block w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] shadow-[0_0_20px_rgba(252,209,22,0.3)] hover:bg-yellow-300 active:scale-95 transition-all text-center"
-                        >
-                            {tokenAcceso ? 'Ver mi perfil y participar' : 'Crear mi cuenta y participar'}
-                        </a>
-                        <p className="text-zinc-600 text-[10px] mt-2">Desde $10.000 · Pago seguro con Wompi</p>
-                    </div>
+                    <OtpAcceso celular={celular} tokenAcceso={tokenAcceso} />
                 </div>
             </div>
         );
