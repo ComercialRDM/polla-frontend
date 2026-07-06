@@ -70,7 +70,7 @@ function PartidoCard({ partido, localGol, visitanteGol, onLocalGol, onVisitanteG
                 </p>
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex flex-col items-center gap-2 flex-1">
-                        <Bandera equipo={partido.equipo_local} className="w-14 h-14" size="lg" />
+                        <Bandera equipo={partido.equipo_local} className="w-14 h-14" size="lg" gloss />
                         <p className="text-white font-extrabold text-sm text-center leading-tight">
                             {partido.equipo_local}
                         </p>
@@ -79,7 +79,7 @@ function PartidoCard({ partido, localGol, visitanteGol, onLocalGol, onVisitanteG
                         <span className="text-[#FCD116] font-black text-2xl">VS</span>
                     </div>
                     <div className="flex flex-col items-center gap-2 flex-1">
-                        <Bandera equipo={partido.equipo_visitante} className="w-14 h-14" size="lg" />
+                        <Bandera equipo={partido.equipo_visitante} className="w-14 h-14" size="lg" gloss />
                         <p className="text-white font-extrabold text-sm text-center leading-tight">
                             {partido.equipo_visitante}
                         </p>
@@ -117,7 +117,7 @@ function ResultadoCard({ r }) {
             </p>
             <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-col items-center flex-1 gap-1.5">
-                    <Bandera equipo={r.partido.equipo_local} className="w-12 h-12" size="lg" />
+                    <Bandera equipo={r.partido.equipo_local} className="w-12 h-12" size="lg" gloss />
                     <p className="text-white font-bold text-xs text-center">{r.partido.equipo_local}</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ function ResultadoCard({ r }) {
                     <span className="text-white font-black text-4xl tabular-nums">{r.pred_visitante}</span>
                 </div>
                 <div className="flex flex-col items-center flex-1 gap-1.5">
-                    <Bandera equipo={r.partido.equipo_visitante} className="w-12 h-12" size="lg" />
+                    <Bandera equipo={r.partido.equipo_visitante} className="w-12 h-12" size="lg" gloss />
                     <p className="text-white font-bold text-xs text-center">{r.partido.equipo_visitante}</p>
                 </div>
             </div>

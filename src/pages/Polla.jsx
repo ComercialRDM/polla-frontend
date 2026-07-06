@@ -740,12 +740,12 @@ export default function Polla() {
                                 </div>
                                 <div className="flex items-center justify-center gap-3 mb-3">
                                     <div className="flex flex-col items-center gap-1 flex-1">
-                                        <Bandera equipo={p.equipo_local} className="w-10 h-10" />
+                                        <Bandera equipo={p.equipo_local} className="w-10 h-10" gloss />
                                         <span className="text-white font-bold text-xs text-center leading-tight">{p.equipo_local}</span>
                                     </div>
                                     <span className="text-amber-400 font-black text-lg">VS</span>
                                     <div className="flex flex-col items-center gap-1 flex-1">
-                                        <Bandera equipo={p.equipo_visitante} className="w-10 h-10" />
+                                        <Bandera equipo={p.equipo_visitante} className="w-10 h-10" gloss />
                                         <span className="text-white font-bold text-xs text-center leading-tight">{p.equipo_visitante}</span>
                                     </div>
                                 </div>

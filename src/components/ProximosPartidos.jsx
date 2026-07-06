@@ -109,7 +109,7 @@ export default function ProximosPartidos({ limite = 5, titulo = '⚽ Próximos p
 
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                                <Bandera equipo={p.equipo_local} className="w-7 h-7 flex-shrink-0" />
+                                <Bandera equipo={p.equipo_local} className="w-7 h-7 flex-shrink-0" gloss />
                                 <span className="text-zinc-900 dark:text-white font-bold text-xs text-center truncate w-full">{p.equipo_local}</span>
                                 <select
                                     value={m.local}
@@ -127,7 +127,7 @@ export default function ProximosPartidos({ limite = 5, titulo = '⚽ Próximos p
                             <span className="text-zinc-400 dark:text-zinc-500 text-xs font-semibold flex-shrink-0 mt-5">vs</span>
 
                             <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                                <Bandera equipo={p.equipo_visitante} className="w-7 h-7 flex-shrink-0" />
+                                <Bandera equipo={p.equipo_visitante} className="w-7 h-7 flex-shrink-0" gloss />
                                 <span className="text-zinc-900 dark:text-white font-bold text-xs text-center truncate w-full">{p.equipo_visitante}</span>
                                 <select
                                     value={m.visitante}

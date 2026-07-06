@@ -138,7 +138,7 @@ export default function Grupo() {
                     </p>
                     <div className="flex items-center justify-center gap-4 mb-3">
                         <div className="flex flex-col items-center gap-1">
-                            <Bandera equipo={partido.equipo_local} className="w-10 h-10" />
+                            <Bandera equipo={partido.equipo_local} className="w-10 h-10" gloss />
                             <span className="text-white font-bold text-xs text-center">{partido.equipo_local}</span>
                         </div>
                         <div className="flex flex-col items-center">
@@ -154,7 +154,7 @@ export default function Grupo() {
                             )}
                         </div>
                         <div className="flex flex-col items-center gap-1">
-                            <Bandera equipo={partido.equipo_visitante} className="w-10 h-10" />
+                            <Bandera equipo={partido.equipo_visitante} className="w-10 h-10" gloss />
                             <span className="text-white font-bold text-xs text-center">{partido.equipo_visitante}</span>
                         </div>
                     </div>

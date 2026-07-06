@@ -26,29 +26,6 @@ function formatHora(iso) {
     });
 }
 
-// Bandera circular con efecto 3D brillante
-function BanderaGloss({ equipo, size = 'lg' }) {
-    return (
-        <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0"
-            style={{
-                boxShadow: '0 8px 24px rgba(0,0,0,0.55), 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.35)',
-            }}
-        >
-            <Bandera equipo={equipo} className="w-full h-full" size={size} />
-            {/* Destello superior */}
-            <div className="absolute inset-0 rounded-full pointer-events-none"
-                style={{
-                    background: 'linear-gradient(160deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 35%, transparent 60%)',
-                }}
-            />
-            {/* Sombra inferior para profundidad */}
-            <div className="absolute bottom-0 left-0 right-0 h-2/5 rounded-b-full pointer-events-none"
-                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.28), transparent)' }}
-            />
-        </div>
-    );
-}
-
 function GolInput({ value, onChange }) {
     return (
         <input
@@ -211,7 +188,7 @@ export default function ColombiaVsSuizaLanding() {
                         <p className="text-zinc-500 text-xs text-center mb-4 uppercase tracking-widest">Tu marcador</p>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col items-center flex-1 gap-2">
-                                <BanderaGloss equipo={equipoIzqRes} />
+                                <Bandera equipo={equipoIzqRes} className="w-12 h-12" size="lg" gloss />
                                 <p className="text-white font-bold text-xs text-center">{equipoIzqRes}</p>
                             </div>
                             <div className="flex items-center gap-2 px-1">
@@ -220,7 +197,7 @@ export default function ColombiaVsSuizaLanding() {
                                 <span className="text-white font-black text-4xl tabular-nums">{predDerRes}</span>
                             </div>
                             <div className="flex flex-col items-center flex-1 gap-2">
-                                <BanderaGloss equipo={equipoDerRes} />
+                                <Bandera equipo={equipoDerRes} className="w-12 h-12" size="lg" gloss />
                                 <p className="text-white font-bold text-xs text-center">{equipoDerRes}</p>
                             </div>
                         </div>
@@ -294,7 +271,7 @@ export default function ColombiaVsSuizaLanding() {
                         {/* Banderas con efecto 3D */}
                         <div className="flex items-start justify-between gap-3 mb-5">
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <BanderaGloss equipo={equipoIzq} />
+                                <Bandera equipo={equipoIzq} className="w-16 h-16" size="lg" gloss />
                                 <p className="text-white font-extrabold text-sm text-center leading-tight">
                                     {equipoIzq}
                                 </p>
@@ -303,7 +280,7 @@ export default function ColombiaVsSuizaLanding() {
                                 <span className="text-[#FCD116] font-black text-2xl">VS</span>
                             </div>
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <BanderaGloss equipo={equipoDer} />
+                                <Bandera equipo={equipoDer} className="w-16 h-16" size="lg" gloss />
                                 <p className="text-white font-extrabold text-sm text-center leading-tight">
                                     {equipoDer}
                                 </p>
