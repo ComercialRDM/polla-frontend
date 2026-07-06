@@ -43,6 +43,12 @@ function cuentaReminderDismissed() {
     return ts && Date.now() - Number(ts) < CUENTA_REMINDER_DIAS * 24 * 60 * 60 * 1000;
 }
 
+const COMPRA_BANNER_KEY = 'polla_compra_banner_at';
+function compraBannerDismissed() {
+    const ts = localStorage.getItem(COMPRA_BANNER_KEY);
+    return ts && Date.now() - Number(ts) < 24 * 60 * 60 * 1000;
+}
+
 function calcularRestante(fechaInicio) {
     const ahora = new Date();
     const inicio = new Date(fechaInicio);
@@ -124,6 +130,7 @@ export default function Polla() {
     const [encolados, setEncolados] = useState({});
     const [mostrarFotoReminder, setMostrarFotoReminder] = useState(false);
     const [mostrarCuentaBanner, setMostrarCuentaBanner] = useState(false);
+    const [mostrarBannerCompra, setMostrarBannerCompra] = useState(false);
     const [subiendoFoto, setSubiendoFoto] = useState(false);
     const [fotoSubidaOk, setFotoSubidaOk] = useState(false);
     const [errorFoto, setErrorFoto] = useState('');
@@ -214,6 +221,12 @@ export default function Polla() {
     useEffect(() => {
         if (!info || info.tiene_cuenta || cuentaReminderDismissed() || modalSesionYaMostrado()) return;
         const timer = setTimeout(() => { marcarModalMostrado(); setMostrarCuentaBanner(true); }, 10000);
+        return () => clearTimeout(timer);
+    }, [info]);
+
+    useEffect(() => {
+        if (!info || info.cupos_disponibles > 0 || compraBannerDismissed()) return;
+        const timer = setTimeout(() => setMostrarBannerCompra(true), 10000);
         return () => clearTimeout(timer);
     }, [info]);
 
@@ -1094,6 +1107,34 @@ export default function Polla() {
                             </label>
                         )}
                         {errorFoto && <p className="text-xs text-red-500 mt-2">{errorFoto}</p>}
+                    </div>
+                </div>
+            )}
+
+            {/* Banner flotante "compra tu bono" — aparece 10 s después si cupos = 0 */}
+            {mostrarBannerCompra && !mostrarDemoBanner && (
+                <div className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-gradient-to-t from-zinc-950 to-transparent">
+                    <div className="max-w-md mx-auto rounded-2xl bg-zinc-900 border border-[#FCD116]/40 p-4 shadow-2xl">
+                        <div className="flex items-start gap-2 mb-3">
+                            <div className="flex-1">
+                                <p className="text-[#FCD116] font-black text-sm">¿Quieres ganar parte del Premio?</p>
+                                <p className="text-zinc-400 text-xs mt-1 leading-relaxed">
+                                    Con tus pronósticos ya estás en juego simbólicamente, pero para participar por los{' '}
+                                    <strong className="text-white">$5.000.000 en premios</strong> necesitas comprar tu bono de arreglos de la Retoucherie.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => { localStorage.setItem(COMPRA_BANNER_KEY, String(Date.now())); setMostrarBannerCompra(false); }}
+                                className="text-zinc-500 hover:text-zinc-300 text-xl leading-none shrink-0 mt-0.5"
+                                aria-label="Cerrar"
+                            >×</button>
+                        </div>
+                        <Link
+                            to="/comprar"
+                            className="block w-full py-3 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] text-center hover:bg-yellow-300 active:scale-95 transition-all shadow-[0_0_20px_rgba(252,209,22,0.25)]"
+                        >
+                            Comprar mi bono y participar por los premios
+                        </Link>
                     </div>
                 </div>
             )}

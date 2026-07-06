@@ -288,16 +288,16 @@ export default function CuartosLanding() {
                     )}
 
                     <div className="w-full rounded-2xl bg-gradient-to-br from-[#FCD116]/10 to-[#FCD116]/5 border border-[#FCD116]/30 p-5 text-center">
-                        <p className="text-[#FCD116] font-black text-sm mb-1">¿Quieres ganar parte del pozo?</p>
+                        <p className="text-[#FCD116] font-black text-sm mb-1">¿Quieres ganar parte del Premio?</p>
                         <p className="text-zinc-400 text-xs mb-4">
                             Con tus pronósticos ya estás en juego simbólicamente, pero para participar
-                            por los <strong className="text-white">$5.000.000 en premios</strong> necesitas comprar tu bono.
+                            por los <strong className="text-white">$5.000.000 en premios</strong> necesitas comprar tu bono de arreglos de la Retoucherie.
                         </p>
                         <a
-                            href="/comprar"
+                            href="/iniciar-sesion"
                             className="inline-block w-full py-3.5 rounded-xl font-black text-zinc-950 text-sm bg-[#FCD116] shadow-[0_0_20px_rgba(252,209,22,0.3)] hover:bg-yellow-300 active:scale-95 transition-all text-center"
                         >
-                            Comprar mi bono y participar por los premios
+                            Crear mi cuenta y participar por los premios
                         </a>
                         <p className="text-zinc-600 text-[10px] mt-2">Desde $10.000 · Pago seguro con Wompi</p>
                     </div>
