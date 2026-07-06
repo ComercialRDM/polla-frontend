@@ -9,21 +9,23 @@ function formatCOP(valor) {
     return `$${Number(valor).toLocaleString('es-CO')}`;
 }
 
-// Laurel wreath using rotation-placed leaf paths around the medal circle
+// Laurel wreath — two branches (left + right), clear gap at top
 function WreathRing({ color }) {
-    // Leaf pointing upward in local coords (from y=26 to y=10 in a 100x100 viewBox centered at 50,50)
-    const leaf = 'M50,26 Q54.5,18 50,10 Q45.5,18 50,26 Z';
-    // Left branch: rotate angles to fan leaves from lower-left to top
-    const left  = [195, 218, 240, 262, 284, 308];
-    // Right branch: mirror
-    const right = [165, 142, 120,  98,  76,  52];
+    // Long narrow leaf pointing up: tip at radius 46, base at radius 26
+    const leaf = 'M50,24 Q57,13 50,4 Q43,13 50,24 Z';
+    // Inner highlight to give each leaf a subtle 3D look
+    const shine = 'M50,21 Q53,13 50,7 Q47,13 50,21 Z';
+    // 5 leaves per branch, gap of ~160° at top
+    const left  = [213, 238, 261, 284, 311];
+    const right = [147, 122,  99,  76,  49];
+    const all   = [...left, ...right];
     return (
         <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none">
-            {left.map((a, i) => (
-                <path key={`L${i}`} d={leaf} fill={color} transform={`rotate(${a},50,50)`} opacity="0.92"/>
-            ))}
-            {right.map((a, i) => (
-                <path key={`R${i}`} d={leaf} fill={color} transform={`rotate(${a},50,50)`} opacity="0.92"/>
+            {all.map((a, i) => (
+                <g key={i} transform={`rotate(${a},50,50)`}>
+                    <path d={leaf} fill={color} opacity="0.9"/>
+                    <path d={shine} fill="rgba(255,255,255,0.35)" opacity="0.7"/>
+                </g>
             ))}
         </svg>
     );

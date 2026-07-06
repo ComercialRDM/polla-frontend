@@ -713,7 +713,6 @@ export default function Polla() {
                     const esLider = posicion === 1 || ptsFaltan === null;
                     const ptsObj = puntos + (ptsFaltan || 0);
                     const progreso = ptsObj > 0 ? Math.min(100, Math.round((puntos / ptsObj) * 100)) : 100;
-                    const medalla = posicion === 1 ? '🥇' : posicion === 2 ? '🥈' : posicion === 3 ? '🥉' : '🏅';
                     return (
                         <div className="rounded-2xl bg-zinc-900 border border-[#FCD116]/30 overflow-hidden mb-4">
 
