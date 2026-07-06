@@ -331,7 +331,7 @@ export default function CuartosLanding() {
                 </div>
 
                 <div className="text-center">
-                    <h1 className="text-white font-extrabold text-xl">Cuartos de final · 6 de julio</h1>
+                    <h1 className="text-white font-extrabold text-xl">Octavos de final · 6 de julio</h1>
                     <p className="text-zinc-400 text-sm mt-1">Predice los marcadores y gana</p>
                 </div>
 
