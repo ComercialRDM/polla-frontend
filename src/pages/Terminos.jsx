@@ -347,7 +347,7 @@ export default function Terminos() {
                     <P>
                         <strong>13.2 Naturaleza del Bono Especial.</strong> El Bono Especial otorga cupos de pronóstico y
                         un crédito real en servicios de La Retoucherie de Manuela, pero el Creador de Contenido queda
-                        excluido de la tabla de premios en efectivo y del Bono Colombia: solo compite dentro de un
+                        excluido de la tabla de premios (Gift Cards) y del Bono Colombia: solo compite dentro de un
                         ranking independiente, exclusivo entre Creadores de Contenido.
                     </P>
                     <P>
