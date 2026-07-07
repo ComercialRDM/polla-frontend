@@ -2,16 +2,19 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import logoRetoucherie from '../../assets/LOGO_RDM.jpeg';
+import { PREMIOS_PRINCIPALES } from '../../data/comoFuncionaData';
+import { formatoPesos } from '../../config/planes';
+import CTAComprarBono from './CTAComprarBono';
 
 export default function HeroComoFunciona() {
     const ref = useRef(null);
     const reduce = useReducedMotion();
     const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
 
-    // Parallax muy ligero: el contenido se desplaza un poco más lento que el scroll
-    // y se desvanece justo antes de salir de pantalla.
     const y = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -60]);
     const opacity = useTransform(scrollYProgress, [0, 0.85, 1], [1, 1, 0]);
+
+    const premioMax = PREMIOS_PRINCIPALES[0].montoMax;
 
     return (
         <section
@@ -50,13 +53,24 @@ export default function HeroComoFunciona() {
                     className="h-[73px] w-auto rounded-lg mb-10"
                 />
 
+                <motion.span
+                    initial={{ opacity: 0, y: reduce ? 0 : 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-black uppercase tracking-wide bg-[#CE1126] text-white mb-6"
+                >
+                    🏆 Hasta {formatoPesos(premioMax)} en premios
+                </motion.span>
+
                 <motion.h1
                     initial={{ opacity: 0, y: reduce ? 0 : 24 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className="font-display text-5xl sm:text-7xl lg:text-8xl leading-[0.95] tracking-wide text-zinc-950 dark:text-white max-w-4xl"
                 >
-                    ¿Cómo funciona la <span className="text-[#CE1126]">Polla Mundialista</span>?
+                    Compra tu bono y gana hasta{' '}
+                    <span className="text-[#CE1126]">{formatoPesos(premioMax)}</span>{' '}
+                    en el Mundial 2026
                 </motion.h1>
 
                 <motion.p
@@ -65,20 +79,17 @@ export default function HeroComoFunciona() {
                     transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     className="mt-6 text-lg sm:text-xl text-zinc-500 dark:text-zinc-400 max-w-xl"
                 >
-                    Todo lo que necesitas saber para participar y ganar.
+                    Tu bono ya es tuyo, ganes o no la Polla. Saldo real para arreglos de ropa en La Retoucherie de Manuela.
                 </motion.p>
 
-                <motion.a
-                    href="#premios"
+                <motion.div
                     initial={{ opacity: 0, y: reduce ? 0 : 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.96 }}
-                    className="mt-10 inline-flex items-center justify-center rounded-full bg-zinc-950 dark:bg-[#FCD116] text-white dark:text-zinc-950 font-bold text-base px-9 py-4 shadow-lg shadow-zinc-950/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCD116]"
+                    className="mt-10"
                 >
-                    Comenzar
-                </motion.a>
+                    <CTAComprarBono microcopy="Sin costo adicional. Tu bono siempre es tuyo." />
+                </motion.div>
             </motion.div>
 
             <a
