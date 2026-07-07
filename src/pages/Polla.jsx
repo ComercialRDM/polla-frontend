@@ -667,6 +667,9 @@ export default function Polla() {
                                 {info.es_especial && (
                                     <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-[#FCD116] text-zinc-950">Bono especial</span>
                                 )}
+                                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-900/40 text-emerald-400">
+                                    💳 {formatoPesos(info.dinero_disponible ?? 0)} saldo
+                                </span>
                             </div>
                             {info.foto_estado === 'pendiente' && !subiendoFoto && <p className="text-amber-400 text-xs mt-1">📷 Foto en revisión</p>}
                             {info.foto_estado === 'rechazada' && !subiendoFoto && <p className="text-red-400 text-xs mt-1">❌ Foto rechazada. Toca para subir otra.</p>}
