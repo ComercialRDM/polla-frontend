@@ -87,16 +87,18 @@ export default function PremiosSection() {
                         <p className="text-zinc-400 print:text-zinc-600 text-sm mt-2 mb-5">{PREMIOS_FLASH.descripcion}</p>
                         <div className="grid grid-cols-4 gap-2">
                             {PREMIOS_FLASH_IMAGENES.map((p) => (
-                                <img
-                                    key={p.titulo}
-                                    src={p.imagen}
-                                    alt={p.titulo}
-                                    loading="lazy"
-                                    decoding="async"
-                                    width={120}
-                                    height={64}
-                                    className="w-full h-16 object-cover rounded-xl bg-white/10 transition-transform hover:scale-105"
-                                />
+                                <div key={p.titulo} className="w-full h-16 rounded-xl overflow-hidden bg-zinc-700 animate-pulse">
+                                    <img
+                                        src={p.imagen}
+                                        alt={p.titulo}
+                                        loading="lazy"
+                                        decoding="async"
+                                        width={120}
+                                        height={64}
+                                        onLoad={(e) => e.currentTarget.parentElement.classList.remove('animate-pulse', 'bg-zinc-700')}
+                                        className="w-full h-full object-cover transition-transform hover:scale-105"
+                                    />
+                                </div>
                             ))}
                         </div>
                     </motion.div>

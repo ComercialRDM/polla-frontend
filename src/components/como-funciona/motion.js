@@ -20,4 +20,4 @@ export function useStaggerContainer(staggerDelay = 0.1) {
     };
 }
 
-export const VIEWPORT_ONCE = { once: true, amount: 0.25 };
+export const VIEWPORT_ONCE = { once: true, amount: 0.1, margin: '0px 0px 200px 0px' };
