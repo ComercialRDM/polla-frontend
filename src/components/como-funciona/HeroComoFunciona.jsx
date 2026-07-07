@@ -5,6 +5,7 @@ import logoRetoucherie from '../../assets/LOGO_RDM.jpeg';
 import { PREMIOS_PRINCIPALES } from '../../data/comoFuncionaData';
 import { formatoPesos } from '../../config/planes';
 import CTAComprarBono from './CTAComprarBono';
+import CountdownLanding from './CountdownLanding';
 
 export default function HeroComoFunciona() {
     const ref = useRef(null);
@@ -90,6 +91,8 @@ export default function HeroComoFunciona() {
                 >
                     <CTAComprarBono microcopy="Sin costo adicional. Tu bono siempre es tuyo." />
                 </motion.div>
+
+                <CountdownLanding />
             </motion.div>
 
             <a

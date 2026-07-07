@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PLANES, formatoPesos, MONTO_PERSONALIZADO_MIN, MONTO_PERSONALIZADO_MAX } from '../../config/planes';
 import { useFadeUp, useStaggerContainer, VIEWPORT_ONCE } from './motion';
+import CountdownLanding from './CountdownLanding';
 
 export default function BonosSection() {
     const fadeUp = useFadeUp();
@@ -34,6 +35,8 @@ export default function BonosSection() {
                     de ropa en La Retoucherie de Manuela. Cómpralo, úsalo cuando quieras. Bonos válidos
                     hasta el 1 de marzo de 2027. Y de regalo participas en la Polla Mundialista.
                 </motion.p>
+
+                <CountdownLanding />
 
                 {/* items-end: todas las tarjetas se alinean al fondo, la popular
                     sobresale hacia arriba por su mayor padding interno. */}
