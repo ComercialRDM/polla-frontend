@@ -20,40 +20,47 @@ export default function HeroComoFunciona() {
     return (
         <section
             ref={ref}
-            className="relative w-full min-h-[92vh] flex flex-col items-center justify-center px-6 text-center overflow-hidden bg-white dark:bg-zinc-950 print:min-h-0 print:break-inside-avoid-page"
+            className="relative w-full min-h-[92vh] flex flex-col items-center text-center overflow-hidden bg-white dark:bg-zinc-950 print:min-h-0 print:break-inside-avoid-page"
         >
-            <div className="absolute top-0 left-0 right-0 h-1.5 flex">
+            {/* Franja tricolor */}
+            <div className="w-full h-1.5 flex flex-shrink-0">
                 <div className="flex-1 bg-[#FCD116]" />
                 <div className="flex-1 bg-zinc-900 dark:bg-white" />
                 <div className="flex-1 bg-[#CE1126]" />
             </div>
 
-            <div className="absolute top-4 left-4 flex gap-2 print:hidden">
+            {/* Barra de navegación: logo centrado, botones a los lados */}
+            <div className="w-full flex items-center justify-between px-4 py-3 flex-shrink-0 print:hidden">
                 <Link
                     to="/iniciar-sesion"
-                    className="flex items-center justify-center px-4 py-2 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] shadow-sm active:scale-95 transition-transform"
+                    className="flex items-center justify-center px-4 py-2 rounded-xl font-bold text-sm text-zinc-950 bg-[#FCD116] shadow-sm active:scale-95 transition-transform whitespace-nowrap"
                 >
                     Iniciar Sesión
                 </Link>
+
+                <motion.img
+                    initial={{ opacity: 0, scale: reduce ? 1 : 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    src={logoRetoucherie}
+                    alt="La Retoucherie de Manuela"
+                    decoding="async"
+                    className="h-12 w-auto rounded-lg"
+                />
+
                 <Link
                     to="/registro"
-                    className="flex items-center justify-center px-4 py-2 rounded-xl font-bold text-sm text-white bg-zinc-900 dark:bg-zinc-800 shadow-sm active:scale-95 transition-transform"
+                    className="flex items-center justify-center px-4 py-2 rounded-xl font-bold text-sm text-white bg-zinc-900 dark:bg-zinc-800 shadow-sm active:scale-95 transition-transform whitespace-nowrap"
                 >
                     Registrarse
                 </Link>
             </div>
 
-            <motion.div style={{ y, opacity }} className="flex flex-col items-center pt-20 sm:pt-16">
-                <motion.img
-                    initial={{ opacity: 0, y: reduce ? 0 : 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    src={logoRetoucherie}
-                    alt="La Retoucherie de Manuela"
-                    decoding="async"
-                    className="h-[73px] w-auto rounded-lg mb-10"
-                />
-
+            {/* Contenido principal con parallax — ocupa el espacio restante */}
+            <motion.div
+                style={{ y, opacity }}
+                className="flex flex-col items-center justify-center flex-1 px-6 py-8 w-full"
+            >
                 <motion.span
                     initial={{ opacity: 0, y: reduce ? 0 : 12 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -99,7 +106,7 @@ export default function HeroComoFunciona() {
                 href="#participar"
                 aria-hidden="true"
                 tabIndex={-1}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 text-zinc-400 dark:text-zinc-600 text-2xl animate-bounce motion-reduce:animate-none print:hidden"
+                className="mb-8 text-zinc-400 dark:text-zinc-600 text-2xl animate-bounce motion-reduce:animate-none print:hidden flex-shrink-0"
             >
                 ↓
             </a>
