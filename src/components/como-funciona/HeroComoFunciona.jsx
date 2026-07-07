@@ -93,7 +93,7 @@ export default function HeroComoFunciona() {
             </motion.div>
 
             <a
-                href="#premios"
+                href="#participar"
                 aria-hidden="true"
                 tabIndex={-1}
                 className="absolute bottom-8 left-1/2 -translate-x-1/2 text-zinc-400 dark:text-zinc-600 text-2xl animate-bounce motion-reduce:animate-none print:hidden"
