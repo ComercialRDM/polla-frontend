@@ -660,7 +660,7 @@ export default function Polla() {
                             <h1 className="text-2xl font-extrabold text-white leading-tight">¡Hola, {info.nombre}!</h1>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 {info.es_influencer ? (
-                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-900/50 text-purple-300">🎖️ Creador de contenido</span>
+                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-purple-900/50 text-purple-300">🎖️ Creador</span>
                                 ) : (
                                     <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide bg-blue-900/30 text-blue-300">👤 Cliente</span>
                                 )}
