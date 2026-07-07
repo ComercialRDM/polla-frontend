@@ -43,7 +43,7 @@ export default function HeroComoFunciona() {
                 </Link>
             </div>
 
-            <motion.div style={{ y, opacity }} className="flex flex-col items-center">
+            <motion.div style={{ y, opacity }} className="flex flex-col items-center pt-20 sm:pt-16">
                 <motion.img
                     initial={{ opacity: 0, y: reduce ? 0 : 16 }}
                     animate={{ opacity: 1, y: 0 }}
