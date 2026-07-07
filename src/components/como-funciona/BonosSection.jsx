@@ -98,7 +98,7 @@ export default function BonosSection() {
 
                                 <span className="mt-auto w-full flex items-center justify-between gap-2">
                                     <span className={`font-semibold text-zinc-600 dark:text-zinc-300 ${esFavorito ? 'text-sm' : 'text-xs'}`}>
-                                        Comprar este bono
+                                        Comprar bono de {formatoPesos(plan.valor)}
                                     </span>
                                     <span className={`shrink-0 inline-flex items-center gap-1 rounded-xl bg-[#FCD116] text-zinc-950 font-black shadow-md shadow-amber-400/20
                                         ${esFavorito ? 'px-5 py-2.5 text-sm' : 'px-3 py-1.5 text-xs'}`}>
@@ -126,7 +126,7 @@ export default function BonosSection() {
                                 Recibe <strong className="text-white print:text-zinc-950">160%</strong> en servicios y 1 cupo por cada $10.000
                             </p>
                             <span className="mt-auto pt-6 text-sm font-bold text-[#FCD116] print:text-zinc-950">
-                                Elegir mi monto →
+                                Elegir mi bono personalizado →
                             </span>
                         </Link>
                     </motion.div>
