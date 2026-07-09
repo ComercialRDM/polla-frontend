@@ -16,26 +16,33 @@ export default function EscanerQR({ onResultado, onError }) {
     useEffect(() => {
         if (modo !== 'camara') return;
 
-        const html5Qrcode = new Html5Qrcode(ELEMENTO_ID);
-        escanerRef.current = html5Qrcode;
+        let html5Qrcode;
         let detenido = false;
 
-        html5Qrcode.start(
-            { facingMode: 'environment' },
-            { fps: 10, qrbox: 220 },
-            (decodedText) => {
-                if (detenido) return;
-                detenido = true;
-                html5Qrcode.stop().catch(() => {});
-                onResultado(decodedText);
-            },
-            () => {}
-        ).catch((err) => {
-            onError?.(err?.message || 'No se pudo acceder a la cámara.');
-        });
+        try {
+            html5Qrcode = new Html5Qrcode(ELEMENTO_ID);
+            escanerRef.current = html5Qrcode;
+
+            html5Qrcode.start(
+                { facingMode: 'environment' },
+                { fps: 10, qrbox: 220 },
+                (decodedText) => {
+                    if (detenido) return;
+                    detenido = true;
+                    html5Qrcode.stop().catch(() => {});
+                    onResultado(decodedText);
+                },
+                () => {}
+            ).catch((err) => {
+                onError?.(err?.message || 'No se pudo acceder a la cámara. Usa "Subir foto".');
+            });
+        } catch (err) {
+            onError?.(err?.message || 'No se pudo iniciar el escáner. Usa "Subir foto".');
+        }
 
         return () => {
-            if (!detenido) html5Qrcode.stop().catch(() => {});
+            detenido = true;
+            if (html5Qrcode) html5Qrcode.stop().catch(() => {});
         };
     }, [modo, onResultado, onError]);
 

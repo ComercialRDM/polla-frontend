@@ -441,11 +441,11 @@ export default function AdminQR() {
         }
     }, [sesionLocal]);
 
-    function handleEscaneoQR(texto) {
+    const handleEscaneoQR = useCallback((texto) => {
         const tok = extraerToken(texto);
         setMostrarScanner(false);
         cargarBono(tok);
-    }
+    }, [cargarBono]);
 
     function handleRedimir(resultado) {
         // Actualizar el saldo en la tarjeta localmente
