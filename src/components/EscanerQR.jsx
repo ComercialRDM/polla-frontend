@@ -3,21 +3,29 @@ import { Html5Qrcode } from 'html5-qrcode';
 
 const ELEMENTO_ID = 'escaner-qr-bono';
 
-// iOS Safari rechaza getUserMedia cuando no viene de un gesto explícito del
-// usuario (el useEffect se ejecuta automáticamente → iOS lo bloquea).
-// Solución: en iOS usar capture="environment" que abre la cámara nativa y
-// luego decodificar la foto con scanFile(). En Android/desktop la cámara
-// en vivo de Html5Qrcode funciona sin problemas.
+// iOS Safari ignora .click() en inputs con display:none.
+// En iOS usamos <label htmlFor> + input posicionado fuera de pantalla
+// (no display:none) para abrir la cámara nativa con capture="environment".
 const ES_IOS = typeof navigator !== 'undefined' && (
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 );
 
+const ESTILO_FUERA = {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    overflow: 'hidden',
+    opacity: 0,
+    top: -9999,
+    left: -9999,
+};
+
 export default function EscanerQR({ onResultado, onError }) {
     const [modo, setModo] = useState('camara');
+    const [procesando, setProcesando] = useState(false);
     const escanerRef = useRef(null);
     const inputFileRef = useRef(null);
-    const inputCaptureRef = useRef(null);
 
     useEffect(() => {
         if (modo !== 'camara' || ES_IOS) return;
@@ -55,52 +63,47 @@ export default function EscanerQR({ onResultado, onError }) {
     async function handleArchivo(e) {
         const archivo = e.target.files?.[0];
         if (!archivo) return;
+        setProcesando(true);
         try {
-            const html5Qrcode = new Html5Qrcode(ELEMENTO_ID);
-            const decodedText = await html5Qrcode.scanFile(archivo, false);
+            const scanner = new Html5Qrcode(ELEMENTO_ID);
+            const decodedText = await scanner.scanFile(archivo, false);
             onResultado(decodedText);
         } catch {
             onError?.('No se pudo leer el código QR. Intenta con mejor luz o más cerca.');
         } finally {
             e.target.value = '';
+            setProcesando(false);
         }
     }
 
-    // iOS: cámara nativa vía capture="environment" (getUserMedia no funciona
-    // sin gesto explícito en iOS Safari)
+    // ── iOS: cámara nativa con capture="environment" ──────────────────────────
+    // <label htmlFor> es la única forma confiable de activar un file input en
+    // iOS Safari — .click() sobre display:none es ignorado por el navegador.
     if (ES_IOS) {
         return (
             <div className="flex flex-col gap-4">
-                {/* Elemento oculto requerido por Html5Qrcode.scanFile() */}
-                <div id={ELEMENTO_ID} style={{ width: 1, height: 1, overflow: 'hidden', position: 'absolute', opacity: 0 }} />
+                {/* Elemento fuera de pantalla requerido por Html5Qrcode.scanFile() */}
+                <div id={ELEMENTO_ID} style={{ ...ESTILO_FUERA, width: 300, height: 300 }} />
 
-                {/* Input para cámara nativa */}
+                {/* Input de cámara nativa — posicionado fuera, NO display:none */}
                 <input
-                    ref={inputCaptureRef}
+                    id="escaner-capture-ios"
                     type="file"
                     accept="image/*"
                     capture="environment"
                     onChange={handleArchivo}
-                    className="hidden"
-                />
-                {/* Input para seleccionar foto existente (QR enviado por WhatsApp) */}
-                <input
-                    ref={inputFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleArchivo}
-                    className="hidden"
+                    style={ESTILO_FUERA}
                 />
 
-                <button
-                    type="button"
-                    onClick={() => inputCaptureRef.current?.click()}
-                    className="w-full py-4 rounded-xl font-black text-zinc-950 text-base bg-[#FCD116] shadow-[0_0_20px_rgba(252,209,22,0.3)] active:scale-95 transition-all"
+                <label
+                    htmlFor="escaner-capture-ios"
+                    className="w-full py-4 rounded-xl font-black text-zinc-950 text-base bg-[#FCD116] shadow-[0_0_20px_rgba(252,209,22,0.3)] active:scale-95 transition-all text-center cursor-pointer block"
                 >
-                    📷 Abrir cámara y escanear QR
-                </button>
+                    {procesando ? '⏳ Leyendo QR...' : '📷 Abrir cámara y escanear QR'}
+                </label>
+
                 <p className="text-zinc-500 text-xs text-center leading-relaxed">
-                    Se abrirá la cámara. Apunta al código QR del cliente y toma la foto.
+                    Se abrirá la cámara. Apunta al QR del cliente y toma la foto.
                 </p>
 
                 <div className="flex items-center gap-3">
@@ -109,18 +112,26 @@ export default function EscanerQR({ onResultado, onError }) {
                     <div className="flex-1 h-px bg-white/10" />
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => inputFileRef.current?.click()}
-                    className="w-full py-3 rounded-xl font-bold text-zinc-300 text-sm bg-zinc-800 border border-white/10 active:scale-95 transition-all"
+                {/* Input de galería / foto recibida */}
+                <input
+                    id="escaner-file-ios"
+                    ref={inputFileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleArchivo}
+                    style={ESTILO_FUERA}
+                />
+                <label
+                    htmlFor="escaner-file-ios"
+                    className="w-full py-3 rounded-xl font-bold text-zinc-300 text-sm bg-zinc-800 border border-white/10 active:scale-95 transition-all text-center cursor-pointer block"
                 >
                     🖼️ Seleccionar foto del QR
-                </button>
+                </label>
             </div>
         );
     }
 
-    // Android / desktop: cámara en vivo con Html5Qrcode
+    // ── Android / desktop: cámara en vivo con Html5Qrcode ────────────────────
     return (
         <div className="flex flex-col gap-3">
             <div className="flex gap-2 self-center">
