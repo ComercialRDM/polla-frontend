@@ -1,6 +1,6 @@
 import logo from '../assets/LOGO_RDM.jpeg';
 
-const WHATSAPP_NUMERO = '573103963708';
+const WHATSAPP_NUMERO = '573233833253';
 const MENSAJE = 'Hola, quiero saber del nuevo concurso de La Retoucherie 🙋';
 
 // Página de espera mientras se prepara el nuevo concurso. La Polla Mundialista
