@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const WHATSAPP_NUMERO = '573103963708';
+const WHATSAPP_NUMERO = '573233833253';
 const MENSAJE = 'Hola, necesito ayuda con la Polla Mundialista 🙋';
 
 // Botón flotante de WhatsApp visible en toda la app para soporte a clientes.

@@ -113,7 +113,7 @@ export default function RegistroInfluencer() {
                             </p>
                         </div>
                         <a
-                            href={`https://wa.me/573103963708?text=${encodeURIComponent(`Hola, soy ${nombre.trim()}, acabo de registrarme como creador de contenido en la Polla Mundialista de La Retoucherie 🇨🇴⚽`)}`}
+                            href={`https://wa.me/573233833253?text=${encodeURIComponent(`Hola, soy ${nombre.trim()}, acabo de registrarme como creador de contenido en la Polla Mundialista de La Retoucherie 🇨🇴⚽`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center justify-center gap-2 w-full py-4 rounded-full font-black text-white text-center bg-[#25D366] shadow-lg active:scale-95 transition-transform text-lg"

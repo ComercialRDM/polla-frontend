@@ -1,7 +1,7 @@
 import FAQ from '../components/FAQ';
 import Footer from '../components/Footer';
 
-const WHATSAPP_NUMERO = '573103963708';
+const WHATSAPP_NUMERO = '573233833253';
 const INSTAGRAM_USUARIO = '@retoucherie_col';
 
 const SEDES = [

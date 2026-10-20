@@ -608,7 +608,7 @@ export default function Polla() {
                     </Link>
                     <p className="text-xs text-zinc-400 dark:text-zinc-500">
                         ¿Dudas? Escríbenos a{' '}
-                        <a href="https://wa.me/573103963708" target="_blank" rel="noreferrer" className="text-amber-500 underline">
+                        <a href="https://wa.me/573233833253" target="_blank" rel="noreferrer" className="text-amber-500 underline">
                             WhatsApp
                         </a>
                     </p>

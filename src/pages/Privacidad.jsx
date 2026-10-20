@@ -61,7 +61,7 @@ export default function Privacidad() {
                         rectificar y solicitar la supresión de sus datos, así como a revocar la autorización otorgada
                         para su tratamiento, en los términos del artículo 8 de la Ley 1581 de 2012. Para ejercer
                         estos derechos, el Participante puede escribir a comercial@retoucherie.com.co o al WhatsApp
-                        +57 310 396 3708, solicitud que será atendida dentro de los plazos legalmente establecidos.
+                        +57 323 383 3253, solicitud que será atendida dentro de los plazos legalmente establecidos.
                     </p>
 
                     <h2 className="text-zinc-900 dark:text-white font-bold text-base mt-2">5. Seguridad y vigencia</h2>

@@ -642,7 +642,7 @@ export default function Comprar() {
                         <p className="text-zinc-500 dark:text-zinc-400 text-xs">
                             ¿Necesitas ayuda?{' '}
                             <a
-                                href="https://wa.me/573103963708?text=Hola%2C+tuve+un+problema+al+intentar+pagar+en+la+Polla+Mundialista"
+                                href="https://wa.me/573233833253?text=Hola%2C+tuve+un+problema+al+intentar+pagar+en+la+Polla+Mundialista"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-green-600 dark:text-green-400 underline font-semibold"

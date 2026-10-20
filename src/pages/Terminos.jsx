@@ -28,7 +28,7 @@ export default function Terminos() {
                 <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-2">Versión 2.2 — 1 de julio de 2026</p>
                 <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-6">
                     Operador: <strong className="text-zinc-700 dark:text-zinc-300">RDM MASTER COLOMBIA SAS</strong> · NIT 901.765.354-3<br />
-                    Carrera 51 #95-31, Barranquilla · comercial@retoucherie.com.co · +57 310 396 3708
+                    Carrera 51 #95-31, Barranquilla · comercial@retoucherie.com.co · +57 323 383 3253
                 </p>
 
                 <div className="flex flex-col gap-3">

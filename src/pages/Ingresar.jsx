@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { verificarAcceso } from '../api';
 
-const WHATSAPP_NUMERO = '573103963708';
+const WHATSAPP_NUMERO = '573233833253';
 
 export default function Ingresar() {
     const navigate = useNavigate();
