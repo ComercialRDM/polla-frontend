@@ -45,6 +45,13 @@ import { obtenerSesion } from './utils/sesion';
 import { registrarClicAfiliado } from './api';
 import { captureAttributionFromUrl, getStoredAttribution } from './lib/attribution';
 
+const Proximamente = lazy(() => import('./pages/Proximamente'));
+
+// La Polla Mundialista terminó: mientras se prepara el nuevo concurso, todas
+// las rutas públicas muestran "Próximamente". Admin y legales siguen activos.
+// Poner en false para volver al sitio de la polla.
+const MODO_PROXIMAMENTE = true;
+
 const RUTAS_CON_BOTTOM_NAV = [];
 
 const SPLASH_KEY = 'polla_splash_visto';
@@ -114,6 +121,24 @@ function RutaProtegida({ children }) {
     return children;
 }
 
+function RutasProximamente() {
+    return (
+        <>
+            <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+                <Routes>
+                    <Route path="/dashboardpollardm" element={<Admin />} />
+                    <Route path="/adminqr" element={<AdminQR />} />
+                    <Route path="/terminos" element={<Terminos />} />
+                    <Route path="/privacidad" element={<Privacidad />} />
+                    <Route path="/anexo" element={<Anexo />} />
+                    <Route path="*" element={<Proximamente />} />
+                </Routes>
+            </Suspense>
+            <CookieBanner />
+        </>
+    );
+}
+
 function AppRoutes() {
     const location = useLocation();
     const mostrarBottomNav = RUTAS_CON_BOTTOM_NAV.includes(location.pathname);
@@ -168,6 +193,7 @@ function AppRoutes() {
 
 export default function App() {
     const [mostrarSplash, setMostrarSplash] = useState(() => {
+        if (MODO_PROXIMAMENTE) return false;
         const params = new URLSearchParams(window.location.search);
         const vieneDeAd = params.has('utm_source') || params.has('utm_medium') || params.has('utm_campaign');
         if (vieneDeAd) return false;
@@ -200,10 +226,10 @@ export default function App() {
         <ThemeProvider>
             <ErrorBoundary>
                 <BrowserRouter>
-                    <AppRoutes />
+                    {MODO_PROXIMAMENTE ? <RutasProximamente /> : <AppRoutes />}
                 </BrowserRouter>
                 {backendCaido && <BackendDown />}
-                <NotificacionActividad />
+                {!MODO_PROXIMAMENTE && <NotificacionActividad />}
             </ErrorBoundary>
         </ThemeProvider>
     );
