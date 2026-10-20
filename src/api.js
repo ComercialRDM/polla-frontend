@@ -1021,3 +1021,36 @@ export function registrarMarcaPublica(formData, registroToken) {
 }
 
 export { API_BASE };
+
+// ── Rifa iPhone 18 Pro: revisión de boletas (/revisionboletas) ──────────────
+const rifaHeaders = (token) => ({ Authorization: `Bearer ${token}` });
+
+export function rifaResumen(token) {
+    return request('/api/admin/rifa/resumen', { headers: rifaHeaders(token) });
+}
+
+export function rifaLote(token, n) {
+    return request(`/api/admin/rifa/lotes/${n}`, { headers: rifaHeaders(token) });
+}
+
+export async function rifaImagen(token, numero) {
+    const res = await fetch(`${API_BASE}/api/admin/rifa/boletas/${numero}/imagen`, { headers: rifaHeaders(token) });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    const blob = await res.blob();
+    // Huella calculada en el navegador: se compara con la de la imagen auditada.
+    const hash = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+    const sha256 = [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('');
+    return { url: URL.createObjectURL(blob), sha256 };
+}
+
+export function rifaRevisarLote(token, n, decisiones) {
+    return request(`/api/admin/rifa/lotes/${n}/revision`, {
+        method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ decisiones }),
+    });
+}
+
+export function rifaCambiarCanal(token, numero, canal, motivo) {
+    return request(`/api/admin/rifa/boletas/${numero}/canal`, {
+        method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ canal, motivo }),
+    });
+}

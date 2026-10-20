@@ -46,6 +46,7 @@ import { registrarClicAfiliado } from './api';
 import { captureAttributionFromUrl, getStoredAttribution } from './lib/attribution';
 
 const Proximamente = lazy(() => import('./pages/Proximamente'));
+const RevisionBoletas = lazy(() => import('./pages/RevisionBoletas'));
 
 // La Polla Mundialista terminó: mientras se prepara el nuevo concurso, todas
 // las rutas públicas muestran "Próximamente". Admin y legales siguen activos.
@@ -128,6 +129,7 @@ function RutasProximamente() {
                 <Routes>
                     <Route path="/dashboardpollardm" element={<Admin />} />
                     <Route path="/adminqr" element={<AdminQR />} />
+                    <Route path="/revisionboletas" element={<RevisionBoletas />} />
                     <Route path="/terminos" element={<Terminos />} />
                     <Route path="/privacidad" element={<Privacidad />} />
                     <Route path="/anexo" element={<Anexo />} />
