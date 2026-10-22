@@ -13,6 +13,8 @@ const GRUPOS_NAV = [
         secciones: [
             { id: 'inicio',     label: '🏠 Inicio' },
             { id: 'checklist',  label: '📋 Growth Checklist' },
+            // Acceso directo: la revisión de boletas es una página propia
+            { id: 'rifaboletas', label: '🎟️ Revisión boletas iPhone', href: '/revisionboletas' },
         ],
     },
     {
@@ -1726,7 +1728,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                                     return (
                                                         <button
                                                             key={s.id}
-                                                            onClick={() => setSeccionActiva(s.id)}
+                                                            onClick={() => (s.href ? window.location.assign(s.href) : setSeccionActiva(s.id))}
                                                             className={`px-3 py-2 text-xs font-bold transition-colors whitespace-nowrap ${si > 0 ? 'border-l border-zinc-200 dark:border-white/10' : ''} ${
                                                                 activa
                                                                     ? `bg-amber-400 text-zinc-950`
