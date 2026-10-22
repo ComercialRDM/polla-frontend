@@ -1058,3 +1058,19 @@ export function rifaCambiarCanal(token, numero, canal, motivo) {
 export function rifaPendientes(token) {
     return request('/api/admin/rifa/pendientes', { headers: rifaHeaders(token) });
 }
+
+export function rifaEnvioResumen(token) {
+    return request('/api/admin/rifa/envio/resumen', { headers: rifaHeaders(token) });
+}
+
+export function rifaEnvioConfig(token, flow_ns) {
+    return request('/api/admin/rifa/envio/config', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ flow_ns }) });
+}
+
+export function rifaEnvioPrueba(token) {
+    return request('/api/admin/rifa/envio/prueba', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
+}
+
+export function rifaEnvioLote(token, cantidad) {
+    return request('/api/admin/rifa/envio/lote', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ cantidad }) });
+}

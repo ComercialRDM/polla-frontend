@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -233,6 +233,196 @@ function Pendientes({ token, onVer }) {
     );
 }
 
+const ESTADOS_ENVIO = {
+    enviando: ['⏳ Enviando', 'text-zinc-300'],
+    enviado: ['📤 Enviado (esperando que lo abra)', 'text-sky-300'],
+    entregado: ['📩 Boletas entregadas', 'text-emerald-300'],
+    cancelado: ['🚫 Canceló WhatsApp → otro medio', 'text-amber-300'],
+    fallido: ['✗ Falló', 'text-red-300'],
+};
+
+function Copiable({ etiqueta, valor }) {
+    const [copiado, setCopiado] = useState(false);
+    return (
+        <div className="flex flex-col gap-1">
+            <span className="text-xs text-zinc-400">{etiqueta}</span>
+            <div className="flex gap-2">
+                <code className="flex-1 rounded bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs break-all">{valor}</code>
+                <button type="button" onClick={() => { navigator.clipboard?.writeText(valor); setCopiado(true); setTimeout(() => setCopiado(false), 1500); }}
+                    className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 rounded">{copiado ? '✓' : 'Copiar'}</button>
+            </div>
+        </div>
+    );
+}
+
+// Envío por WhatsApp (ManyChat): configuración, prueba obligatoria a tu número,
+// envío por tandas con control y bitácora con fecha/hora de entrega y confirmación.
+function Envio({ token }) {
+    const [r, setR] = useState(null);
+    const [flowNs, setFlowNs] = useState('');
+    const [ocupado, setOcupado] = useState(false);
+    const [auto, setAuto] = useState(false);
+    const [aviso, setAviso] = useState(null);
+
+    const cargar = useCallback(async () => {
+        const x = await rifaEnvioResumen(token);
+        if (x?.success) setR(x); else setAviso({ tipo: 'error', texto: x?.error || 'No se pudo cargar el envío' });
+        return x;
+    }, [token]);
+
+    useEffect(() => {
+        rifaEnvioResumen(token).then((x) => {
+            if (x?.success) { setR(x); setFlowNs(x.configurado.flow_ns || ''); }
+            else setAviso({ tipo: 'error', texto: x?.error || 'No se pudo cargar el envío' });
+        });
+    }, [token]);
+
+    // Envío continuo por tandas de 10 mientras "auto" esté activo.
+    useEffect(() => {
+        if (!auto) return;
+        let vivo = true;
+        (async () => {
+            while (vivo) {
+                const x = await rifaEnvioLote(token, 10);
+                if (!x?.success) { setAviso({ tipo: 'error', texto: x?.error || 'Error enviando' }); break; }
+                const res = await cargar();
+                if (!x.resultados.length || !res?.clientes_listos) { setAviso({ tipo: 'ok', texto: 'Envío terminado: no quedan clientes listos.' }); break; }
+            }
+            if (vivo) setAuto(false);
+        })();
+        return () => { vivo = false; };
+    }, [auto, token, cargar]);
+
+    if (!r) return <p className="text-zinc-400">{aviso?.texto || 'Cargando…'}</p>;
+
+    const cfg = r.configurado;
+    const pruebas = r.envios.filter((e) => e.es_prueba);
+    const pruebaOk = pruebas.some((e) => e.entregado_en);
+    const reales = r.envios.filter((e) => !e.es_prueba);
+    const conteo = (estado) => r.por_estado.find((e) => e.envio_estado === estado) || { clientes: 0, boletas: 0 };
+
+    async function guardarFlow() {
+        const x = await rifaEnvioConfig(token, flowNs.trim());
+        setAviso(x?.success ? { tipo: 'ok', texto: 'Flow guardado.' } : { tipo: 'error', texto: x?.error || 'No se pudo guardar' });
+        cargar();
+    }
+    async function prueba() {
+        setOcupado(true);
+        const x = await rifaEnvioPrueba(token);
+        setOcupado(false);
+        setAviso(x?.success
+            ? { tipo: 'ok', texto: `Prueba enviada a tu WhatsApp (${x.enviado_a}). Ábrela y toca "Ver mis boletas"; luego responde la pregunta.` }
+            : { tipo: 'error', texto: x?.error || x?.resultado?.detalle || 'La prueba falló' });
+        cargar();
+    }
+    async function tanda() {
+        setOcupado(true);
+        const x = await rifaEnvioLote(token, 10);
+        setOcupado(false);
+        setAviso(x?.success ? { tipo: 'ok', texto: `Tanda enviada: ${x.resultados.filter((y) => y.estado === 'enviado').length} de ${x.resultados.length}.` }
+            : { tipo: 'error', texto: x?.error || 'Error enviando' });
+        cargar();
+    }
+    function exportar() {
+        const filas = [['Cliente', 'Cédula', 'Celular', 'Boletas', 'Estado', 'Detalle', 'Enviado', 'Boletas entregadas', 'Respuesta', 'Respondió']];
+        const f = (d) => (d ? new Date(d).toLocaleString('es-CO') : '');
+        for (const e of reales) {
+            filas.push([e.nombre, e.cedula, e.celular, e.numeros.map((n) => String(n).padStart(3, '0')).join(' '), e.estado, e.detalle,
+                f(e.enviado_en), f(e.entregado_en), e.respuesta === 'ok' ? 'Datos correctos' : e.respuesta === 'error' ? 'Reportó error' : '', f(e.respondido_en)]);
+        }
+        descargarCsv(`rifa_bitacora_envios_${new Date().toISOString().slice(0, 10)}.csv`, filas);
+    }
+
+    const paso = 'rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 flex flex-col gap-3';
+    return (
+        <div className="flex flex-col gap-5">
+            {aviso && <p className={`rounded-xl px-4 py-3 text-sm ${aviso.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{aviso.texto}</p>}
+
+            <section className={paso}>
+                <h3 className="font-bold">1 · Conectar el flow de ManyChat</h3>
+                <p className="text-sm text-zinc-400">Estos datos van en las dos “Solicitudes externas” (External Request) del flow. Ver la guía de configuración.</p>
+                <Copiable etiqueta="URL al tocar “Ver mis boletas” (POST)" valor={`${cfg.backend_url}/api/rifa/webhook/ver`} />
+                <Copiable etiqueta="URL al responder la pregunta (POST)" valor={`${cfg.backend_url}/api/rifa/webhook/confirmar`} />
+                <Copiable etiqueta="Encabezado X-Rifa-Secret (no lo compartas)" valor={cfg.webhook_secret} />
+                <div className="flex gap-2 flex-wrap items-end">
+                    <label className="flex-1 flex flex-col gap-1 text-xs text-zinc-400">flow_ns del flow (sale en la URL al editarlo: /cms/files/<b>content…</b>/edit)
+                        <input value={flowNs} onChange={(e) => setFlowNs(e.target.value)} placeholder="content20261023120000_123456"
+                            className="rounded bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white" />
+                    </label>
+                    <button type="button" onClick={guardarFlow} className="bg-zinc-700 hover:bg-zinc-600 text-sm font-bold px-4 py-2 rounded-full">Guardar</button>
+                </div>
+            </section>
+
+            <section className={paso}>
+                <h3 className="font-bold">2 · Prueba a tu número (obligatoria)</h3>
+                <p className="text-sm text-zinc-400">Te llega el mensaje de un cliente real a tu WhatsApp de control. Tócalo hasta el final para comprobar que llegan las boletas y se registra la respuesta. No marca nada como enviado.</p>
+                <div className="flex gap-3 items-center flex-wrap">
+                    <button type="button" disabled={!cfg.flow_ns || ocupado} onClick={prueba}
+                        className="bg-sky-500 hover:bg-sky-400 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar prueba a mi WhatsApp</button>
+                    <span className={`text-sm ${pruebaOk ? 'text-emerald-300' : 'text-zinc-400'}`}>
+                        {pruebaOk ? '✅ Prueba completada: las boletas llegaron.' : pruebas.length ? 'Prueba enviada; falta tocar “Ver mis boletas”.' : 'Aún sin prueba.'}
+                    </span>
+                    <button type="button" onClick={cargar} className="text-xs underline text-zinc-400">Actualizar</button>
+                </div>
+            </section>
+
+            <section className={paso}>
+                <h3 className="font-bold">3 · Enviar a los clientes</h3>
+                <p className="text-sm text-zinc-300">
+                    <b className="text-white">{r.clientes_listos}</b> clientes listos ({r.boletas_listas} boletas aprobadas).{' '}
+                    {r.clientes_sin_aprobar > 0 && <span className="text-amber-300">{r.clientes_sin_aprobar} clientes con boletas sin aprobar no se enviarán. </span>}
+                    Antes de cada envío se verifica de nuevo que no haya cancelado la suscripción.
+                </p>
+                <div className="flex gap-3 flex-wrap">
+                    <button type="button" disabled={!pruebaOk || ocupado || auto || !r.clientes_listos} onClick={tanda}
+                        className="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar a los siguientes 10</button>
+                    {!auto ? (
+                        <button type="button" disabled={!pruebaOk || ocupado || !r.clientes_listos} onClick={() => setAuto(true)}
+                            className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar a todos ({r.clientes_listos})</button>
+                    ) : (
+                        <button type="button" onClick={() => setAuto(false)} className="bg-red-500 text-white font-bold px-5 py-2 rounded-full">⏸ Detener envío</button>
+                    )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-sm">
+                    {[['enviado', 'Enviados'], ['entregado', 'Boletas entregadas'], ['confirmado', 'Confirmaron datos'], ['error_datos', 'Reportaron error']].map(([k, et]) => (
+                        <div key={k} className="rounded-xl bg-zinc-900 p-3"><div className="text-2xl font-black">{conteo(k).clientes}</div><div className="text-zinc-400 text-xs">{et}</div></div>
+                    ))}
+                </div>
+            </section>
+
+            <section className={paso}>
+                <div className="flex justify-between items-center gap-3 flex-wrap">
+                    <h3 className="font-bold">Bitácora de envíos ({reales.length})</h3>
+                    <button type="button" onClick={exportar} className="bg-zinc-800 hover:bg-zinc-700 text-sm font-bold px-4 py-2 rounded-full">⬇ Descargar bitácora</button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="text-zinc-400 text-left"><tr>
+                            <th className="py-2 pr-3">Cliente</th><th className="py-2 pr-3">Boletas</th><th className="py-2 pr-3">Estado</th>
+                            <th className="py-2 pr-3">Enviado</th><th className="py-2 pr-3">Entregado</th><th className="py-2 pr-3">Respuesta</th></tr></thead>
+                        <tbody>
+                            {r.envios.map((e) => {
+                                const [txt, color] = ESTADOS_ENVIO[e.estado] || [e.estado, 'text-zinc-300'];
+                                const f = (d) => (d ? new Date(d).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+                                return (
+                                    <tr key={e.id} className="border-t border-zinc-800 align-top">
+                                        <td className="py-2 pr-3">{e.es_prueba && <span className="text-sky-300 text-xs">[PRUEBA] </span>}{e.nombre}<div className="text-xs text-zinc-500">{e.celular}</div></td>
+                                        <td className="py-2 pr-3 whitespace-nowrap">{e.numeros.map((n) => `#${String(n).padStart(3, '0')}`).join(' ')}</td>
+                                        <td className={`py-2 pr-3 ${color}`}>{txt}{e.detalle && <div className="text-xs text-zinc-500 max-w-xs break-words">{e.detalle}</div>}</td>
+                                        <td className="py-2 pr-3 whitespace-nowrap">{f(e.enviado_en)}</td>
+                                        <td className="py-2 pr-3 whitespace-nowrap">{f(e.entregado_en)}</td>
+                                        <td className="py-2 pr-3 whitespace-nowrap">{e.respuesta === 'ok' ? '✅ Correctos' : e.respuesta === 'error' ? '❌ Error' : '—'}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    );
+}
+
 export default function RevisionBoletas() {
     const [token, setToken] = useState(leerToken);
     const [resumen, setResumen] = useState(null);
@@ -354,6 +544,9 @@ export default function RevisionBoletas() {
                                 <button type="button" onClick={() => setVista('pendientes')}
                                     className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'pendientes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
                                     📵 Pendientes por enviar ({resumen.pendientes?.boletas ?? 0})</button>
+                                <button type="button" onClick={() => setVista('envio')}
+                                    className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'envio' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                                    📤 Envío WhatsApp</button>
                             </div>
                             {vista === 'lotes' && <div className="flex gap-1.5 flex-wrap">
                                 {resumen.lotes.map((l) => (
@@ -381,6 +574,7 @@ export default function RevisionBoletas() {
                 {mensaje && (
                     <p className={`rounded-xl px-4 py-3 text-sm ${mensaje.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{mensaje.texto}</p>
                 )}
+                {vista === 'envio' && <Envio token={token} />}
                 {vista === 'pendientes' && (
                     <Pendientes token={token} onVer={(n) => rifaImagen(token, n).then((img) => setAmpliada(img.url)).catch(() => setMensaje({ tipo: 'error', texto: 'No se pudo abrir la imagen' }))} />
                 )}
