@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -134,6 +134,105 @@ function TarjetaBoleta({ b, imagen, decision, onDecision, onCanal, onAmpliar }) 
     );
 }
 
+function descargarCsv(nombre, filas) {
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = '﻿' + filas.map((f) => f.map(esc).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = nombre;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function TablaPendientes({ titulo, descripcion, lista, color, onVer }) {
+    return (
+        <section className="flex flex-col gap-3">
+            <div>
+                <h3 className={`text-lg font-bold ${color}`}>{titulo} · {lista.length} clientes · {lista.reduce((a, g) => a + g.total, 0)} boletas</h3>
+                <p className="text-sm text-zinc-400">{descripcion}</p>
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-zinc-800">
+                <table className="w-full text-sm">
+                    <thead className="bg-zinc-900 text-zinc-400 text-left">
+                        <tr>
+                            <th className="px-3 py-2">Cliente</th><th className="px-3 py-2">Cédula</th><th className="px-3 py-2">Contacto</th>
+                            <th className="px-3 py-2">Sede</th><th className="px-3 py-2">Factura → boletas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {lista.map((g) => (
+                            <tr key={g.cedula} className="border-t border-zinc-800 align-top">
+                                <td className="px-3 py-2 font-semibold text-white">{g.nombre}</td>
+                                <td className="px-3 py-2 whitespace-nowrap">{g.cedula}</td>
+                                <td className="px-3 py-2">
+                                    {g.celular && <div>{g.celular}</div>}
+                                    {g.correo ? <div className="break-all">{g.correo}</div> : !g.celular && <span className="text-zinc-500">sin datos</span>}
+                                </td>
+                                <td className="px-3 py-2">{g.sede}</td>
+                                <td className="px-3 py-2">
+                                    {[...g.facturas.entries()].map(([fac, nums]) => (
+                                        <div key={fac} className="whitespace-nowrap">{fac} → {nums.map((n) => (
+                                            <button key={n} type="button" onClick={() => onVer(n)} className="underline text-amber-300 mr-1.5">#{String(n).padStart(3, '0')}</button>
+                                        ))}</div>
+                                    ))}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    );
+}
+
+// Boletas que no salen por WhatsApp: sin celular, o el cliente canceló la
+// suscripción. Agrupadas por cliente para gestionar el contacto y la entrega.
+function Pendientes({ token, onVer }) {
+    const [boletas, setBoletas] = useState(null);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        rifaPendientes(token).then((r) => (r?.success ? setBoletas(r.boletas) : setError(r?.error || 'No se pudo cargar')));
+    }, [token]);
+
+    const grupos = useMemo(() => {
+        const porCliente = new Map();
+        for (const b of boletas || []) {
+            const g = porCliente.get(b.cedula) || { ...b, facturas: new Map(), total: 0 };
+            g.facturas.set(b.factura, [...(g.facturas.get(b.factura) || []), b.numero]);
+            g.total += 1;
+            porCliente.set(b.cedula, g);
+        }
+        const todos = [...porCliente.values()];
+        return { sinTelefono: todos.filter((g) => !g.celular), cancelados: todos.filter((g) => g.celular) };
+    }, [boletas]);
+
+    if (error) return <p className="text-red-300">{error}</p>;
+    if (!boletas) return <p className="text-zinc-400">Cargando pendientes…</p>;
+
+    function exportar() {
+        const filas = [['Grupo', 'Cliente', 'Cédula', 'Celular', 'Correo', 'Sede', 'Factura', 'Fecha factura', 'Boleta', 'Motivo']];
+        for (const b of boletas) {
+            filas.push([b.celular ? 'Canceló suscripción' : 'Sin teléfono', b.nombre, b.cedula, b.celular, b.correo, b.sede,
+                b.factura, b.fecha_factura, String(b.numero).padStart(3, '0'), b.canal_motivo]);
+        }
+        descargarCsv(`rifa_pendientes_por_enviar_${new Date().toISOString().slice(0, 10)}.csv`, filas);
+    }
+
+    return (
+        <div className="flex flex-col gap-8">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+                <p className="text-sm text-zinc-300">Estas boletas <b>no se envían por WhatsApp</b>. Cuando se complete el celular en el Sheet y se actualice, pasan solas a los lotes de revisión.</p>
+                <button type="button" onClick={exportar} className="bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-bold px-4 py-2 rounded-full">⬇ Descargar listado (Excel/CSV)</button>
+            </div>
+            <TablaPendientes titulo="📵 Sin número de teléfono" color="text-red-300" lista={grupos.sinTelefono} onVer={onVer}
+                descripcion="Conseguir el celular (completar la pestaña CONTACTOS del Sheet) o entregar la boleta en la sede." />
+            <TablaPendientes titulo="🚫 Cancelaron la suscripción de WhatsApp" color="text-amber-300" lista={grupos.cancelados} onVer={onVer}
+                descripcion="No escribirles por WhatsApp. Enviar la boleta al correo o entregarla en la sede." />
+        </div>
+    );
+}
+
 export default function RevisionBoletas() {
     const [token, setToken] = useState(leerToken);
     const [resumen, setResumen] = useState(null);
@@ -144,6 +243,7 @@ export default function RevisionBoletas() {
     const [ampliada, setAmpliada] = useState(null);
     const [mensaje, setMensaje] = useState(null);
     const [guardando, setGuardando] = useState(false);
+    const [vista, setVista] = useState('lotes');
 
     const salir = useCallback(() => {
         try { localStorage.removeItem(TOKEN_STORAGE_KEY); } catch { /* nada */ }
@@ -245,15 +345,23 @@ export default function RevisionBoletas() {
                             </div>
                             <p className="text-xs text-zinc-400">
                                 <b className="text-emerald-400">{t.aprobadas}</b> aprobadas · <b className="text-red-400">{t.rechazadas}</b> con error ·{' '}
-                                {t.total - t.aprobadas - t.rechazadas} pendientes · de {t.total} · <b className="text-red-300">{t.otro_medio}</b> por otro medio
+                                {t.total - t.aprobadas - t.rechazadas} por revisar · de {t.total} boletas con WhatsApp
                             </p>
-                            <div className="flex gap-1.5 flex-wrap">
+                            <div className="flex gap-2 flex-wrap">
+                                <button type="button" onClick={() => setVista('lotes')}
+                                    className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'lotes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                                    📲 Lotes WhatsApp ({t.total})</button>
+                                <button type="button" onClick={() => setVista('pendientes')}
+                                    className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'pendientes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                                    📵 Pendientes por enviar ({resumen.pendientes?.boletas ?? 0})</button>
+                            </div>
+                            {vista === 'lotes' && <div className="flex gap-1.5 flex-wrap">
                                 {resumen.lotes.map((l) => (
                                     <button key={l.lote} type="button" onClick={() => irALote(Number(l.lote))}
                                         className={`min-w-9 h-9 px-2 rounded-lg text-sm font-bold ${colorLote(l)} ${Number(l.lote) === loteActual ? 'ring-2 ring-white' : ''}`}
                                         title={`Boletas ${l.desde}–${l.hasta}`}>{l.lote}</button>
                                 ))}
-                            </div>
+                            </div>}
                         </>
                     )}
                 </div>
@@ -273,18 +381,21 @@ export default function RevisionBoletas() {
                 {mensaje && (
                     <p className={`rounded-xl px-4 py-3 text-sm ${mensaje.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{mensaje.texto}</p>
                 )}
-                {loteActual && boletas.length > 0 && (
+                {vista === 'pendientes' && (
+                    <Pendientes token={token} onVer={(n) => rifaImagen(token, n).then((img) => setAmpliada(img.url)).catch(() => setMensaje({ tipo: 'error', texto: 'No se pudo abrir la imagen' }))} />
+                )}
+                {vista === 'lotes' && loteActual && boletas.length > 0 && (
                     <h2 className="text-lg font-bold">Lote {loteActual} · boletas {boletas[0].numero}–{boletas[boletas.length - 1].numero}</h2>
                 )}
-                <div className="grid gap-5 sm:grid-cols-2">
+                {vista === 'lotes' && <div className="grid gap-5 sm:grid-cols-2">
                     {boletas.map((b) => (
                         <TarjetaBoleta key={b.numero} b={b} imagen={imagenes[b.numero]} decision={decisiones[b.numero] || { estado: 'aprobada', nota: '' }}
                             onDecision={(n, d) => setDecisiones((prev) => ({ ...prev, [n]: d }))} onCanal={cambiarCanal} onAmpliar={setAmpliada} />
                     ))}
-                </div>
+                </div>}
             </div>
 
-            {boletas.length > 0 && (
+            {vista === 'lotes' && boletas.length > 0 && (
                 <footer className="fixed bottom-0 inset-x-0 z-20 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 px-4 py-3" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
                     <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 flex-wrap">
                         <p className="text-sm text-zinc-300">

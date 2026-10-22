@@ -1054,3 +1054,7 @@ export function rifaCambiarCanal(token, numero, canal, motivo) {
         method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ canal, motivo }),
     });
 }
+
+export function rifaPendientes(token) {
+    return request('/api/admin/rifa/pendientes', { headers: rifaHeaders(token) });
+}
