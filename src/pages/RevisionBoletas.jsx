@@ -736,7 +736,12 @@ function Correo({ token }) {
                 <div className="flex gap-3 items-center flex-wrap">
                     <button type="button" disabled={ocupado} onClick={prueba} className="bg-sky-500 hover:bg-sky-400 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar prueba</button>
                     <span className={`text-sm ${r.prueba_ok ? 'text-emerald-300' : 'text-zinc-400'}`}>
-                        {r.prueba_ok ? `✅ Prueba enviada (${f(pruebas.find((e) => e.estado === 'enviado')?.enviado_en)}). Verifica que llegó antes de enviar a clientes.` : pruebas.length ? `✗ Última prueba falló: ${pruebas[0].detalle}` : 'Aún sin prueba.'}
+                        {r.prueba_ok ? '✅ Prueba confirmada: el correo llegó y se tocó un botón.'
+                            : r.prueba_pendiente ? `📨 Prueba enviada. Ábrela en ${r.correo_prueba} y toca uno de sus botones para confirmar que llegó; luego toca "Actualizar".`
+                            : pruebas.length ? `✗ Última prueba falló: ${pruebas[0].detalle}` : 'Aún sin prueba.'}
+                    </span>
+                    <button type="button" onClick={cargar} className="text-xs underline text-zinc-400">Actualizar</button>
+                    <span className="hidden">
                     </span>
                 </div>
             </section>
