@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaEnvioContactoManychat, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaEnvioContactoManychat, rifaCorreoResumen, rifaCorreoPrueba, rifaCorreoLote, rifaCorreoReintentar, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -662,6 +662,132 @@ function CambiarPassword({ token, onCerrar, onCambiada }) {
     );
 }
 
+// Envío de boletas por CORREO a quienes no reciben por WhatsApp y tienen correo.
+function Correo({ token }) {
+    const [r, setR] = useState(null);
+    const [ocupado, setOcupado] = useState(false);
+    const [auto, setAuto] = useState(false);
+    const [aviso, setAviso] = useState(null);
+
+    const cargar = useCallback(async () => {
+        const x = await rifaCorreoResumen(token);
+        if (x?.success) setR(x); else setAviso({ tipo: 'error', texto: x?.error || 'No se pudo cargar' });
+        return x;
+    }, [token]);
+
+    useEffect(() => {
+        rifaCorreoResumen(token).then((x) => (x?.success ? setR(x) : setAviso({ tipo: 'error', texto: x?.error || 'No se pudo cargar' })));
+    }, [token]);
+
+    useEffect(() => {
+        if (!auto) return;
+        let vivo = true;
+        (async () => {
+            while (vivo) {
+                const x = await rifaCorreoLote(token, 10);
+                if (!x?.success) { setAviso({ tipo: 'error', texto: x?.error || 'Error enviando' }); break; }
+                const res = await cargar();
+                if (!x.resultados.length || !res?.clientes_listos) { setAviso({ tipo: 'ok', texto: 'Envío por correo terminado.' }); break; }
+                if (!x.resultados.some((y) => y.estado === 'enviado')) { setAviso({ tipo: 'error', texto: 'Envío detenido: ningún correo salió en la última tanda. Revisa la bitácora.' }); break; }
+            }
+            if (vivo) setAuto(false);
+        })();
+        return () => { vivo = false; };
+    }, [auto, token, cargar]);
+
+    if (!r) return <p className="text-zinc-400">{aviso?.texto || 'Cargando…'}</p>;
+    const est = (k) => r.por_estado.find((e) => e.correo_estado === k) || { clientes: 0, boletas: 0 };
+    const pruebas = r.envios.filter((e) => e.es_prueba);
+    const reales = r.envios.filter((e) => !e.es_prueba);
+    const f = (d) => (d ? new Date(d).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+
+    async function prueba() {
+        setOcupado(true);
+        const x = await rifaCorreoPrueba(token);
+        setOcupado(false);
+        setAviso(x?.success ? { tipo: 'ok', texto: `Prueba enviada a ${r.correo_prueba} con las boletas de ${x.resultado.nombre}. Revisa que lleguen los adjuntos y prueba un botón.` }
+            : { tipo: 'error', texto: `La prueba falló: ${x?.error || x?.resultado?.detalle || 'error'}` });
+        cargar();
+    }
+    function exportar() {
+        const filas = [['Cliente', 'Cédula', 'Correo', 'Boletas', 'Estado', 'Detalle', 'Enviado', 'Respuesta', 'Respondió']];
+        for (const e of reales) {
+            filas.push([e.nombre, e.cedula, e.correo, e.numeros.map((n) => String(n).padStart(3, '0')).join(' '), e.estado, e.detalle, f(e.enviado_en),
+                e.respuesta === 'ok' ? 'Confirmó datos' : e.respuesta === 'error' ? 'Reportó error' : '', f(e.respondido_en)]);
+        }
+        descargarCsv(`rifa_envios_correo_${new Date().toISOString().slice(0, 10)}.csv`, filas);
+    }
+
+    const paso = 'rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 flex flex-col gap-3';
+    return (
+        <div className="flex flex-col gap-5">
+            {aviso && <p className={`rounded-xl px-4 py-3 text-sm ${aviso.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{aviso.texto}</p>}
+
+            <section className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center text-sm">
+                {[[r.clientes_con_correo, 'Clientes con correo'], [est('enviado').clientes + est('confirmado').clientes + est('error_datos').clientes, 'Correos enviados'],
+                  [est('confirmado').clientes, 'Confirmaron datos'], [est('error_datos').clientes, 'Reportaron error'], [est('fallido').clientes, 'Fallidos']].map(([v, t]) => (
+                    <div key={t} className="rounded-xl bg-zinc-900 p-3"><div className="text-2xl font-black">{v}</div><div className="text-zinc-400 text-xs">{t}</div></div>
+                ))}
+            </section>
+            <p className="text-xs text-zinc-500">{r.sin_correo.clientes} clientes ({r.sin_correo.boletas} boletas) no tienen ni celular ni correo: hay que entregarles la boleta en la sede.</p>
+
+            <section className={paso}>
+                <h3 className="font-bold">1 · Prueba a {r.correo_prueba} (obligatoria)</h3>
+                <div className="flex gap-3 items-center flex-wrap">
+                    <button type="button" disabled={ocupado} onClick={prueba} className="bg-sky-500 hover:bg-sky-400 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar prueba</button>
+                    <span className={`text-sm ${r.prueba_ok ? 'text-emerald-300' : 'text-zinc-400'}`}>
+                        {r.prueba_ok ? `✅ Prueba enviada (${f(pruebas.find((e) => e.estado === 'enviado')?.enviado_en)}). Verifica que llegó antes de enviar a clientes.` : pruebas.length ? `✗ Última prueba falló: ${pruebas[0].detalle}` : 'Aún sin prueba.'}
+                    </span>
+                </div>
+            </section>
+
+            <section className={paso}>
+                <h3 className="font-bold">2 · Enviar a los clientes</h3>
+                <p className="text-sm text-zinc-300"><b className="text-white">{r.clientes_listos}</b> clientes listos ({r.boletas_listas} boletas). Cada uno recibe un correo con sus boletas adjuntas y copia oculta a comercial@.</p>
+                <div className="flex gap-3 flex-wrap">
+                    {!auto ? (
+                        <button type="button" disabled={!r.prueba_ok || ocupado || !r.clientes_listos} onClick={() => setAuto(true)}
+                            className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar a todos ({r.clientes_listos})</button>
+                    ) : (
+                        <button type="button" onClick={() => setAuto(false)} className="bg-red-500 text-white font-bold px-5 py-2 rounded-full">⏸ Detener</button>
+                    )}
+                    {est('fallido').clientes > 0 && (
+                        <button type="button" disabled={auto} onClick={async () => { await rifaCorreoReintentar(token); cargar(); }} className="text-sm underline text-red-300">Reintentar fallidos ({est('fallido').clientes})</button>
+                    )}
+                </div>
+            </section>
+
+            <section className={paso}>
+                <div className="flex justify-between items-center gap-3 flex-wrap">
+                    <h3 className="font-bold">Bitácora de correos ({reales.length})</h3>
+                    <button type="button" onClick={exportar} className="bg-zinc-800 hover:bg-zinc-700 text-sm font-bold px-4 py-2 rounded-full">⬇ Descargar</button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="text-zinc-400 text-left"><tr>
+                            <th className="py-2 pr-3">Cliente</th><th className="py-2 pr-3">Boletas</th><th className="py-2 pr-3">Estado</th>
+                            <th className="py-2 pr-3">Enviado</th><th className="py-2 pr-3">Respuesta</th></tr></thead>
+                        <tbody>
+                            {r.envios.map((e) => (
+                                <tr key={e.id} className="border-t border-zinc-800 align-top">
+                                    <td className="py-2 pr-3">{e.es_prueba && <span className="text-sky-300 text-xs">[PRUEBA] </span>}{e.nombre}<div className="text-xs text-zinc-500 break-all">{e.correo}</div></td>
+                                    <td className="py-2 pr-3 whitespace-nowrap">{e.numeros.map((n) => `#${String(n).padStart(3, '0')}`).join(' ')}</td>
+                                    <td className={`py-2 pr-3 ${e.estado === 'enviado' ? 'text-emerald-300' : e.estado === 'fallido' ? 'text-red-300' : 'text-zinc-300'}`}>
+                                        {e.estado === 'enviado' ? '📧 Enviado' : e.estado === 'fallido' ? '✗ Falló' : e.estado}
+                                        {e.estado === 'fallido' && e.detalle && <div className="text-xs text-zinc-500 max-w-xs break-words">{e.detalle}</div>}
+                                    </td>
+                                    <td className="py-2 pr-3 whitespace-nowrap">{f(e.enviado_en)}</td>
+                                    <td className="py-2 pr-3 whitespace-nowrap">{e.respuesta === 'ok' ? '✅ Correctos' : e.respuesta === 'error' ? '❌ Error' : '—'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    );
+}
+
 export default function RevisionBoletas() {
     const [token, setToken] = useState(leerToken);
     const [resumen, setResumen] = useState(null);
@@ -801,6 +927,9 @@ export default function RevisionBoletas() {
                                 <button type="button" onClick={() => setVista('pendientes')}
                                     className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'pendientes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
                                     📵 Pendientes por enviar ({resumen.pendientes?.boletas ?? 0})</button>
+                                <button type="button" onClick={() => setVista('correo')}
+                                    className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'correo' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                                    📧 Correo</button>
                                 <button type="button" onClick={() => setVista('cortes')}
                                     className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'cortes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
                                     🕐 Cortes (Alegra)</button>
@@ -835,6 +964,7 @@ export default function RevisionBoletas() {
                     <p className={`rounded-xl px-4 py-3 text-sm ${mensaje.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{mensaje.texto}</p>
                 )}
                 {vista === 'envio' && <Envio token={token} />}
+                {vista === 'correo' && <Correo token={token} />}
                 {vista === 'cortes' && <Cortes token={token} verificado={verificado} onAmpliar={setAmpliada} />}
                 {vista === 'pendientes' && (
                     <Pendientes token={token} onVer={(n) => rifaImagen(token, n).then((img) => setAmpliada(img.url)).catch(() => setMensaje({ tipo: 'error', texto: 'No se pudo abrir la imagen' }))} />

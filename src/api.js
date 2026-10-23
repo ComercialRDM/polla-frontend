@@ -1123,3 +1123,20 @@ export function rifaEnvioReintentarFallidos(token) {
 export function rifaEnvioContactoManychat(token, cedula, subscriber_id) {
     return request('/api/admin/rifa/envio/contacto-manychat', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ cedula, subscriber_id }) });
 }
+
+// ── Rifa: envío de boletas por correo ───────────────────────────────────────
+export function rifaCorreoResumen(token) {
+    return request('/api/admin/rifa/correo/resumen', { headers: rifaHeaders(token) });
+}
+
+export function rifaCorreoPrueba(token) {
+    return request('/api/admin/rifa/correo/prueba', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
+}
+
+export function rifaCorreoLote(token, cantidad) {
+    return request('/api/admin/rifa/correo/lote', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ cantidad }) });
+}
+
+export function rifaCorreoReintentar(token) {
+    return request('/api/admin/rifa/correo/reintentar-fallidos', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
+}
