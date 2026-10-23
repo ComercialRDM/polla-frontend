@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaCortes, rifaCorte, rifaRevisarCorte } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -198,13 +198,17 @@ function Pendientes({ token, onVer }) {
     const grupos = useMemo(() => {
         const porCliente = new Map();
         for (const b of boletas || []) {
-            const g = porCliente.get(b.cedula) || { ...b, facturas: new Map(), total: 0 };
+            const g = porCliente.get(`${b.cedula}|${b.anulada ? 'a' : ''}`) || { ...b, facturas: new Map(), total: 0 };
             g.facturas.set(b.factura, [...(g.facturas.get(b.factura) || []), b.numero]);
             g.total += 1;
-            porCliente.set(b.cedula, g);
+            porCliente.set(`${b.cedula}|${b.anulada ? 'a' : ''}`, g);
         }
         const todos = [...porCliente.values()];
-        return { sinTelefono: todos.filter((g) => !g.celular), cancelados: todos.filter((g) => g.celular) };
+        return {
+            sinTelefono: todos.filter((g) => !g.anulada && !g.celular),
+            cancelados: todos.filter((g) => !g.anulada && g.celular),
+            anuladas: todos.filter((g) => g.anulada),
+        };
     }, [boletas]);
 
     if (error) return <p className="text-red-300">{error}</p>;
@@ -213,8 +217,8 @@ function Pendientes({ token, onVer }) {
     function exportar() {
         const filas = [['Grupo', 'Cliente', 'Cédula', 'Celular', 'Correo', 'Sede', 'Factura', 'Fecha factura', 'Boleta', 'Motivo']];
         for (const b of boletas) {
-            filas.push([b.celular ? 'Canceló suscripción' : 'Sin teléfono', b.nombre, b.cedula, b.celular, b.correo, b.sede,
-                b.factura, b.fecha_factura, String(b.numero).padStart(3, '0'), b.canal_motivo]);
+            filas.push([b.anulada ? 'Anulada' : b.celular ? 'Canceló suscripción' : 'Sin teléfono', b.nombre, b.cedula, b.celular, b.correo, b.sede,
+                b.factura, b.fecha_factura, String(b.numero).padStart(3, '0'), b.anulada ? b.anulada_motivo : b.canal_motivo]);
         }
         descargarCsv(`rifa_pendientes_por_enviar_${new Date().toISOString().slice(0, 10)}.csv`, filas);
     }
@@ -229,6 +233,10 @@ function Pendientes({ token, onVer }) {
                 descripcion="Conseguir el celular (completar la pestaña CONTACTOS del Sheet) o entregar la boleta en la sede." />
             <TablaPendientes titulo="🚫 Cancelaron la suscripción de WhatsApp" color="text-amber-300" lista={grupos.cancelados} onVer={onVer}
                 descripcion="No escribirles por WhatsApp. Enviar la boleta al correo o entregarla en la sede." />
+            {grupos.anuladas.length > 0 && (
+                <TablaPendientes titulo="🗑️ Anuladas (no participan)" color="text-zinc-400" lista={grupos.anuladas} onVer={onVer}
+                    descripcion="La factura se anuló o tuvo nota crédito en Alegra. Estas boletas no participan en el sorteo." />
+            )}
         </div>
     );
 }
@@ -344,6 +352,13 @@ function Envio({ token }) {
                 <Copiable etiqueta="URL al tocar “Ver mis boletas” (POST)" valor={`${cfg.backend_url}/api/rifa/webhook/ver`} />
                 <Copiable etiqueta="URL al responder la pregunta (POST)" valor={`${cfg.backend_url}/api/rifa/webhook/confirmar`} />
                 <Copiable etiqueta="Encabezado X-Rifa-Secret (no lo compartas)" valor={cfg.webhook_secret} />
+                <details className="text-sm">
+                    <summary className="cursor-pointer text-zinc-400">Datos para n8n (facturas de Alegra)</summary>
+                    <div className="flex flex-col gap-3 mt-3">
+                        <Copiable etiqueta="URL para enviar facturas (POST)" valor={`${cfg.backend_url}/api/rifa/integracion/facturas`} />
+                        <Copiable etiqueta="Encabezado X-Integracion-Secret (no lo compartas)" valor={cfg.integracion_secret} />
+                    </div>
+                </details>
                 <div className="flex gap-2 flex-wrap items-end">
                     <label className="flex-1 flex flex-col gap-1 text-xs text-zinc-400">flow_ns del flow (sale en la URL al editarlo: /cms/files/<b>content…</b>/edit)
                         <input value={flowNs} onChange={(e) => setFlowNs(e.target.value)} placeholder="content20261023120000_123456"
@@ -419,6 +434,122 @@ function Envio({ token }) {
                     </table>
                 </div>
             </section>
+        </div>
+    );
+}
+
+const fmtCorte = (iso) => new Date(iso).toLocaleString('es-CO', {
+    timeZone: 'America/Bogota', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+});
+
+// Cortes horarios: las boletas que llegan solas desde Alegra se aprueban por
+// corte (L-S cada hora 9:00-21:00; domingos y festivos 10:00-19:00).
+function Cortes({ token, verificado, onAmpliar }) {
+    const [cortes, setCortes] = useState(null);
+    const [actual, setActual] = useState(null);
+    const [boletas, setBoletas] = useState([]);
+    const [imagenes, setImagenes] = useState({});
+    const [decisiones, setDecisiones] = useState({});
+    const [aviso, setAviso] = useState(null);
+    const [guardando, setGuardando] = useState(false);
+
+    const cargarCortes = useCallback(async () => {
+        const r = await rifaCortes(token);
+        if (r?.success) setCortes(r.cortes);
+        return r;
+    }, [token]);
+
+    useEffect(() => {
+        rifaCortes(token).then((r) => {
+            if (!r?.success) { setAviso({ tipo: 'error', texto: r?.error || 'No se pudieron cargar los cortes' }); return; }
+            setCortes(r.cortes);
+            const pendiente = [...r.cortes].reverse().find((c) => c.cerrado && c.aprobadas + c.rechazadas < c.total);
+            if (pendiente) setActual(pendiente.corte);
+        });
+    }, [token]);
+
+    useEffect(() => {
+        if (!actual) return;
+        let vivo = true;
+        rifaCorte(token, actual).then((r) => {
+            if (!vivo || !r?.success) return;
+            setBoletas(r.boletas);
+            setDecisiones(Object.fromEntries(r.boletas.map((b) => [b.numero, {
+                estado: b.revision_estado === 'rechazada' ? 'rechazada' : 'aprobada', nota: b.revision_nota || '',
+            }])));
+            r.boletas.forEach((b) => rifaImagen(token, b.numero)
+                .then((img) => vivo && setImagenes((p) => ({ ...p, [b.numero]: img })))
+                .catch(() => vivo && setImagenes((p) => ({ ...p, [b.numero]: { url: '', sha256: 'error' } }))));
+        });
+        return () => { vivo = false; };
+    }, [token, actual]);
+
+    function abrir(iso) { setBoletas([]); setImagenes({}); setAviso(null); setActual(iso); }
+
+    async function cambiarCanal(numero, canal, motivo) {
+        const r = await rifaCambiarCanal(token, numero, canal, motivo);
+        if (!r?.success) { setAviso({ tipo: 'error', texto: r?.error || 'No se pudo cambiar el canal' }); return; }
+        const x = await rifaCorte(token, actual);
+        if (x?.success) setBoletas(x.boletas);
+    }
+
+    async function guardar() {
+        setGuardando(true);
+        const lista = boletas.map((b) => ({ numero: b.numero, ...decisiones[b.numero] }));
+        const r = await rifaRevisarCorte(token, actual, lista);
+        setGuardando(false);
+        if (!r?.success) { setAviso({ tipo: 'error', texto: r?.error || 'No se pudo guardar' }); return; }
+        setAviso({ tipo: 'ok', texto: `Corte ${fmtCorte(actual)} guardado. Las aprobadas ya pueden enviarse desde la pestaña Envío.` });
+        const c = await cargarCortes();
+        const sig = c?.cortes && [...c.cortes].reverse().find((k) => k.cerrado && k.aprobadas + k.rechazadas < k.total && k.corte !== actual);
+        if (sig) abrir(sig.corte);
+    }
+
+    if (!cortes) return <p className="text-zinc-400">{aviso?.texto || 'Cargando cortes…'}</p>;
+    if (!cortes.length) return <p className="text-zinc-400">Aún no han llegado boletas automáticas desde Alegra. Cuando lleguen, aparecerán aquí agrupadas por corte horario.</p>;
+
+    const cargadas = boletas.length > 0 && boletas.every((b) => imagenes[b.numero]);
+    const integras = boletas.every((b) => imagenes[b.numero]?.sha256 === b.imagen_sha256);
+    const faltaNota = Object.values(decisiones).some((d) => d.estado === 'rechazada' && !d.nota.trim());
+    const hayAprob = Object.values(decisiones).some((d) => d.estado === 'aprobada');
+
+    return (
+        <div className="flex flex-col gap-5">
+            <div className="flex gap-2 flex-wrap">
+                {cortes.map((c) => {
+                    const listo = c.aprobadas + c.rechazadas === c.total;
+                    const color = !c.cerrado ? 'bg-zinc-900 text-zinc-500 border border-dashed border-zinc-700'
+                        : c.rechazadas ? 'bg-red-500 text-white' : listo ? 'bg-emerald-500 text-zinc-950' : 'bg-amber-400 text-zinc-950';
+                    return (
+                        <button key={c.corte} type="button" onClick={() => abrir(c.corte)}
+                            className={`px-3 py-2 rounded-lg text-xs font-bold ${color} ${c.corte === actual ? 'ring-2 ring-white' : ''}`}>
+                            {fmtCorte(c.corte)} · {c.total}{!c.cerrado && ' (abierto)'}
+                        </button>
+                    );
+                })}
+            </div>
+            {aviso && <p className={`rounded-xl px-4 py-3 text-sm ${aviso.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{aviso.texto}</p>}
+            {actual && boletas.length > 0 && (
+                <>
+                    <h2 className="text-lg font-bold">Corte {fmtCorte(actual)} · {boletas.length} boletas</h2>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        {boletas.map((b) => (
+                            <TarjetaBoleta key={b.numero} b={b} imagen={imagenes[b.numero]} decision={decisiones[b.numero] || { estado: 'aprobada', nota: '' }}
+                                onDecision={(n, d) => setDecisiones((p) => ({ ...p, [n]: d }))} onCanal={cambiarCanal} onAmpliar={onAmpliar} />
+                        ))}
+                    </div>
+                    <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-zinc-800 p-4">
+                        <p className="text-sm text-zinc-300">
+                            {!cargadas ? 'Cargando imágenes…' : !integras ? '✗ Hay imágenes que no coinciden con las generadas: no se puede aprobar.'
+                                : faltaNota ? 'Escribe el motivo de cada boleta con error.' : !verificado && hayAprob ? 'Falta verificar la lista de cancelados.' : 'Revisa cada boleta y guarda el corte.'}
+                        </p>
+                        <button type="button" onClick={guardar} disabled={guardando || !cargadas || !integras || faltaNota || (!verificado && hayAprob)}
+                            className="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 font-bold px-6 py-3 rounded-full">
+                            {guardando ? 'Guardando…' : 'Guardar revisión del corte'}
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }
@@ -544,6 +675,9 @@ export default function RevisionBoletas() {
                                 <button type="button" onClick={() => setVista('pendientes')}
                                     className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'pendientes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
                                     📵 Pendientes por enviar ({resumen.pendientes?.boletas ?? 0})</button>
+                                <button type="button" onClick={() => setVista('cortes')}
+                                    className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'cortes' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                                    🕐 Cortes (Alegra)</button>
                                 <button type="button" onClick={() => setVista('envio')}
                                     className={`px-4 py-2 rounded-full text-sm font-bold ${vista === 'envio' ? 'bg-white text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
                                     📤 Envío WhatsApp</button>
@@ -575,6 +709,7 @@ export default function RevisionBoletas() {
                     <p className={`rounded-xl px-4 py-3 text-sm ${mensaje.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{mensaje.texto}</p>
                 )}
                 {vista === 'envio' && <Envio token={token} />}
+                {vista === 'cortes' && <Cortes token={token} verificado={verificado} onAmpliar={setAmpliada} />}
                 {vista === 'pendientes' && (
                     <Pendientes token={token} onVer={(n) => rifaImagen(token, n).then((img) => setAmpliada(img.url)).catch(() => setMensaje({ tipo: 'error', texto: 'No se pudo abrir la imagen' }))} />
                 )}

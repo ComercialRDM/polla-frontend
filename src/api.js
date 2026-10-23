@@ -1074,3 +1074,17 @@ export function rifaEnvioPrueba(token) {
 export function rifaEnvioLote(token, cantidad) {
     return request('/api/admin/rifa/envio/lote', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ cantidad }) });
 }
+
+export function rifaCortes(token) {
+    return request('/api/admin/rifa/cortes', { headers: rifaHeaders(token) });
+}
+
+export function rifaCorte(token, iso) {
+    return request(`/api/admin/rifa/cortes/${encodeURIComponent(iso)}`, { headers: rifaHeaders(token) });
+}
+
+export function rifaRevisarCorte(token, iso, decisiones) {
+    return request(`/api/admin/rifa/cortes/${encodeURIComponent(iso)}/revision`, {
+        method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ decisiones }),
+    });
+}
