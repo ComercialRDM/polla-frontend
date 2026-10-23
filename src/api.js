@@ -1115,3 +1115,7 @@ export function cuentaRecuperar(usuario) {
 export function cuentaRestablecer(token, nueva) {
     return request('/api/cuenta/restablecer', { method: 'POST', body: JSON.stringify({ token, nueva }) });
 }
+
+export function rifaEnvioReintentarFallidos(token) {
+    return request('/api/admin/rifa/envio/reintentar-fallidos', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
+}

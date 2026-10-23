@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -296,6 +296,8 @@ function Envio({ token }) {
                 if (!x?.success) { setAviso({ tipo: 'error', texto: x?.error || 'Error enviando' }); break; }
                 const res = await cargar();
                 if (!x.resultados.length || !res?.clientes_listos) { setAviso({ tipo: 'ok', texto: 'Envío terminado: no quedan clientes listos.' }); break; }
+                // Freno de seguridad: si una tanda completa no logra enviar nada, se detiene.
+                if (!x.resultados.some((y) => y.estado === 'enviado')) { setAviso({ tipo: 'error', texto: 'Envío detenido: ninguna entrega en la última tanda. Revisa la bitácora.' }); break; }
             }
             if (vivo) setAuto(false);
         })();
@@ -399,6 +401,16 @@ function Envio({ token }) {
                         <button type="button" onClick={() => setAuto(false)} className="bg-red-500 text-white font-bold px-5 py-2 rounded-full">⏸ Detener envío</button>
                     )}
                 </div>
+                {conteo('fallido').clientes > 0 && (
+                    <div className="flex items-center gap-3 flex-wrap text-sm text-red-300">
+                        ✗ {conteo('fallido').clientes} clientes con envío fallido (ver bitácora).
+                        <button type="button" disabled={ocupado || auto} onClick={async () => {
+                            const x = await rifaEnvioReintentarFallidos(token);
+                            setAviso(x?.success ? { tipo: 'ok', texto: `${x.clientes} clientes devueltos a la cola. Usa "Enviar a los siguientes 10".` } : { tipo: 'error', texto: x?.error || 'No se pudo' });
+                            cargar();
+                        }} className="underline">Reintentar fallidos</button>
+                    </div>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-sm">
                     {[['enviado', 'Enviados'], ['entregado', 'Boletas entregadas'], ['confirmado', 'Confirmaron datos'], ['error_datos', 'Reportaron error']].map(([k, et]) => (
                         <div key={k} className="rounded-xl bg-zinc-900 p-3"><div className="text-2xl font-black">{conteo(k).clientes}</div><div className="text-zinc-400 text-xs">{et}</div></div>
