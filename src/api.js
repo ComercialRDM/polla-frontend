@@ -1119,3 +1119,7 @@ export function cuentaRestablecer(token, nueva) {
 export function rifaEnvioReintentarFallidos(token) {
     return request('/api/admin/rifa/envio/reintentar-fallidos', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
 }
+
+export function rifaEnvioContactoManychat(token, cedula, subscriber_id) {
+    return request('/api/admin/rifa/envio/contacto-manychat', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ cedula, subscriber_id }) });
+}

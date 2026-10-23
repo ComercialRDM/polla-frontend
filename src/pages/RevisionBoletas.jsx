@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaEnvioContactoManychat, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -250,6 +250,28 @@ const ESTADOS_ENVIO = {
     fallido: ['✗ Falló', 'text-red-300'],
 };
 
+// Para clientes que ManyChat no encuentra por número: se pega su ID de ManyChat
+// (Contacts → abrir el contacto → ícono de ID) y el cliente vuelve a la cola.
+function IdManychat({ token, cedula, onListo }) {
+    const [id, setId] = useState('');
+    const [error, setError] = useState('');
+    async function guardar() {
+        const r = await rifaEnvioContactoManychat(token, cedula, id.trim());
+        if (r?.success) { setId(''); setError(''); onListo(r); } else setError(r?.error || 'No se pudo guardar');
+    }
+    return (
+        <div className="mt-2 flex flex-col gap-1">
+            <div className="flex gap-1">
+                <input value={id} onChange={(e) => setId(e.target.value.replace(/\D/g, ''))} placeholder="ID de ManyChat"
+                    className="w-32 rounded bg-zinc-900 border border-zinc-700 px-2 py-1 text-xs text-white" />
+                <button type="button" disabled={id.length < 5} onClick={guardar}
+                    className="text-xs bg-sky-500 disabled:opacity-40 text-zinc-950 font-bold px-2 rounded">Guardar</button>
+            </div>
+            {error && <span className="text-xs text-red-300">{error}</span>}
+        </div>
+    );
+}
+
 function Copiable({ etiqueta, valor }) {
     const [copiado, setCopiado] = useState(false);
     return (
@@ -436,7 +458,14 @@ function Envio({ token }) {
                                     <tr key={e.id} className="border-t border-zinc-800 align-top">
                                         <td className="py-2 pr-3">{e.es_prueba && <span className="text-sky-300 text-xs">[PRUEBA] </span>}{e.nombre}<div className="text-xs text-zinc-500">{e.celular}</div></td>
                                         <td className="py-2 pr-3 whitespace-nowrap">{e.numeros.map((n) => `#${String(n).padStart(3, '0')}`).join(' ')}</td>
-                                        <td className={`py-2 pr-3 ${color}`}>{txt}{e.detalle && <div className="text-xs text-zinc-500 max-w-xs break-words">{e.detalle}</div>}</td>
+                                        <td className={`py-2 pr-3 ${color}`}>{txt}{e.detalle && <div className="text-xs text-zinc-500 max-w-xs break-words">{e.detalle}</div>}
+                                            {e.estado === 'fallido' && !e.es_prueba && (
+                                                <IdManychat token={token} cedula={e.cedula} onListo={(x) => {
+                                                    setAviso({ tipo: 'ok', texto: `ID guardado: ${x.boletas_en_cola} boletas de ${e.nombre} volvieron a la cola. Usa "Enviar a los siguientes 10".` });
+                                                    cargar();
+                                                }} />
+                                            )}
+                                        </td>
                                         <td className="py-2 pr-3 whitespace-nowrap">{f(e.enviado_en)}</td>
                                         <td className="py-2 pr-3 whitespace-nowrap">{f(e.entregado_en)}</td>
                                         <td className="py-2 pr-3 whitespace-nowrap">{e.respuesta === 'ok' ? '✅ Correctos' : e.respuesta === 'error' ? '❌ Error' : '—'}</td>
