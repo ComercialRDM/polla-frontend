@@ -1088,3 +1088,30 @@ export function rifaRevisarCorte(token, iso, decisiones) {
         method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ decisiones }),
     });
 }
+
+// ── Cuenta del panel (todos los roles): 2FA, cambio y recuperación de contraseña ──
+const cuentaHeaders = (token) => ({ Authorization: `Bearer ${token}` });
+
+export function cuenta2faEstado(token) {
+    return request('/api/cuenta/2fa/estado', { headers: cuentaHeaders(token) });
+}
+
+export function cuenta2faSetup(token) {
+    return request('/api/cuenta/2fa/setup', { method: 'POST', headers: cuentaHeaders(token), body: '{}' });
+}
+
+export function cuenta2faConfirmar(token, code) {
+    return request('/api/cuenta/2fa/confirmar', { method: 'POST', headers: cuentaHeaders(token), body: JSON.stringify({ code }) });
+}
+
+export function cuentaCambiarPassword(token, actual, nueva) {
+    return request('/api/cuenta/cambiar-password', { method: 'POST', headers: cuentaHeaders(token), body: JSON.stringify({ actual, nueva }) });
+}
+
+export function cuentaRecuperar(usuario) {
+    return request('/api/cuenta/recuperar', { method: 'POST', body: JSON.stringify({ usuario }) });
+}
+
+export function cuentaRestablecer(token, nueva) {
+    return request('/api/cuenta/restablecer', { method: 'POST', body: JSON.stringify({ token, nueva }) });
+}

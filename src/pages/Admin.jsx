@@ -1621,6 +1621,7 @@ Estás en el Top 100 de la Polla Mundialista de La Retoucherie 🏆 con ${puntos
                                 autoComplete="current-password"
                                 className="w-full rounded-lg bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-4 py-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
                             />
+                            <a href="/acceso/recuperar" className="text-xs text-zinc-400 underline text-right">¿Olvidaste tu contraseña?</a>
                         </>
                     ) : (
                         <div className="flex flex-col gap-3">

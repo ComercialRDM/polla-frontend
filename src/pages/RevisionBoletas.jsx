@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaCortes, rifaCorte, rifaRevisarCorte } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -52,6 +52,7 @@ function Login({ onLogin }) {
                 <button disabled={cargando} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 font-bold py-3 rounded-full">
                     {cargando ? 'Verificando…' : pide2fa ? 'Verificar' : 'Ingresar'}
                 </button>
+                <a href="/acceso/recuperar" className="text-xs text-zinc-400 underline text-center">¿Olvidaste tu contraseña?</a>
             </form>
         </main>
     );
@@ -554,6 +555,72 @@ function Cortes({ token, verificado, onAmpliar }) {
     );
 }
 
+// Verificación en dos pasos obligatoria: si la cuenta no la tiene, se configura
+// antes de dejar entrar.
+function Configurar2FA({ token, onListo, onSalir }) {
+    const [qr, setQr] = useState(null);
+    const [code, setCode] = useState('');
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        cuenta2faSetup(token).then((r) => (r?.success ? setQr(r) : setError(r?.error || 'No se pudo generar el código QR')));
+    }, [token]);
+
+    async function confirmar(e) {
+        e.preventDefault();
+        const r = await cuenta2faConfirmar(token, code);
+        if (r?.success) onListo(); else setError(r?.error || 'Código incorrecto');
+    }
+
+    return (
+        <main className="min-h-screen bg-zinc-950 flex items-center justify-center px-6 py-10">
+            <form onSubmit={confirmar} className="w-full max-w-sm flex flex-col gap-4 text-center">
+                <h1 className="font-display text-white text-4xl">Activa la verificación en dos pasos</h1>
+                <p className="text-zinc-400 text-sm">Es obligatoria para todas las cuentas. Escanea el código con Google Authenticator (o Microsoft Authenticator) y escribe el código de 6 dígitos que aparece.</p>
+                {qr && <img src={qr.qrDataUrl} alt="Código QR de verificación" className="mx-auto w-56 h-56 rounded-xl bg-white p-2" />}
+                {qr && <p className="text-xs text-zinc-500 break-all">Si no puedes escanear, escribe esta clave en la app: <code className="text-zinc-300">{qr.clave}</code></p>}
+                <input inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} placeholder="000000"
+                    className="w-full rounded-lg bg-zinc-900 border border-zinc-700 px-4 py-3 text-white text-center text-2xl tracking-widest" required />
+                {error && <p className="text-red-400 text-sm">{error}</p>}
+                <button disabled={code.length !== 6} className="bg-amber-400 hover:bg-amber-300 disabled:opacity-50 text-zinc-950 font-bold py-3 rounded-full">Activar y continuar</button>
+                <button type="button" onClick={onSalir} className="text-xs text-zinc-400 underline">Cerrar sesión</button>
+            </form>
+        </main>
+    );
+}
+
+function CambiarPassword({ token, onCerrar, onCambiada }) {
+    const [actual, setActual] = useState('');
+    const [nueva, setNueva] = useState('');
+    const [repetir, setRepetir] = useState('');
+    const [error, setError] = useState('');
+
+    async function guardar(e) {
+        e.preventDefault();
+        if (nueva !== repetir) { setError('Las contraseñas nuevas no coinciden.'); return; }
+        const r = await cuentaCambiarPassword(token, actual, nueva);
+        if (r?.success) onCambiada(); else setError(r?.error || 'No se pudo cambiar');
+    }
+
+    const campo = 'w-full rounded-lg bg-zinc-900 border border-zinc-700 px-4 py-3 text-white';
+    return (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+            <form onSubmit={guardar} className="w-full max-w-sm flex flex-col gap-3 rounded-2xl bg-zinc-950 border border-zinc-800 p-6">
+                <h2 className="text-xl font-bold">Cambiar contraseña</h2>
+                <p className="text-xs text-zinc-400">Mínimo 12 caracteres, con letras y números. Se cerrarán todas tus sesiones abiertas.</p>
+                <input className={campo} type="password" placeholder="Contraseña actual" value={actual} onChange={(e) => setActual(e.target.value)} autoComplete="current-password" required />
+                <input className={campo} type="password" placeholder="Contraseña nueva" value={nueva} onChange={(e) => setNueva(e.target.value)} autoComplete="new-password" required />
+                <input className={campo} type="password" placeholder="Repite la contraseña nueva" value={repetir} onChange={(e) => setRepetir(e.target.value)} autoComplete="new-password" required />
+                {error && <p className="text-red-400 text-sm">{error}</p>}
+                <div className="flex gap-2 justify-end">
+                    <button type="button" onClick={onCerrar} className="px-4 py-2 text-sm text-zinc-400">Cancelar</button>
+                    <button className="bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold px-5 py-2 rounded-full">Guardar</button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
 export default function RevisionBoletas() {
     const [token, setToken] = useState(leerToken);
     const [resumen, setResumen] = useState(null);
@@ -565,6 +632,8 @@ export default function RevisionBoletas() {
     const [mensaje, setMensaje] = useState(null);
     const [guardando, setGuardando] = useState(false);
     const [vista, setVista] = useState('lotes');
+    const [cuenta, setCuenta] = useState(null); // { totp_enabled, usuario, rol }
+    const [cambiarPw, setCambiarPw] = useState(false);
 
     const salir = useCallback(() => {
         try { localStorage.removeItem(TOKEN_STORAGE_KEY); } catch { /* nada */ }
@@ -572,9 +641,18 @@ export default function RevisionBoletas() {
     }, []);
 
     const manejar = useCallback((r) => {
-        if (r && r.success === false && /autorizado|Sesión inválida|prohibido/i.test(r.error || '')) salir();
+        if (r?.requiere_2fa) setCuenta((c) => ({ ...(c || {}), totp_enabled: false }));
+        else if (r && r.success === false && /autorizado|Sesión inválida|prohibido/i.test(r.error || '')) salir();
         return r;
     }, [salir]);
+
+    useEffect(() => {
+        if (!token) return;
+        cuenta2faEstado(token).then((r) => {
+            if (r?.success) setCuenta(r);
+            else if (/autorizado|Sesión inválida/i.test(r?.error || '')) salir();
+        });
+    }, [token, salir]);
 
     const cargarResumen = useCallback(async () => {
         const r = manejar(await rifaResumen(token));
@@ -649,6 +727,9 @@ export default function RevisionBoletas() {
     }
 
     if (!token) return <Login onLogin={setToken} />;
+    if (cuenta && !cuenta.totp_enabled) {
+        return <Configurar2FA token={token} onSalir={salir} onListo={() => { setCuenta({ ...cuenta, totp_enabled: true }); window.location.reload(); }} />;
+    }
 
     const t = resumen?.totales;
     return (
@@ -657,7 +738,11 @@ export default function RevisionBoletas() {
                 <div className="max-w-6xl mx-auto flex flex-col gap-3">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                         <h1 className="font-display text-3xl">Revisión de boletas · iPhone 18 Pro</h1>
-                        <button type="button" onClick={salir} className="text-xs text-zinc-400 underline">Cerrar sesión</button>
+                        <div className="flex gap-4 items-center text-xs text-zinc-400">
+                            {cuenta?.usuario && <span>👤 {cuenta.usuario}</span>}
+                            <button type="button" onClick={() => setCambiarPw(true)} className="underline">Cambiar contraseña</button>
+                            <button type="button" onClick={salir} className="underline">Cerrar sesión</button>
+                        </div>
                     </div>
                     {t && (
                         <>
@@ -743,6 +828,10 @@ export default function RevisionBoletas() {
                 </footer>
             )}
 
+            {cambiarPw && (
+                <CambiarPassword token={token} onCerrar={() => setCambiarPw(false)}
+                    onCambiada={() => { setCambiarPw(false); salir(); }} />
+            )}
             {ampliada && (
                 <button type="button" onClick={() => setAmpliada(null)} className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
                     <img src={ampliada} alt="Boleta ampliada" className="max-w-full max-h-full object-contain" />
