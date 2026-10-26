@@ -1140,3 +1140,20 @@ export function rifaCorreoLote(token, cantidad) {
 export function rifaCorreoReintentar(token) {
     return request('/api/admin/rifa/correo/reintentar-fallidos', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
 }
+
+// ── Rifa: recordatorio por WhatsApp a quienes no abrieron sus boletas ───────
+export function rifaRecordatorioResumen(token) {
+    return request('/api/admin/rifa/envio/recordatorio/resumen', { headers: rifaHeaders(token) });
+}
+
+export function rifaRecordatorioConfig(token, flow_ns) {
+    return request('/api/admin/rifa/envio/recordatorio/config', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ flow_ns }) });
+}
+
+export function rifaRecordatorioPrueba(token) {
+    return request('/api/admin/rifa/envio/recordatorio/prueba', { method: 'POST', headers: rifaHeaders(token), body: '{}' });
+}
+
+export function rifaRecordatorioLote(token, cantidad) {
+    return request('/api/admin/rifa/envio/recordatorio/lote', { method: 'POST', headers: rifaHeaders(token), body: JSON.stringify({ cantidad }) });
+}

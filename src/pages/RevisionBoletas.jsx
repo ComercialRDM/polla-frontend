@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaEnvioContactoManychat, rifaCorreoResumen, rifaCorreoPrueba, rifaCorreoLote, rifaCorreoReintentar, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
+import { adminLogin, rifaResumen, rifaLote, rifaImagen, rifaRevisarLote, rifaCambiarCanal, rifaPendientes, rifaEnvioResumen, rifaEnvioConfig, rifaEnvioPrueba, rifaEnvioLote, rifaEnvioReintentarFallidos, rifaEnvioContactoManychat, rifaCorreoResumen, rifaCorreoPrueba, rifaCorreoLote, rifaCorreoReintentar, rifaRecordatorioResumen, rifaRecordatorioConfig, rifaRecordatorioPrueba, rifaRecordatorioLote, rifaCortes, rifaCorte, rifaRevisarCorte, cuenta2faEstado, cuenta2faSetup, cuenta2faConfirmar, cuentaCambiarPassword } from '../api';
 
 // Revisión y aprobación de las boletas de la rifa del iPhone 18 Pro antes del
 // envío por WhatsApp. Usa la misma sesión de administrador que /dashboardpollardm.
@@ -440,6 +440,8 @@ function Envio({ token }) {
                 </div>
             </section>
 
+            <Recordatorio token={token} />
+
             <section className={paso}>
                 <div className="flex justify-between items-center gap-3 flex-wrap">
                     <h3 className="font-bold">Bitácora de envíos ({reales.length})</h3>
@@ -456,7 +458,7 @@ function Envio({ token }) {
                                 const f = (d) => (d ? new Date(d).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '—');
                                 return (
                                     <tr key={e.id} className="border-t border-zinc-800 align-top">
-                                        <td className="py-2 pr-3">{e.es_prueba && <span className="text-sky-300 text-xs">[PRUEBA] </span>}{e.nombre}<div className="text-xs text-zinc-500">{e.celular}</div></td>
+                                        <td className="py-2 pr-3">{e.es_prueba && <span className="text-sky-300 text-xs">[PRUEBA] </span>}{e.tipo === 'recordatorio' && <span className="text-amber-300 text-xs">[RECORDATORIO] </span>}{e.nombre}<div className="text-xs text-zinc-500">{e.celular}</div></td>
                                         <td className="py-2 pr-3 whitespace-nowrap">{e.numeros.map((n) => `#${String(n).padStart(3, '0')}`).join(' ')}</td>
                                         <td className={`py-2 pr-3 ${color}`}>{txt}{e.detalle && <div className="text-xs text-zinc-500 max-w-xs break-words">{e.detalle}</div>}
                                             {e.estado === 'fallido' && !e.es_prueba && (
@@ -790,6 +792,80 @@ function Correo({ token }) {
                 </div>
             </section>
         </div>
+    );
+}
+
+// Recordatorio (una vez, 48 h después) a quienes recibieron el WhatsApp pero
+// no tocaron "Ver mis boletas". Prueba obligatoria en el número de control.
+function Recordatorio({ token }) {
+    const [r, setR] = useState(null);
+    const [flow, setFlow] = useState('');
+    const [ocupado, setOcupado] = useState(false);
+    const [auto, setAuto] = useState(false);
+    const [aviso, setAviso] = useState(null);
+
+    const cargar = useCallback(async () => {
+        const x = await rifaRecordatorioResumen(token);
+        if (x?.success) setR(x);
+        return x;
+    }, [token]);
+
+    useEffect(() => {
+        rifaRecordatorioResumen(token).then((x) => { if (x?.success) { setR(x); setFlow(x.flow_ns_recordatorio || ''); } });
+    }, [token]);
+
+    useEffect(() => {
+        if (!auto) return;
+        let vivo = true;
+        (async () => {
+            while (vivo) {
+                const x = await rifaRecordatorioLote(token, 10);
+                if (!x?.success) { setAviso({ tipo: 'error', texto: x?.error || 'Error enviando' }); break; }
+                const res = await cargar();
+                if (!x.resultados.length || !res?.listos) { setAviso({ tipo: 'ok', texto: 'Recordatorios enviados.' }); break; }
+                if (!x.resultados.some((y) => y.estado === 'enviado')) { setAviso({ tipo: 'error', texto: 'Detenido: ningún recordatorio salió en la última tanda.' }); break; }
+            }
+            if (vivo) setAuto(false);
+        })();
+        return () => { vivo = false; };
+    }, [auto, token, cargar]);
+
+    if (!r) return null;
+    return (
+        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 flex flex-col gap-3">
+            <h3 className="font-bold">🔔 Recordatorio a quienes no han abierto sus boletas</h3>
+            <p className="text-sm text-zinc-300">
+                <b className="text-white">{r.listos}</b> clientes listos para recordatorio (recibieron el mensaje hace {r.horas} h o más y no tocaron “Ver mis boletas”).
+                {r.aun_no_cumplen_48h > 0 && <> {r.aun_no_cumplen_48h} más aún no cumplen {r.horas} h.</>}
+                {' '}Ya enviados: {r.enviados}{r.abrieron_despues ? ` · ${r.abrieron_despues} los abrieron después del recordatorio` : ''}{r.fallidos ? ` · ${r.fallidos} fallidos` : ''}. Máximo un recordatorio por cliente.
+            </p>
+            {aviso && <p className={`rounded-xl px-4 py-3 text-sm ${aviso.tipo === 'ok' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-red-500/15 text-red-200'}`}>{aviso.texto}</p>}
+            <div className="flex gap-2 flex-wrap items-end">
+                <label className="flex-1 flex flex-col gap-1 text-xs text-zinc-400">flow_ns del flow de recordatorio (vacío = usa el mismo flow de entrega)
+                    <input value={flow} onChange={(e) => setFlow(e.target.value)} placeholder={r.flow_ns_principal || 'content…'}
+                        className="rounded bg-zinc-900 border border-zinc-700 px-3 py-2 text-sm text-white" />
+                </label>
+                <button type="button" onClick={async () => { const x = await rifaRecordatorioConfig(token, flow.trim()); setAviso(x?.success ? { tipo: 'ok', texto: 'Guardado.' } : { tipo: 'error', texto: x?.error || 'No se pudo' }); cargar(); }}
+                    className="bg-zinc-700 hover:bg-zinc-600 text-sm font-bold px-4 py-2 rounded-full">Guardar</button>
+            </div>
+            <div className="flex gap-3 flex-wrap items-center">
+                <button type="button" disabled={ocupado || auto} onClick={async () => {
+                    setOcupado(true);
+                    const x = await rifaRecordatorioPrueba(token);
+                    setOcupado(false);
+                    setAviso(x?.success ? { tipo: 'ok', texto: `Prueba enviada a tu WhatsApp (${x.enviado_a}). Toca “Ver mis boletas” y luego “Actualizar”.` } : { tipo: 'error', texto: x?.error || 'La prueba falló' });
+                    cargar();
+                }} className="bg-sky-500 hover:bg-sky-400 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Prueba a mi WhatsApp</button>
+                <span className={`text-sm ${r.prueba_ok ? 'text-emerald-300' : 'text-zinc-400'}`}>{r.prueba_ok ? '✅ Prueba completada' : 'Prueba pendiente'}</span>
+                <button type="button" onClick={cargar} className="text-xs underline text-zinc-400">Actualizar</button>
+                {!auto ? (
+                    <button type="button" disabled={!r.prueba_ok || ocupado || !r.listos} onClick={() => setAuto(true)}
+                        className="bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-zinc-950 font-bold px-5 py-2 rounded-full">Enviar recordatorio ({r.listos})</button>
+                ) : (
+                    <button type="button" onClick={() => setAuto(false)} className="bg-red-500 text-white font-bold px-5 py-2 rounded-full">⏸ Detener</button>
+                )}
+            </div>
+        </section>
     );
 }
 
