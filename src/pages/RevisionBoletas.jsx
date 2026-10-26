@@ -583,8 +583,8 @@ function Cortes({ token, verificado, onAmpliar }) {
                         ))}
                     </div>
                     <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-zinc-800 p-4">
-                        <p className="text-sm text-zinc-300">
-                            {!cargadas ? 'Cargando imágenes…' : !integras ? '✗ Hay imágenes que no coinciden con las generadas: no se puede aprobar.'
+                        <p className={`text-sm ${aviso ? (aviso.tipo === 'ok' ? 'text-emerald-300' : 'text-red-300') : 'text-zinc-300'}`}>
+                            {aviso ? `${aviso.tipo === 'ok' ? '✓ ' : ''}${aviso.texto}` : !cargadas ? 'Cargando imágenes…' : !integras ? '✗ Hay imágenes que no coinciden con las generadas: no se puede aprobar.'
                                 : faltaNota ? 'Escribe el motivo de cada boleta con error.' : !verificado && hayAprob ? 'Falta verificar la lista de cancelados.' : 'Revisa cada boleta y guarda el corte.'}
                         </p>
                         <button type="button" onClick={guardar} disabled={guardando || !cargadas || !integras || faltaNota || (!verificado && hayAprob)}
