@@ -110,6 +110,9 @@ function TarjetaBoleta({ b, imagen, decision, onDecision, onCanal, onAmpliar }) 
                     </div>
                 )}
 
+                {b.pago_pendiente && (
+                    <p className="rounded-lg bg-orange-500/15 border border-orange-500/40 px-3 py-2 text-orange-200 text-xs">💳 Factura pendiente de pago en Alegra (saldo ${Number(b.pago_pendiente).toLocaleString('es-CO')}). Se envía igual; el aviso se quita solo cuando se registre el pago.</p>
+                )}
                 {b.observacion_auditoria && (
                     <p className="rounded-lg bg-amber-400/10 border border-amber-400/40 px-3 py-2 text-amber-200 text-xs">⚠ Auditoría: {b.observacion_auditoria}</p>
                 )}
