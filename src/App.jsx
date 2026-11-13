@@ -117,6 +117,19 @@ function CapturarAtribucion() {
     return null;
 }
 
+// Si la analítica ya se cargó en una página pública y se navega dentro del sitio
+// hacia el panel interno, se recarga la página: en una carga directa de esas rutas
+// index.html no descarga GA4, Clarity ni el Pixel, y así no ven datos de clientes.
+function SinAnaliticaEnPanel() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        if (window.__analiticaCargada && window.__esRutaInterna?.(pathname)) window.location.reload();
+    }, [pathname]);
+
+    return null;
+}
+
 function RutaProtegida({ children }) {
     const sesion = obtenerSesion();
     if (!sesion) return <Navigate to="/registro" replace />;
@@ -126,6 +139,7 @@ function RutaProtegida({ children }) {
 function RutasProximamente() {
     return (
         <>
+            <SinAnaliticaEnPanel />
             <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
                 <Routes>
                     <Route path="/dashboardpollardm" element={<Admin />} />
@@ -154,6 +168,7 @@ function AppRoutes() {
 
     return (
         <>
+            <SinAnaliticaEnPanel />
             <CapturarRef />
             <CapturarAfiliado />
             <CapturarAtribucion />

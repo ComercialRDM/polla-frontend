@@ -28,22 +28,9 @@
     <meta name="apple-mobile-web-app-title" content="GanaConRetoucherie" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 
-    <!-- Fuentes: precargadas y aplicadas sin bloquear el render (evita el
-         @import bloqueante que retrasaba el primer pintado en toda la app) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap"
-      />
-    </noscript>
+    <!-- Fuentes alojadas en el propio sitio: no se envía la IP del visitante a Google. -->
+    <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
 
     <title>Gana con Retoucherie - Nuevo concurso muy pronto</title>
     <meta name="description" content="La Retoucherie de Manuela prepara un nuevo concurso. ¡Muy pronto más formas de ganar!" />
@@ -84,15 +71,18 @@
       }
     </script>
 
-    <!-- Stubs de cola: se crean INMEDIATAMENTE para que React pueda llamar
-         gtag/fbq/clarity en cualquier momento sin errores. Los scripts reales
-         se cargan diferidos (primera interacción o 3 s). -->
+    <!-- Analítica (GA4, Clarity, Meta Pixel): los stubs solo encolan llamadas y no
+         envían nada. Los scripts reales se cargan únicamente si el visitante aceptó las
+         cookies en el banner (polla_cookies = 'aceptadas') y nunca en las rutas internas
+         del panel, donde se ven datos personales de clientes. -->
     <script>
-      // GA4 stub — dataLayer acepta eventos antes de que cargue el script
       window.dataLayer = window.dataLayer || [];
       window.gtag = function(){ window.dataLayer.push(arguments); };
+      // Consent Mode v2: todo denegado por defecto hasta que el visitante acepte.
+      gtag('consent', 'default', {
+        ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied'
+      });
 
-      // Meta Pixel stub — fbq.queue almacena eventos hasta que fbevents.js los replay
       if (!window.fbq) {
         var fbq = window.fbq = function(){
           fbq.callMethod ? fbq.callMethod.apply(fbq, arguments) : fbq.queue.push(arguments);
@@ -103,20 +93,24 @@
         fbq('track', 'PageView');
       }
 
-      // Clarity stub — .q almacena llamadas hasta que clarity.js las replay
       window.clarity = window.clarity || function(){ (window.clarity.q = window.clarity.q || []).push(arguments); };
-    </script>
 
-    <!-- Carga diferida: los .js externos se descargan tras la primera interacción
-         del usuario (scroll, click, tap, teclado) o pasados 3 s desde el load. -->
-    <script>
       (function() {
-        var cargado = false;
-        function cargarScriptsTerceros() {
-          if (cargado) return;
-          cargado = true;
+        var RUTAS_INTERNAS = /^\/(dashboardpollardm|adminqr|revisionboletas|acceso)(\/|$)/;
+        window.__esRutaInterna = function(ruta) { return RUTAS_INTERNAS.test(ruta || window.location.pathname); };
+        window.__consentimientoCookies = function() {
+          try { return localStorage.getItem('polla_cookies'); } catch (e) { return null; }
+        };
 
-          // GA4 — el stub ya procesó los eventos; este script los reproduce
+        // La llama el banner al pulsar "Aceptar" y esta misma página si ya se había aceptado.
+        window.__cargarAnalitica = function() {
+          if (window.__analiticaCargada) return;
+          if (window.__consentimientoCookies() !== 'aceptadas' || window.__esRutaInterna()) return;
+          window.__analiticaCargada = true;
+
+          gtag('consent', 'update', {
+            ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted'
+          });
           var ga = document.createElement('script');
           ga.async = true;
           ga.src = 'https://www.googletagmanager.com/gtag/js?id=G-B33ZXGVN96';
@@ -124,28 +118,26 @@
           gtag('js', new Date());
           gtag('config', 'G-B33ZXGVN96');
 
-          // Clarity — el stub ya almacenó las llamadas en .q
           var cl = document.createElement('script');
           cl.async = true;
           cl.src = 'https://www.clarity.ms/tag/km0g4nk651';
           document.head.appendChild(cl);
 
-          // Meta Pixel — el stub (fbq.queue) ya tiene init+PageView; fbevents.js los replay
           var fb = document.createElement('script');
           fb.async = true;
           fb.src = 'https://connect.facebook.net/en_US/fbevents.js';
           document.head.appendChild(fb);
-        }
+        };
 
-        ['click', 'scroll', 'touchstart', 'keydown'].forEach(function(ev) {
-          window.addEventListener(ev, cargarScriptsTerceros, { once: true, passive: true });
-        });
-        setTimeout(cargarScriptsTerceros, 3000);
+        // Con consentimiento previo se mantiene la carga diferida (primera interacción o 3 s).
+        if (window.__consentimientoCookies() === 'aceptadas' && !window.__esRutaInterna()) {
+          ['click', 'scroll', 'touchstart', 'keydown'].forEach(function(ev) {
+            window.addEventListener(ev, window.__cargarAnalitica, { once: true, passive: true });
+          });
+          setTimeout(window.__cargarAnalitica, 3000);
+        }
       })();
     </script>
-    <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=366212620395137&ev=PageView&noscript=1"
-    /></noscript>
   </head>
   <body>
     <div id="root"></div>

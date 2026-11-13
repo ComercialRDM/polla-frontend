@@ -61,7 +61,7 @@ export default function Registro() {
     const [calendarioToken, setCalendarioToken] = useState(null);
     const [mayorDeEdad, setMayorDeEdad] = useState(false);
     const [aceptaTerminos, setAceptaTerminos] = useState(false);
-    const [recordarDispositivo, setRecordarDispositivo] = useState(true);
+    const [recordarDispositivo, setRecordarDispositivo] = useState(false);
     const [error, setError] = useState('');
     const [enviando, setEnviando] = useState(false);
 
