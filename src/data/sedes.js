@@ -134,8 +134,10 @@ export const SEDES = [
         nombreCorto: 'Caribe Plaza',
         centroComercial: 'Centro Comercial Caribe Plaza',
         ubicacionInterna: 'Sótano 1',
-        direccion: null,
-        barrio: null,
+        // Dirección del centro comercial (ficha de Google del CC). El local aún no tiene ficha propia:
+        // al crearla, usar exactamente esta dirección.
+        direccion: 'Calle 29D # 22-108',
+        barrio: 'Pie de la Popa',
         municipio: 'Cartagena',
         departamento: 'Bolívar',
         ciudad: 'Cartagena, Bolívar',
