@@ -48,6 +48,8 @@ import { captureAttributionFromUrl, getStoredAttribution } from './lib/attributi
 const Proximamente = lazy(() => import('./pages/Proximamente'));
 const RevisionBoletas = lazy(() => import('./pages/RevisionBoletas'));
 const Acceso = lazy(() => import('./pages/Acceso'));
+const Sedes = lazy(() => import('./pages/Sedes'));
+const Sede = lazy(() => import('./pages/Sede'));
 
 // La Polla Mundialista terminó: mientras se prepara el nuevo concurso, todas
 // las rutas públicas muestran "Próximamente". Admin y legales siguen activos.
@@ -150,6 +152,8 @@ function RutasProximamente() {
                     <Route path="/terminos" element={<Terminos />} />
                     <Route path="/privacidad" element={<Privacidad />} />
                     <Route path="/anexo" element={<Anexo />} />
+                    <Route path="/sedes" element={<Sedes />} />
+                    <Route path="/sedes/:slug" element={<Sede />} />
                     <Route path="*" element={<Proximamente />} />
                 </Routes>
             </Suspense>
@@ -192,6 +196,8 @@ function AppRoutes() {
                     <Route path="/privacidad" element={<Privacidad />} />
                     <Route path="/anexo" element={<Anexo />} />
                     <Route path="/resultados" element={<ResultadosFinales />} />
+                    <Route path="/sedes" element={<Sedes />} />
+                    <Route path="/sedes/:slug" element={<Sede />} />
                     <Route path="/dashboardpollardm" element={<Admin />} />
                     <Route path="/adminqr" element={<AdminQR />} />
                     <Route path="/grupo/:token" element={<Grupo />} />

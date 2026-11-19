@@ -27,6 +27,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,ico}'],
+        // Fotos de las sedes y su HTML prerenderizado: se cargan bajo demanda, no se precargan.
+        globIgnores: ['**/sedes/**'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,

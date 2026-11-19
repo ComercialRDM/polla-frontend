@@ -3,5 +3,7 @@ Allow: /
 Disallow: /dashboardpollardm
 Disallow: /redimircodigordm
 Disallow: /adminqr
+Disallow: /revisionboletas
+Disallow: /acceso
 
 Sitemap: https://www.ganaconretoucherie.com/sitemap.xml
