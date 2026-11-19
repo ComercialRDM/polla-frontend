@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-    SEDES, SERVICIOS, ESPECIALIDAD, DIAS, enlaceMaps, enlaceWhatsApp, mensajeSede, enlaceTel, rutaFoto, srcsetFoto,
+    SEDES, SERVICIOS, ESPECIALIDAD, DIAS, enlaceMaps, enlaceWhatsApp, mensajeSede, enlaceTel, rutaFoto, srcsetFoto, lineaDireccion,
 } from '../src/data/sedes.js';
 import {
     SEO_INDICE, seoSede, jsonLdSede, jsonLdIndice, faqSede, h1Sede,
@@ -93,10 +93,10 @@ function cuerpoSede(sede) {
 <nav aria-label="Ruta"><a href="/">Inicio</a> › <a href="/sedes">Sedes</a> › CC ${esc(sede.nombreCorto)}</nav>
 ${fotoEstatica(sede)}
 <h1>${esc(h1Sede(sede))}</h1>
-<p><strong>${esc(sede.ubicacionInterna)}</strong> · ${esc(sede.centroComercial)} · ${esc(sede.direccion)}${sede.barrio ? `, ${esc(sede.barrio)}` : ''} · Barranquilla</p>
+<p><strong>${esc(sede.ubicacionInterna)}</strong> · ${esc(sede.centroComercial)} · ${esc(lineaDireccion(sede))}</p>
 <p><a href="${esc(enlaceWhatsApp(mensajeSede(sede)))}">WhatsApp</a> · <a href="${esc(enlaceMaps(sede))}">Cómo llegar</a> · <a href="${esc(enlaceTel(sede))}">Llamar ${esc(sede.telefonoFijo)}</a></p>
 <h2>¿Dónde estamos exactamente?</h2>
-<p>${esc(sede.ubicacionInterna)}, ${esc(sede.centroComercial)}. ${esc(sede.direccion)}, ${esc(sede.ciudad)}.</p>
+<p>${esc(sede.ubicacionInterna)}, ${esc(sede.centroComercial)}. ${esc(lineaDireccion(sede))}, ${esc(sede.departamento)}.</p>
 ${sede.referencia ? `<p>Referencia: ${esc(sede.referencia)}</p>` : ''}${sede.comoLlegar ? `<p>${esc(sede.comoLlegar)}</p>` : ''}
 <h2>Horario</h2><table>${filas}</table>
 <h2>Servicios</h2><p>${esc(ESPECIALIDAD)}</p><ul>${SERVICIOS.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
@@ -107,8 +107,8 @@ ${sede.referencia ? `<p>Referencia: ${esc(sede.referencia)}</p>` : ''}${sede.com
 
 function cuerpoIndice() {
     const items = SEDES.map((s) => `<li><h2><a href="/sedes/${s.slug}">CC ${esc(s.nombreCorto)}</a></h2>`
-        + `<p>${esc(s.ubicacionInterna)} · ${esc(s.direccion)} · ${esc(s.telefonoFijo)}</p></li>`).join('');
-    return `${ESTILO}<div class="pre"><h1>Arreglo de ropa y sastrería en Barranquilla</h1>`
+        + `<p>${esc(s.ubicacionInterna)} · ${esc(lineaDireccion(s))} · ${esc(s.telefonoFijo)}</p></li>`).join('');
+    return `${ESTILO}<div class="pre"><h1>Arreglo de ropa y sastrería en Barranquilla y Cartagena</h1>`
         + `<p>${esc(ESPECIALIDAD)}</p><ul>${items}</ul></div>`;
 }
 

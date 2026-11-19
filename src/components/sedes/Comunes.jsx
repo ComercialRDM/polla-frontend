@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Navigation, Phone, MapPin, Clock } from 'lucide-react';
 import {
-    enlaceMaps, enlaceTel, enlaceWhatsApp, mensajeSede,
+    enlaceMaps, enlaceTel, enlaceWhatsApp, mensajeSede, lineaDireccion,
 } from '../../data/sedes';
 import { estadoAhora, horarioDeHoy, rangoLegible } from '../../utils/horario';
 import FotoSede from './FotoSede';
@@ -74,7 +74,7 @@ export function TarjetaSede({ sede, encabezado: Encabezado = 'h2' }) {
                         sede={sede}
                         nombre="fachada"
                         alt={`Fachada de La Retoucherie de Manuela en el ${sede.centroComercial}`}
-                        sizes="(min-width: 768px) 33vw, 100vw"
+                        sizes="(min-width: 640px) 50vw, 100vw"
                         className="w-full aspect-[4/3] object-cover"
                     />
                 ) : (
@@ -91,7 +91,7 @@ export function TarjetaSede({ sede, encabezado: Encabezado = 'h2' }) {
                 </Encabezado>
                 <p className="flex gap-2 text-sm text-zinc-300">
                     <MapPin size={16} className="shrink-0 mt-0.5 text-amber-400" aria-hidden="true" />
-                    <span>{sede.ubicacionInterna} · {sede.direccion}</span>
+                    <span>{sede.ubicacionInterna} · {lineaDireccion(sede)}</span>
                 </p>
                 <p className="flex gap-2 text-sm text-zinc-300">
                     <Clock size={16} className="shrink-0 mt-0.5 text-amber-400" aria-hidden="true" />

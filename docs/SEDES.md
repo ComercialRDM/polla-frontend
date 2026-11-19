@@ -1,6 +1,6 @@
 # Páginas de sedes
 
-Rutas: `/sedes`, `/sedes/buenavista`, `/sedes/viva`, `/sedes/aranjuez`. Funcionan también con
+Rutas: `/sedes`, `/sedes/buenavista`, `/sedes/viva`, `/sedes/aranjuez`, `/sedes/caribe-plaza` (Cartagena). Funcionan también con
 `MODO_PROXIMAMENTE = true`.
 
 ## Dónde se cambia cada cosa
@@ -34,6 +34,7 @@ no se muestran. Nombres que usa la página: `fachada` (hero y og:image), `fachad
 | Buenavista | `https://www.ganaconretoucherie.com/sedes/buenavista?utm_source=google&utm_medium=organic&utm_campaign=gbp_buenavista` |
 | Viva | `https://www.ganaconretoucherie.com/sedes/viva?utm_source=google&utm_medium=organic&utm_campaign=gbp_viva` |
 | Aranjuez | `https://www.ganaconretoucherie.com/sedes/aranjuez?utm_source=google&utm_medium=organic&utm_campaign=gbp_aranjuez` |
+| Caribe Plaza (Cartagena) | `https://www.ganaconretoucherie.com/sedes/caribe-plaza?utm_source=google&utm_medium=organic&utm_campaign=gbp_caribe-plaza` |
 
 Se usa `www.` porque es el dominio canónico del sitio (evita una redirección).
 

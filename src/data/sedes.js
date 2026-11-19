@@ -17,7 +17,8 @@ export const REDES = [
 ];
 
 // Horario por día de la semana, en el orden de Date.getDay(): 0 = domingo … 6 = sábado.
-// null = cerrado. `festivo` es el horario de los festivos de Colombia.
+// Cada día es un tramo h(abre, cierra), una lista de tramos (jornada partida) o null (cerrado).
+// `festivo` es el horario de los festivos de Colombia.
 const h = (abre, cierra) => ({ abre, cierra });
 
 // Fotos disponibles por sede (en public/sedes/{slug}/). Cada una existe en .webp y .jpg,
@@ -34,6 +35,8 @@ export const SEDES = [
         ubicacionInterna: 'Sótano 2, Local 17',
         direccion: 'Calle 99 # 52-53',
         barrio: 'Riomar',
+        municipio: 'Barranquilla',
+        departamento: 'Atlántico',
         ciudad: 'Barranquilla, Atlántico',
         telefonoFijo: '(605) 313 1966',
         horario: {
@@ -68,6 +71,8 @@ export const SEDES = [
         ubicacionInterna: 'Sótano 1',
         direccion: 'Cra. 51B # 87-50',
         barrio: null,
+        municipio: 'Barranquilla',
+        departamento: 'Atlántico',
         ciudad: 'Barranquilla, Atlántico',
         telefonoFijo: '(605) 309 3750',
         horario: {
@@ -100,6 +105,8 @@ export const SEDES = [
         ubicacionInterna: 'Local 06, junto a las escaleras',
         direccion: 'Calle 82 # 53-10',
         barrio: null,
+        municipio: 'Barranquilla',
+        departamento: 'Atlántico',
         ciudad: 'Barranquilla, Atlántico',
         telefonoFijo: '(605) 202 2021',
         horario: {
@@ -119,6 +126,35 @@ export const SEDES = [
         fotos: {
             fachada: { w: 1536, h: 1024, alt: 'Fachada de La Retoucherie de Manuela, arreglo de ropa en el CC Aranjuez, local 06' },
         },
+    },
+    {
+        slug: 'caribe-plaza',
+        nombre: 'La Retoucherie de Manuela – CC Caribe Plaza',
+        nombreCorto: 'Caribe Plaza',
+        centroComercial: 'Centro Comercial Caribe Plaza',
+        ubicacionInterna: 'Sótano 1',
+        direccion: null,
+        barrio: null,
+        municipio: 'Cartagena',
+        departamento: 'Bolívar',
+        ciudad: 'Cartagena, Bolívar',
+        telefonoFijo: '(605) 651 5251',
+        horario: {
+            dias: [[h('11:00', '13:00'), h('14:00', '20:00')], h('09:00', '19:30'), h('09:00', '19:30'), h('09:00', '19:30'),
+                h('09:00', '19:30'), h('09:00', '19:30'), h('10:00', '19:30')],
+            festivo: [h('11:00', '13:00'), h('14:00', '20:00')],
+        },
+        comoLlegar: null,
+        referencia: null,
+        googleMapsUrl: null,
+        resenaUrl: null,
+        // Coordenadas del centro comercial (OpenStreetMap), no del local: cambiar por las de la ficha de Google.
+        lat: 10.4144625,
+        lng: -75.5298711,
+        desde: null,
+        videoComoLlegar: null,
+        videoLocal: null,
+        fotos: {},
     },
 ];
 
@@ -153,16 +189,21 @@ export function urlSede(sede) {
     return sede ? `${SITIO}/sedes/${sede.slug}` : `${SITIO}/sedes`;
 }
 
+// "Calle 99 # 52-53, Riomar, Barranquilla" (omite los datos pendientes).
+export function lineaDireccion(sede) {
+    return [sede.direccion, sede.barrio, sede.municipio].filter(Boolean).join(', ');
+}
+
 export function enlaceMaps(sede) {
     if (sede.googleMapsUrl) return sede.googleMapsUrl;
-    const q = `${sede.nombre}, ${sede.direccion}, Barranquilla`;
+    const q = `${sede.nombre}, ${lineaDireccion(sede)}`;
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
 export function mapaEmbebido(sede) {
     const q = sede.lat != null && sede.lng != null
         ? `${sede.lat},${sede.lng}`
-        : `${sede.nombre}, ${sede.direccion}, Barranquilla`;
+        : `${sede.nombre}, ${lineaDireccion(sede)}`;
     return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
 }
 

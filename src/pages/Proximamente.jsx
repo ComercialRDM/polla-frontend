@@ -44,7 +44,7 @@ export default function Proximamente() {
                     href="/sedes"
                     className="inline-flex items-center min-h-11 text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-4"
                 >
-                    Nuestras sedes en Barranquilla
+                    Nuestras sedes en Barranquilla y Cartagena
                 </a>
 
                 <nav className="flex gap-4 text-xs text-zinc-500">
