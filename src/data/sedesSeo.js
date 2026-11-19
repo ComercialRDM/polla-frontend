@@ -1,14 +1,14 @@
 // Metadatos SEO y preguntas frecuentes de las sedes. JavaScript puro: lo usan las
 // páginas (para la navegación dentro de la app) y el prerender (HTML sin JavaScript).
 import {
-    SEDES, SITIO, MARCA, REDES, RESPUESTAS_FAQ, DIAS, urlSede, rutaFoto,
+    SEDES, SITIO, MARCA, REDES, RESPUESTAS_FAQ, DIAS, urlSede, rutaFoto, lineaDireccion,
 } from './sedes.js';
-import { horaLegible } from '../utils/horario.js';
+import { rangoLegible, tramos } from '../utils/horario.js';
 
 export const SEO_INDICE = {
-    title: 'Arreglo de ropa en Barranquilla | La Retoucherie de Manuela',
-    description: 'Arreglo de ropa y sastrería en Barranquilla: sedes en los CC Buenavista II, '
-        + 'Viva Barranquilla y Aranjuez. Horarios, cómo llegar y WhatsApp.',
+    title: 'Sedes en Barranquilla y Cartagena | La Retoucherie de Manuela',
+    description: 'Arreglo de ropa y sastrería en los CC Buenavista II, Viva y Aranjuez (Barranquilla) '
+        + 'y Caribe Plaza (Cartagena). Horarios, cómo llegar y WhatsApp.',
     url: `${SITIO}/sedes`,
     image: `${SITIO}/og-image.jpg`,
 };
@@ -18,7 +18,7 @@ export function tituloSede(sede) {
 }
 
 export function h1Sede(sede) {
-    return `Arreglo de ropa y sastrería en el CC ${sede.nombreTitulo || sede.nombreCorto}, Barranquilla`;
+    return `Arreglo de ropa y sastrería en el CC ${sede.nombreTitulo || sede.nombreCorto}, ${sede.municipio}`;
 }
 
 export function descripcionSede(sede) {
@@ -39,6 +39,9 @@ export function seoSede(sede) {
     };
 }
 
+// "8:00 p. m." ya termina en punto: no agregar otro.
+const conPunto = (t) => (t.endsWith('.') ? t : `${t}.`);
+
 // Preguntas frecuentes con respuesta. Las que no tienen respuesta no se muestran.
 export function faqSede(sede) {
     const domingo = sede.horario.dias[0];
@@ -46,7 +49,7 @@ export function faqSede(sede) {
     const lista = [
         {
             p: '¿En qué parte del centro comercial están?',
-            r: `Estamos en el ${sede.centroComercial}, ${sede.ubicacionInterna} (${sede.direccion}, Barranquilla).`
+            r: `Estamos en el ${sede.centroComercial}, ${sede.ubicacionInterna} (${lineaDireccion(sede)}).`
                 + (sede.referencia ? ` Referencia: ${sede.referencia.charAt(0).toLowerCase()}${sede.referencia.slice(1)}.` : ''),
         },
         RESPUESTAS_FAQ.demora && { p: '¿Cuánto se demora un arreglo?', r: RESPUESTAS_FAQ.demora },
@@ -55,8 +58,7 @@ export function faqSede(sede) {
         {
             p: '¿Atienden domingos y festivos?',
             r: domingo || festivo
-                ? `Sí. Domingos: ${domingo ? `${horaLegible(domingo.abre)} a ${horaLegible(domingo.cierra)}` : 'cerrado'}. `
-                  + `Festivos: ${festivo ? `${horaLegible(festivo.abre)} a ${horaLegible(festivo.cierra)}` : 'cerrado'}.`
+                ? `Sí. Domingos: ${conPunto(rangoLegible(domingo).toLowerCase())} Festivos: ${conPunto(rangoLegible(festivo).toLowerCase())}`
                 : 'No, los domingos y festivos esta sede permanece cerrada.',
         },
     ];
@@ -68,11 +70,12 @@ const NOMBRE_SCHEMA = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', '
 function horarioSchema(sede) {
     // Agrupa los días con el mismo horario: menos ruido en el JSON-LD.
     const grupos = new Map();
-    sede.horario.dias.forEach((r, dow) => {
-        if (!r) return;
-        const clave = `${r.abre}-${r.cierra}`;
-        if (!grupos.has(clave)) grupos.set(clave, { ...r, dias: [] });
-        grupos.get(clave).dias.push(`https://schema.org/${NOMBRE_SCHEMA[dow]}`);
+    sede.horario.dias.forEach((dia, dow) => {
+        tramos(dia).forEach((r) => {
+            const clave = `${r.abre}-${r.cierra}`;
+            if (!grupos.has(clave)) grupos.set(clave, { ...r, dias: [] });
+            grupos.get(clave).dias.push(`https://schema.org/${NOMBRE_SCHEMA[dow]}`);
+        });
     });
     return [...grupos.values()].map((g) => ({
         '@type': 'OpeningHoursSpecification',
@@ -94,9 +97,9 @@ export function jsonLdSede(sede) {
         telephone: sede.telefonoFijo,
         address: {
             '@type': 'PostalAddress',
-            streetAddress: sede.direccion, // NAP: idéntico a la ficha de Google
-            addressLocality: 'Barranquilla',
-            addressRegion: 'Atlántico',
+            ...(sede.direccion ? { streetAddress: sede.direccion } : {}), // NAP: idéntico a la ficha de Google
+            addressLocality: sede.municipio,
+            addressRegion: sede.departamento,
             addressCountry: 'CO',
         },
         openingHoursSpecification: horarioSchema(sede),
@@ -124,7 +127,7 @@ export function jsonLdIndice() {
     return [{
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        name: `Sedes de ${MARCA} en Barranquilla`,
+        name: `Sedes de ${MARCA} en Barranquilla y Cartagena`,
         itemListElement: SEDES.map((s, i) => ({
             '@type': 'ListItem', position: i + 1, url: urlSede(s), name: s.nombre,
         })),

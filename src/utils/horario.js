@@ -78,8 +78,12 @@ export function horaLegible(hhmm) {
     return `${h12}:${String(mm).padStart(2, '0')} ${sufijo}`;
 }
 
-export function rangoLegible(rango) {
-    return rango ? `${horaLegible(rango.abre)} – ${horaLegible(rango.cierra)}` : 'Cerrado';
+// Un día puede ser un tramo, una lista de tramos (jornada partida) o null.
+export const tramos = (dia) => (dia ? (Array.isArray(dia) ? dia : [dia]) : []);
+
+export function rangoLegible(dia) {
+    const t = tramos(dia);
+    return t.length ? t.map((r) => `${horaLegible(r.abre)} – ${horaLegible(r.cierra)}`).join(' y ') : 'Cerrado';
 }
 
 function horarioDe(sede, y, m, d, dow) {
@@ -96,20 +100,22 @@ const NOMBRE_DIA = ['el domingo', 'el lunes', 'el martes', 'el miércoles', 'el 
 // { abierto, texto }: "Abierto ahora · cierra a las 7:00 p. m." o "Cerrado · abre mañana a las…"
 export function estadoAhora(sede, fecha = new Date()) {
     const a = ahoraBogota(fecha);
-    const hoy = horarioDe(sede, a.y, a.m, a.d, a.dow);
-    if (hoy && a.minutos >= aMinutos(hoy.abre) && a.minutos < aMinutos(hoy.cierra)) {
-        return { abierto: true, texto: `Abierto ahora · cierra a las ${horaLegible(hoy.cierra)}` };
+    const hoy = tramos(horarioDe(sede, a.y, a.m, a.d, a.dow));
+    const actual = hoy.find((r) => a.minutos >= aMinutos(r.abre) && a.minutos < aMinutos(r.cierra));
+    if (actual) {
+        return { abierto: true, texto: `Abierto ahora · cierra a las ${horaLegible(actual.cierra)}` };
     }
-    if (hoy && a.minutos < aMinutos(hoy.abre)) {
-        return { abierto: false, texto: `Cerrado · abre hoy a las ${horaLegible(hoy.abre)}` };
+    const luego = hoy.find((r) => a.minutos < aMinutos(r.abre));
+    if (luego) {
+        return { abierto: false, texto: `Cerrado · abre hoy a las ${horaLegible(luego.abre)}` };
     }
     for (let i = 1; i <= 7; i++) {
         const f = new Date(Date.UTC(a.y, a.m - 1, a.d + i));
         const dow = f.getUTCDay();
-        const rango = horarioDe(sede, f.getUTCFullYear(), f.getUTCMonth() + 1, f.getUTCDate(), dow);
-        if (rango) {
+        const [primero] = tramos(horarioDe(sede, f.getUTCFullYear(), f.getUTCMonth() + 1, f.getUTCDate(), dow));
+        if (primero) {
             const cuando = i === 1 ? 'mañana' : NOMBRE_DIA[dow];
-            return { abierto: false, texto: `Cerrado · abre ${cuando} a las ${horaLegible(rango.abre)}` };
+            return { abierto: false, texto: `Cerrado · abre ${cuando} a las ${horaLegible(primero.abre)}` };
         }
     }
     return { abierto: false, texto: 'Cerrado' };

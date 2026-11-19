@@ -11,13 +11,13 @@ export default function Sedes() {
             <main className="max-w-5xl mx-auto px-4 py-12">
                 <p className="text-amber-400 text-xs font-bold tracking-[0.3em] uppercase">La Retoucherie de Manuela</p>
                 <h1 className="mt-3 font-display text-white text-5xl sm:text-6xl leading-none">
-                    Arreglo de ropa y sastrería en Barranquilla
+                    Arreglo de ropa y sastrería en Barranquilla y Cartagena
                 </h1>
                 <p className="mt-4 max-w-2xl text-zinc-300">
-                    Dobladillos, ajustes, cremalleras, vestidos de fiesta y parches de jean en tres centros comerciales.
+                    Dobladillos, ajustes, cremalleras, vestidos de fiesta y parches de jean en cuatro centros comerciales.
                     {' '}{ESPECIALIDAD}
                 </p>
-                <div className="mt-8 grid md:grid-cols-3 gap-4">
+                <div className="mt-8 grid sm:grid-cols-2 gap-4">
                     {SEDES.map((s) => <TarjetaSede key={s.slug} sede={s} />)}
                 </div>
             </main>

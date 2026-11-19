@@ -1,7 +1,7 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { MapPin, Phone, Star, ChevronDown, Scissors, Car, PlayCircle } from 'lucide-react';
 import {
-    SEDES, SERVICIOS, ESPECIALIDAD, DIAS, sedePorSlug, mapaEmbebido, enlaceWhatsApp, mensajeSede, enlaceTel,
+    SEDES, SERVICIOS, ESPECIALIDAD, DIAS, sedePorSlug, mapaEmbebido, enlaceWhatsApp, mensajeSede, enlaceTel, lineaDireccion,
 } from '../data/sedes';
 import { seoSede, jsonLdSede, faqSede, h1Sede } from '../data/sedesSeo';
 import { rangoLegible, horarioDeHoy } from '../utils/horario';
@@ -76,7 +76,7 @@ function PaginaSede({ sede }) {
                             <span>{sede.ubicacionInterna}</span>
                         </p>
                         <p className="mt-2 text-zinc-200">
-                            {sede.centroComercial} · {sede.direccion}{sede.barrio ? `, ${sede.barrio}` : ''} · Barranquilla
+                            {sede.centroComercial} · {lineaDireccion(sede)}
                         </p>
                         <EstadoAhora sede={sede} className="mt-4 bg-zinc-950/80 rounded-full px-3 py-1.5" />
                         <div className="hidden sm:block mt-6">
@@ -97,7 +97,7 @@ function PaginaSede({ sede }) {
                         </div>
                         <div>
                             <dt className="text-xs uppercase tracking-wider text-zinc-400">Dirección</dt>
-                            <dd>{sede.direccion}{sede.barrio ? `, ${sede.barrio}` : ''}, {sede.ciudad}</dd>
+                            <dd>{lineaDireccion(sede)}, {sede.departamento}</dd>
                         </div>
                         {sede.referencia && (
                             <div>
@@ -255,7 +255,7 @@ function PaginaSede({ sede }) {
             </main>
 
             <footer className="px-4 py-8 border-t border-zinc-800 text-center text-xs text-zinc-400">
-                <p>{sede.nombre} · {sede.direccion} · {sede.telefonoFijo}</p>
+                <p>{sede.nombre} · {lineaDireccion(sede)} · {sede.telefonoFijo}</p>
                 <p className="mt-2">
                     <Link to="/sedes" className="hover:text-zinc-300">Todas las sedes</Link>
                     <span aria-hidden="true"> · </span>
