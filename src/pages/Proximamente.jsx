@@ -40,6 +40,13 @@ export default function Proximamente() {
                     Avísame por WhatsApp
                 </a>
 
+                <a
+                    href="/sedes"
+                    className="inline-flex items-center min-h-11 text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-4"
+                >
+                    Nuestras sedes en Barranquilla
+                </a>
+
                 <nav className="flex gap-4 text-xs text-zinc-500">
                     <a href="/terminos" className="hover:text-zinc-300 transition-colors">Términos y condiciones</a>
                     <span>·</span>
